@@ -1,0 +1,96 @@
+# =================================================================
+# RAMS — .dockerignore
+# Excludes files from the Docker build context.
+# Keeps the build fast and the image lean.
+# =================================================================
+
+# -----------------------------------------------------------------
+# Version control
+# -----------------------------------------------------------------
+.git
+.gitignore
+.gitattributes
+
+# -----------------------------------------------------------------
+# Node / Frontend (built in the node-builder stage via npm ci)
+# -----------------------------------------------------------------
+node_modules
+
+# -----------------------------------------------------------------
+# PHP vendor (installed in the composer-builder stage)
+# -----------------------------------------------------------------
+vendor
+
+# -----------------------------------------------------------------
+# Laravel compiled / cache files (generated at runtime)
+# -----------------------------------------------------------------
+bootstrap/cache/*.php
+storage/logs/*.log
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# -----------------------------------------------------------------
+# Environment files
+# The production container receives env vars via docker-compose
+# env_file. Never bake secrets into the image.
+# -----------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# -----------------------------------------------------------------
+# IDE / editor
+# -----------------------------------------------------------------
+.idea
+.vscode
+*.code-workspace
+.editorconfig
+
+# -----------------------------------------------------------------
+# OS generated
+# -----------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -----------------------------------------------------------------
+# Tests (not needed at runtime)
+# -----------------------------------------------------------------
+tests
+phpunit.xml
+phpstan.neon
+pint.json
+
+# -----------------------------------------------------------------
+# Docker files (no need to include in their own build)
+# -----------------------------------------------------------------
+Dockerfile
+docker-compose.yml
+docker-compose*.yml
+nginx.conf
+.dockerignore
+
+# -----------------------------------------------------------------
+# Documentation (not needed in image)
+# -----------------------------------------------------------------
+docs
+README.md
+CLAUDE.md
+IMPLEMENTATION_LOG.md
+*.md
+
+# -----------------------------------------------------------------
+# CI / dev tooling
+# -----------------------------------------------------------------
+.github
+.claude
+
+# -----------------------------------------------------------------
+# Temporary / dumps
+# -----------------------------------------------------------------
+*.sql
+*.zip
+*.tar.gz
+dump.rdb
+bash.exe.stackdump

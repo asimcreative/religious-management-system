@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Notification;
+use Carbon\CarbonInterface;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\Log;
  */
 class PurgeOldLogs extends Command
 {
+    private const CHUNK_SIZE = 1000;
+
     protected $signature = 'logs:purge
                             {--dry-run : Show counts without deleting}
                             {--activity-days=730 : Activity log retention in days}
@@ -45,11 +48,9 @@ class PurgeOldLogs extends Command
         $this->line("Activity logs older than {$activityDays} days: <comment>{$activityCount}</comment>");
 
         if (! $dryRun && $activityCount > 0) {
-            DB::table('activity_log')
-                ->where('created_at', '<', $activityCutoff)
-                ->delete();
-            $this->info("Deleted {$activityCount} activity log records.");
-            Log::info("[logs:purge] Deleted {$activityCount} activity_log records older than {$activityDays} days.");
+            $deleted = $this->deleteInChunks('activity_log', 'created_at', $activityCutoff);
+            $this->info("Deleted {$deleted} activity log records.");
+            Log::info("[logs:purge] Deleted {$deleted} activity_log records older than {$activityDays} days.");
         }
 
         // ── Notifications ──────────────────────────────────────────
@@ -60,11 +61,9 @@ class PurgeOldLogs extends Command
         $this->line("Notifications older than {$notificationDays} days: <comment>{$notificationCount}</comment>");
 
         if (! $dryRun && $notificationCount > 0) {
-            Notification::withoutGlobalScopes()
-                ->where('created_at', '<', $notificationCutoff)
-                ->delete();
-            $this->info("Deleted {$notificationCount} notification records.");
-            Log::info("[logs:purge] Deleted {$notificationCount} notification records older than {$notificationDays} days.");
+            $deleted = $this->deleteNotificationsInChunks($notificationCutoff);
+            $this->info("Deleted {$deleted} notification records.");
+            Log::info("[logs:purge] Deleted {$deleted} notification records older than {$notificationDays} days.");
         }
 
         if ($dryRun) {
@@ -74,5 +73,47 @@ class PurgeOldLogs extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Delete rows from a raw table in chunks to avoid long-running lock.
+     *
+     * @param  CarbonInterface  $cutoff
+     */
+    private function deleteInChunks(string $table, string $dateColumn, mixed $cutoff): int
+    {
+        $total = 0;
+
+        do {
+            $rows = DB::table($table)
+                ->where($dateColumn, '<', $cutoff)
+                ->limit(self::CHUNK_SIZE)
+                ->delete();
+
+            $total += $rows;
+        } while ($rows === self::CHUNK_SIZE);
+
+        return $total;
+    }
+
+    /**
+     * Delete Notification model rows in chunks (respects Eloquent events if any).
+     *
+     * @param  CarbonInterface  $cutoff
+     */
+    private function deleteNotificationsInChunks(mixed $cutoff): int
+    {
+        $total = 0;
+
+        do {
+            $rows = Notification::withoutGlobalScopes()
+                ->where('created_at', '<', $cutoff)
+                ->limit(self::CHUNK_SIZE)
+                ->delete();
+
+            $total += $rows;
+        } while ($rows === self::CHUNK_SIZE);
+
+        return $total;
     }
 }

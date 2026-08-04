@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Status;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -63,7 +64,7 @@ class NotificationService
         string $priority = self::PRIORITY_MEDIUM,
         array $userIds = [],
     ): int {
-        $query = User::where('company_id', $companyId)->where('status', 1);
+        $query = User::where('company_id', $companyId)->where('status', Status::Active);
 
         if ($userIds !== []) {
             $query->whereIn('id', $userIds);

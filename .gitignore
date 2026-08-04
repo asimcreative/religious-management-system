@@ -22,6 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+*.stackdump
 
 # IDE Helper generated files
 _ide_helper.php

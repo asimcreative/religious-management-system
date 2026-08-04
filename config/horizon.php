@@ -185,7 +185,7 @@ return [
     |
     */
 
-    'memory_limit' => 64,
+    'memory_limit' => 128,
 
     /*
     |--------------------------------------------------------------------------
@@ -287,6 +287,18 @@ return [
     | changed, Horizon will automatically restart to apply all changes.
     |
     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Horizon Allowed Emails
+    |--------------------------------------------------------------------------
+    |
+    | A comma-separated list of email addresses that are allowed to access the
+    | Horizon dashboard in addition to Super Admin role holders.
+    |
+    */
+
+    'allowed_emails' => env('HORIZON_ALLOWED_EMAILS', ''),
 
     'watch' => [
         'app',

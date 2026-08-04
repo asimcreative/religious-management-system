@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
-use Laravel\Horizon\Horizon;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
 
 class HorizonServiceProvider extends HorizonApplicationServiceProvider
@@ -14,10 +13,6 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     public function boot(): void
     {
         parent::boot();
-
-        // Horizon::routeSmsNotificationsTo('15556667777');
-        // Horizon::routeMailNotificationsTo('example@example.com');
-        // Horizon::routeSlackNotificationsTo('slack-webhook-url', '#channel');
     }
 
     /**
@@ -28,9 +23,20 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewHorizon', function ($user = null) {
-            return in_array(optional($user)->email, [
-                //
-            ]);
+            if ($user === null) {
+                return false;
+            }
+
+            // Allow Super Admins and any email addresses listed in HORIZON_ALLOWED_EMAILS
+            if ($user->hasRole('Super Admin')) {
+                return true;
+            }
+
+            $allowedEmails = array_filter(
+                explode(',', (string) config('horizon.allowed_emails', ''))
+            );
+
+            return in_array($user->email, $allowedEmails, true);
         });
     }
 }

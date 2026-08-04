@@ -45,6 +45,8 @@ Manage employees, Quran classes, Salah attendance, reports, and notifications �
 - [Scheduler Configuration](#-scheduler-configuration)
 - [Multi-Tenant Architecture](#-multi-tenant-architecture)
 - [Roles & Permissions](#-roles--permissions)
+- [Employee Module](#-employee-module)
+- [Localization](#-localization)
 - [Quran Module](#-quran-module)
 - [Salah Module](#-salah-module)
 - [Reports](#-reports)
@@ -690,6 +692,146 @@ if ($user->can('export-reports')) { ... }
 
 ---
 
+## 👥 Employee Module
+
+The Employee module provides complete lifecycle management for all staff members across branches and departments.
+
+### Data Model
+
+```
+Employee
+├── Branch (assigned branch)
+├── Department (assigned department)
+├── Designation (job title)
+└── AuditLog (full change history)
+```
+
+### Features
+
+- **Full CRUD** — create, view, edit, and soft-delete employees with search, filter, and pagination
+- **Multi-Branch Assignment** — employees can be assigned to any branch within the company
+- **Department & Designation** — assign employees to departments with specific designations
+- **Employment Status** — manage Active / Inactive status with audit trail
+- **Excel Import** — bulk-upload employees from a formatted Excel file
+- **Excel Export** — export filtered employee lists to Excel for HR reporting
+- **Audit History** — every field change is logged with user, timestamp, IP, and old/new values
+- **Detail View** — full employee profile with change history timeline
+
+### Creating an Employee (Web)
+
+```
+POST /employees
+```
+
+Form fields validated via `StoreEmployeeRequest`:
+
+| Field | Type | Required |
+|---|---|---|
+| `first_name` | string, max:100 | Yes |
+| `last_name` | string, max:100 | Yes |
+| `email` | email, unique per company | Yes |
+| `phone` | string, nullable | No |
+| `branch_id` | exists:branches | Yes |
+| `department_id` | exists:departments | Yes |
+| `designation_id` | exists:designations | Yes |
+| `employment_status` | enum: active/inactive | Yes |
+| `joined_date` | date | Yes |
+
+### Bulk Import
+
+Upload employees via Excel using the import template:
+
+```
+GET  /employees/import/template   → Download blank template
+POST /employees/import            → Upload populated file
+```
+
+The importer validates each row and reports errors per row — partial imports are supported (valid rows are saved, invalid rows reported back).
+
+---
+
+## 🌐 Localization
+
+RAMS ships with full **English and Urdu** language support throughout the web interface.
+
+### Supported Languages
+
+| Code | Language | Script |
+|---|---|---|
+| `en` | English | Latin |
+| `ur` | Urdu | Right-to-left (RTL) |
+
+### How It Works
+
+Language preference is stored per user (`users.language` column). On every web request, the `SetLocale` middleware reads the authenticated user's language and sets it as the application locale:
+
+```php
+// app/Http/Middleware/SetLocale.php
+public function handle(Request $request, Closure $next): Response
+{
+    $user = Auth::user();
+    if ($user && in_array($user->language, ['en', 'ur'])) {
+        App::setLocale($user->language);
+    }
+    return $next($request);
+}
+```
+
+### Translation Files
+
+```
+resources/lang/
+├── en/
+│   ├── auth.php
+│   ├── employees.php
+│   ├── quran.php
+│   ├── salah.php
+│   └── validation.php
+└── ur/
+    ├── auth.php
+    ├── employees.php
+    ├── quran.php
+    ├── salah.php
+    └── validation.php
+```
+
+### Using Translations in Blade
+
+```blade
+{{-- Standard translation helper --}}
+{{ __('employees.create_title') }}
+
+{{-- With parameters --}}
+{{ __('employees.welcome', ['name' => $user->name]) }}
+
+{{-- Pluralisation --}}
+{{ trans_choice('employees.count', $total) }}
+```
+
+### RTL Support
+
+When the locale is `ur`, the layout automatically switches to **right-to-left** direction:
+
+```blade
+{{-- resources/views/layouts/app.blade.php --}}
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ur' ? 'rtl' : 'ltr' }}">
+```
+
+Bootstrap 5's RTL CSS is loaded conditionally for correct layout mirroring.
+
+### Changing Language
+
+Users can switch language from their profile settings:
+
+```
+PUT /profile
+{ "language": "ur" }
+```
+
+Changes take effect immediately on the next page load. The API also accepts a `?lang=` parameter for mobile consumers.
+
+---
+
 ## 📖 Quran Module
 
 The Quran module provides complete management of Quran education classes.
@@ -1253,31 +1395,9 @@ docs(readme): add deployment checklist
 
 ## 📄 License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for full details.
 
-```
-MIT License
-
-Copyright (c) 2026 RAMS Project
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+Copyright (c) 2026 [Asim](https://github.com/asimcreative)
 
 ---
 

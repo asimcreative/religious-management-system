@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Status;
 use App\Models\Employee;
 use App\Models\Jamaat;
 use App\Models\QuranAttendance;
@@ -66,13 +67,13 @@ class DashboardService
         return Cache::remember($this->key('overview'), self::TTL_KPI, function () {
             return [
                 'total_employees' => Employee::count(),
-                'active_employees' => Employee::where('employment_status', 1)->count(),
+                'active_employees' => Employee::where('employment_status', Status::Active)->count(),
                 'total_teachers' => Teacher::count(),
-                'active_teachers' => Teacher::where('status', 1)->count(),
+                'active_teachers' => Teacher::where('status', Status::Active)->count(),
                 'total_quran_classes' => QuranClass::count(),
-                'active_quran_classes' => QuranClass::where('status', 1)->count(),
+                'active_quran_classes' => QuranClass::where('status', Status::Active)->count(),
                 'total_jamaats' => Jamaat::count(),
-                'active_jamaats' => Jamaat::where('status', 1)->count(),
+                'active_jamaats' => Jamaat::where('status', Status::Active)->count(),
             ];
         });
     }

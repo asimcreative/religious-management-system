@@ -43,8 +43,8 @@ class UpdateEmployeeRequest extends FormRequest
                 Rule::exists('designations', 'id')->where('company_id', $companyId),
             ],
             'employment_status' => ['required', 'integer', 'in:0,1,2'],
-            'quran_department_id' => ['nullable', Rule::exists('quran_departments', 'id')],
-            'quran_status_id' => ['nullable', Rule::exists('quran_statuses', 'id')],
+            'quran_department_id' => ['nullable', Rule::exists('quran_departments', 'id')->where('company_id', $companyId)],
+            'quran_status_id' => ['nullable', Rule::exists('quran_statuses', 'id')->where('company_id', $companyId)],
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
     }

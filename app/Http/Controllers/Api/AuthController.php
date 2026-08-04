@@ -137,7 +137,8 @@ class AuthController extends BaseApiController
             ]);
         }
 
-        $user->update(['password' => Hash::make($request->password)]);
+        // Do NOT pre-hash — User model has 'password' => 'hashed' cast which hashes automatically
+        $user->update(['password' => $request->password]);
 
         // Revoke all tokens to force re-login on other devices
         $user->tokens()->whereNot('id', $request->user()->currentAccessToken()->id)->delete();

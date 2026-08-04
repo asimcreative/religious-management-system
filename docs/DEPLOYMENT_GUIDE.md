@@ -1,5 +1,124 @@
 # RAMS — Deployment Guide
 
+---
+
+## Docker Deployment (Recommended)
+
+The fastest way to run the full stack locally or on a server.
+
+### Requirements
+
+- Docker 24+ and Docker Compose v2
+- No local PHP, Node, or MySQL needed — everything runs inside containers
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Multi-stage build: Node (Vite assets) → Composer (PHP deps) → PHP 8.4-FPM |
+| `docker-compose.yml` | Orchestrates all 6 services |
+| `nginx.conf` | Nginx config proxying to PHP-FPM |
+| `.dockerignore` | Keeps build context lean |
+| `docker/entrypoint.sh` | Runs migrations, caching, and volume init on startup |
+| `docker/php.ini` | OPcache, memory limits, upload limits |
+| `.env.docker` | Docker-ready environment template |
+
+### Services
+
+| Container | Image | Role | Port |
+|---|---|---|---|
+| `rams_app` | Built from `Dockerfile` | PHP 8.4-FPM (Laravel) | 9000 (internal) |
+| `rams_nginx` | `nginx:1.27-alpine` | Web server | `80` → host |
+| `rams_mysql` | `mysql:8.0` | Database | `3306` → host |
+| `rams_redis` | `redis:7-alpine` | Cache / Sessions / Queues | `6379` → host |
+| `rams_horizon` | Same as app | Laravel Horizon (queue manager) | — |
+| `rams_scheduler` | Same as app | Laravel task scheduler | — |
+
+### Quick Start
+
+```bash
+# 1. Copy Docker environment template
+cp .env.docker .env
+
+# 2. Generate APP_KEY
+docker compose run --rm app php artisan key:generate --show
+# Paste the output as APP_KEY= in .env
+
+# 3. Build and start all services (first run takes a few minutes to build)
+docker compose up -d
+
+# 4. Follow startup logs
+docker compose logs -f app
+
+# 5. Open in browser
+# http://localhost
+```
+
+On first start, the `app` container automatically:
+- Populates the shared public volume (Vite-compiled assets)
+- Runs `php artisan package:discover`
+- Runs `php artisan optimize` (config / route / view / event cache)
+- Runs `php artisan migrate --force`
+- Creates the storage symlink
+
+### Common Commands
+
+```bash
+# View all container statuses
+docker compose ps
+
+# Tail logs for a specific service
+docker compose logs -f horizon
+docker compose logs -f scheduler
+
+# Run artisan commands
+docker compose exec app php artisan tinker
+docker compose exec app php artisan make:model Foo
+
+# Run tests
+docker compose exec app php artisan test
+
+# Open a shell in the app container
+docker compose exec app bash
+
+# Rebuild after code or Dockerfile changes
+docker compose build --no-cache
+docker compose up -d
+
+# Stop all containers (preserves volumes / data)
+docker compose stop
+
+# Stop and remove containers + volumes (DESTRUCTIVE — wipes DB)
+docker compose down -v
+```
+
+### Horizon Dashboard
+
+Visit `/horizon` in your browser. Only accessible to users with the `Super Admin` role in production.
+
+### Updating / Redeploying
+
+```bash
+git pull origin main
+docker compose build
+docker compose up -d
+```
+
+The entrypoint runs `php artisan migrate --force` on every container start, so migrations are applied automatically.
+
+### Production Notes
+
+1. **APP_KEY** — must be set and kept secret. Never commit it.
+2. **DB_PASSWORD / MYSQL_ROOT_PASSWORD** — use strong passwords in production.
+3. **REDIS_PASSWORD** — to enable: add `--requirepass yourpassword` to the Redis `command:` in `docker-compose.yml` and set `REDIS_PASSWORD=yourpassword` in `.env`.
+4. **HTTPS** — put a reverse proxy (Nginx, Traefik, Caddy) in front that handles TLS and forwards to port 80.
+5. **APP_DEBUG=false** — always off in production.
+6. **Volumes** — `mysql_data` and `redis_data` are named Docker volumes. Back them up before major updates.
+
+---
+
+## Traditional Deployment (VPS / Shared Hosting)
+
 ## Pre-Deployment Checklist
 
 Before deploying to production:

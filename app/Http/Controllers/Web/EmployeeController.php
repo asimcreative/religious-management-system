@@ -67,8 +67,7 @@ class EmployeeController extends Controller
             $data['photo'] = $request->file('photo')->store('employees/photos', 'public');
         }
 
-        $data['company_id'] = $request->user()->company_id;
-
+        // company_id is set automatically by the BelongsToCompany model concern (creating event)
         $this->service->create($data);
 
         return redirect()

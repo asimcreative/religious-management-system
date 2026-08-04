@@ -11,6 +11,8 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class EmployeeExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping
 {
+    private int $index = 0;
+
     /** @param  array<string, mixed>  $filters */
     public function __construct(
         private readonly array $filters = [],
@@ -42,10 +44,8 @@ class EmployeeExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMap
     /** @return array<int, mixed> */
     public function map(mixed $row): array
     {
-        static $index = 0;
-
         return [
-            ++$index,
+            ++$this->index,
             $row->employee_code,
             $row->employee_name,
             $row->branch->branch_name ?? '-',
