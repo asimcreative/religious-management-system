@@ -588,3 +588,40 @@
 - PHPStan Level 5: 0 errors (fixed 12 initial errors — nullsafe.neverNull, return.type, argument.type)
 - Laravel Pint: 0 issues (fixed 2 files — import ordering, fully_qualified_strict_types)
 - migrate:fresh --seed: 32 migrations + 5 seeders passed
+
+---
+
+## Phase 12: Dashboard
+**Commit:** (pending)
+**Date:** 2026-08-04
+
+### Features
+- Role-based dashboard with permission-gated sections
+- Overview KPI cards: employees, teachers, quran classes, jamaats (total + active/inactive)
+- Today's attendance cards: quran and salah (total, present, absent, percentage with progress bars)
+- Module summary: average quran completion %, progress records count, salah attendance records
+- Quick action cards: mark quran/salah attendance, add employee, view reports
+- All sections use `@can` / `@canany` directives for permission-based visibility
+- Company-scoped via BelongsToCompany global scopes on all models
+
+### Created Files
+- `app/Services/DashboardService.php` — overviewStats, todayQuranAttendance, todaySalahAttendance, quranSummary, salahSummary
+- `app/Http/Controllers/Web/DashboardController.php` — invokable controller replacing closure route
+- `lang/en/dashboard.php` — English translations
+- `lang/ur/dashboard.php` — Urdu translations
+
+### Modified Files
+- `resources/views/dashboard.blade.php` — full dashboard with KPI cards, attendance stats, module summary, quick actions
+- `routes/web.php` — replaced closure with DashboardController invokable, added DashboardController import
+
+### Architecture Notes
+- DashboardController uses `__invoke()` single-action pattern (no resource methods needed)
+- DashboardService queries use model global scopes for automatic company isolation
+- Today's attendance uses `Carbon::today()` for date-scoped queries
+- No authorization check on dashboard route — every authenticated user can access it; sections are permission-gated in the view
+- Quick actions link to existing module routes for common operations
+
+### Quality
+- PHPStan Level 5: 0 errors
+- Laravel Pint: 0 issues (fixed 1 file — single_quote)
+- migrate:fresh --seed: 32 migrations + 5 seeders passed

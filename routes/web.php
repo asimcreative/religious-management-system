@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EmployeeController;
 use App\Http\Controllers\Web\JamaatController;
 use App\Http\Controllers\Web\JamaatMemberController;
@@ -46,7 +47,7 @@ Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->grou
     Route::get('change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('password.change.form');
     Route::post('change-password', [ChangePasswordController::class, 'changePassword'])->name('password.change');
 
-    Route::get('dashboard', fn () => view('dashboard'))->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     // ── Employees ─────────────────────────────────────────────
     Route::resource('employees', EmployeeController::class);
