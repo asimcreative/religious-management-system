@@ -15,6 +15,7 @@ use App\Http\Controllers\Web\Masters\DesignationController;
 use App\Http\Controllers\Web\Masters\LanguageController;
 use App\Http\Controllers\Web\Masters\QuranDepartmentController;
 use App\Http\Controllers\Web\Masters\QuranStatusController;
+use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\QuranAttendanceController;
 use App\Http\Controllers\Web\QuranClassController;
 use App\Http\Controllers\Web\QuranClassMemberController;
@@ -103,6 +104,15 @@ Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->grou
         Route::get('export/teachers', [ReportController::class, 'exportTeachers'])->name('export.teachers');
         Route::get('export/quran-attendance', [ReportController::class, 'exportQuranAttendance'])->name('export.quran-attendance');
         Route::get('export/salah-attendance', [ReportController::class, 'exportSalahAttendance'])->name('export.salah-attendance');
+    });
+
+    // ── Notifications ────────────────────────────────────────────
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('{id}/mark-read', [NotificationController::class, 'markRead'])->name('mark-read');
+        Route::post('mark-all-read', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
+        Route::delete('{id}', [NotificationController::class, 'destroy'])->name('destroy');
+        Route::get('unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
     });
 
     // ── Master Data ─────────────────────────────────────────────

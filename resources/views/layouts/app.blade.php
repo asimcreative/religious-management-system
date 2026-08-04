@@ -157,6 +157,22 @@
                 </ul>
 
                 <ul class="navbar-nav">
+                    {{-- Notification Bell --}}
+                    @can('notification.view')
+                        @php $unreadCount = app(\App\Services\NotificationService::class)->getUnreadCount(Auth::id()); @endphp
+                        <li class="nav-item">
+                            <a class="nav-link position-relative {{ request()->routeIs('notifications.*') ? 'active' : '' }}"
+                               href="{{ route('notifications.index') }}" title="{{ __('notifications.notifications') }}">
+                                <i class="bi bi-bell"></i>
+                                @if($unreadCount > 0)
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem;">
+                                        {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                                    </span>
+                                @endif
+                            </a>
+                        </li>
+                    @endcan
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle me-1"></i>
