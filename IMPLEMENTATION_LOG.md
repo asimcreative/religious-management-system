@@ -235,3 +235,41 @@
 - PHPStan Level 5: 0 errors
 - Laravel Pint: 0 issues
 - migrate:fresh --seed: 32 migrations + 5 seeders passed
+
+## Phase 7: Employee Module (CRUD)
+**Status:** COMPLETED
+**Date:** 2026-08-04
+
+### Features
+- Full CRUD with show/detail page
+- Advanced search (code, name, mobile, email, CNIC via hash)
+- Filters: branch, department, designation, status, quran department, quran status
+- Photo upload with storage management
+- CNIC encryption via HasEncryptedCnic trait (auto encrypt/decrypt, SHA-256 hash for search)
+- Delete guard: prevents deletion if attendance records exist
+- Soft delete + restore
+- Masked CNIC display on show page
+- Company-scoped unique validation (employee_code, via BelongsToCompany)
+
+### Created Files
+- `app/Repositories/EmployeeRepository.php` — search with filters, findWithRelations, hasAttendanceRecords, restore
+- `app/Services/EmployeeService.php` — search, findWithRelations, canDelete, restore
+- `app/Policies/EmployeePolicy.php` — viewAny, view, create, update, delete, restore, import, export
+- `app/Http/Requests/Employee/StoreEmployeeRequest.php` — company-scoped unique rules, exists rules
+- `app/Http/Requests/Employee/UpdateEmployeeRequest.php` — same with ignore current record
+- `app/Http/Controllers/Web/EmployeeController.php` — index, create, store, show, edit, update, destroy, restore
+- `resources/views/employees/index.blade.php` — list with search, filters, pagination, icon actions
+- `resources/views/employees/create.blade.php` — sectioned form (Personal, Organization, Religious, Notes)
+- `resources/views/employees/edit.blade.php` — same sections with pre-filled values
+- `resources/views/employees/show.blade.php` — detail cards (Personal, Organization, Religious, Notes, Audit)
+- `lang/en/employees.php` — English translations
+- `lang/ur/employees.php` — Urdu translations
+
+### Modified Files
+- `routes/web.php` — resource route + restore route for employees
+- `resources/views/layouts/app.blade.php` — Employees nav link with permission check
+
+### Quality
+- PHPStan Level 5: 0 errors
+- Laravel Pint: 0 issues
+- migrate:fresh --seed: 32 migrations + 5 seeders passed

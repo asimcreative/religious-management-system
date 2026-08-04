@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Web\EmployeeController;
 use App\Http\Controllers\Web\Masters\AttendanceReasonController;
 use App\Http\Controllers\Web\Masters\BranchController;
 use App\Http\Controllers\Web\Masters\DepartmentController;
@@ -37,6 +38,10 @@ Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->grou
     Route::post('change-password', [ChangePasswordController::class, 'changePassword'])->name('password.change');
 
     Route::get('dashboard', fn () => view('dashboard'))->name('dashboard');
+
+    // ── Employees ─────────────────────────────────────────────
+    Route::resource('employees', EmployeeController::class);
+    Route::post('employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore')->withTrashed();
 
     // ── Master Data ─────────────────────────────────────────────
     Route::prefix('masters')->name('masters.')->group(function () {

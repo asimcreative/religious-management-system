@@ -31,6 +31,16 @@
                         </a>
                     </li>
 
+                    {{-- Employees --}}
+                    @can('employee.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
+                               href="{{ route('employees.index') }}">
+                                <i class="bi bi-people me-1"></i> {{ __('employees.employees') }}
+                            </a>
+                        </li>
+                    @endcan
+
                     {{-- Master Data Dropdown --}}
                     @canany(['branch.manage', 'department.manage', 'designation.manage', 'attendance_reason.manage', 'quran_department.manage', 'quran_status.manage', 'language.manage'])
                         <li class="nav-item dropdown">
