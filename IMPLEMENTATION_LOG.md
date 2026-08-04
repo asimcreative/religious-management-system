@@ -316,3 +316,105 @@
 - PHPStan Level 5: 0 errors
 - Laravel Pint: 0 issues
 - migrate:fresh --seed: 32 migrations + 5 seeders passed
+
+---
+
+## Phase 9: Quran Module
+**Commit:** (pending)
+**Date:** 2026-08-04
+
+### Sub-phases
+- 9a: Quran Classes CRUD
+- 9b: Quran Class Members Management
+- 9c: Quran Attendance
+- 9d: Quran Progress Tracking
+- 9e: Routes, Navigation, Quality Checks
+
+### Features
+
+**Quran Classes (9a)**
+- Full CRUD with show/detail page
+- Class linked to Teacher (BelongsTo) and Branch (BelongsTo)
+- Schedule: start_time, end_time, max_strength
+- Search by class_code, class_name
+- Filters: branch, teacher, status
+- Active member count display with capacity color coding (red when full)
+- Soft delete + restore (blocked if attendance records exist)
+
+**Class Members (9b)**
+- Add/remove employees from a class
+- One-active-class rule: adding to a new class auto-deactivates previous membership
+- Reactivation support: re-adding a previous member reactivates existing record
+- Capacity enforcement: cannot add members beyond max_strength
+- History preservation: removal sets is_active=false + left_at date
+
+**Quran Attendance (9c)**
+- Mark attendance for a class on a specific date
+- Two-step flow: select class + date → mark attendance for active members
+- Attendance reasons dropdown (from master data)
+- Remarks field per student
+- Backdating validation: configurable max days (default 3) from settings table
+- Future dates never allowed
+- Upsert pattern: delete + insert within DB transaction
+- Attendance history list with class/teacher/date filters
+
+**Quran Progress (9d)**
+- Track student Quran progress: current_lesson, current_surah, current_sipara, current_page, completion_percentage
+- Linked to QuranDepartment and QuranStatus (master data)
+- One progress record per employee (create or update)
+- Immutable history: every save creates a QuranProgressHistory record
+- Progress bar display in list view
+- Full history timeline on show page
+
+### Created Files
+- `app/Repositories/QuranClassRepository.php` — search with filters, findWithRelations, hasAttendanceRecords, restore
+- `app/Services/QuranClassService.php` — search, findWithRelations, canDelete, restore
+- `app/Policies/QuranClassPolicy.php` — viewAny, view, create, update, delete, restore
+- `app/Http/Requests/QuranClass/StoreQuranClassRequest.php` — company-scoped unique, exists rules
+- `app/Http/Requests/QuranClass/UpdateQuranClassRequest.php` — same with ignore
+- `app/Http/Controllers/Web/QuranClassController.php` — full CRUD + restore
+- `resources/views/quran-classes/index.blade.php` — list with search, filters, member count
+- `resources/views/quran-classes/create.blade.php` — class info + schedule card
+- `resources/views/quran-classes/edit.blade.php` — same with pre-filled values
+- `resources/views/quran-classes/show.blade.php` — class info, schedule, active members, audit
+- `lang/en/quran_classes.php` — English translations (includes member keys)
+- `lang/ur/quran_classes.php` — Urdu translations (includes member keys)
+- `app/Services/QuranClassMemberService.php` — addMember (one-active-class rule), removeMember, getActiveMembers
+- `app/Http/Controllers/Web/QuranClassMemberController.php` — index, store, destroy
+- `resources/views/quran-classes/members.blade.php` — add member form + active members table
+- `app/Repositories/QuranAttendanceRepository.php` — search with filters, getForClassDate, existsForClassDate
+- `app/Services/QuranAttendanceService.php` — search, getForClassDate, isDateAllowed, saveAttendance (transaction)
+- `app/Policies/QuranAttendancePolicy.php` — viewAny, view, create, update, delete, lock
+- `app/Http/Controllers/Web/QuranAttendanceController.php` — index, create (two-step), store
+- `resources/views/quran-attendance/index.blade.php` — history list with filters
+- `resources/views/quran-attendance/create.blade.php` — two-step attendance marking form
+- `lang/en/quran_attendance.php` — English translations
+- `lang/ur/quran_attendance.php` — Urdu translations
+- `app/Repositories/QuranProgressRepository.php` — search with filters, findWithRelations, findByEmployee
+- `app/Services/QuranProgressService.php` — search, findWithRelations, findByEmployee, saveProgress (with history)
+- `app/Policies/QuranProgressPolicy.php` — viewAny, view, create, update, viewHistory
+- `app/Http/Requests/QuranProgress/SaveQuranProgressRequest.php` — company-scoped exists rules, completion validation
+- `app/Http/Controllers/Web/QuranProgressController.php` — index, show, create, store, edit, update
+- `resources/views/quran-progress/index.blade.php` — list with filters, progress bar
+- `resources/views/quran-progress/form.blade.php` — shared create/edit form
+- `resources/views/quran-progress/show.blade.php` — current position + history timeline
+- `lang/en/quran_progress.php` — English translations
+- `lang/ur/quran_progress.php` — Urdu translations
+
+### Modified Files
+- `routes/web.php` — Quran classes resource, members routes, attendance routes, progress resource
+- `resources/views/layouts/app.blade.php` — Quran Module dropdown with permission-based visibility
+- `app/Models/Teacher.php` — Added getEmployeeName() helper for PHPStan-compatible name access
+
+### Architecture Notes
+- Teacher::getEmployeeName() uses `instanceof Employee` check to avoid PHPStan nullsafe.neverNull errors
+- QuranClassMemberService enforces one-active-class-per-employee business rule at service layer
+- QuranAttendanceService uses upsert pattern (delete existing + insert new) within DB::transaction
+- QuranProgressService creates immutable QuranProgressHistory on every save within DB::transaction
+- Backdating window is configurable per company via settings table (key: max_backdated_attendance_days)
+- All repositories use Illuminate\Database\Eloquent\Collection (not Support\Collection) for PHPStan compatibility
+
+### Quality
+- PHPStan Level 5: 0 errors (fixed 12 initial errors — property.notFound, nullsafe.neverNull, return.type)
+- Laravel Pint: 0 issues (fixed 5 files)
+- migrate:fresh --seed: 32 migrations + 5 seeders passed

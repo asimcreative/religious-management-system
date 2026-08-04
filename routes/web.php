@@ -12,6 +12,10 @@ use App\Http\Controllers\Web\Masters\DesignationController;
 use App\Http\Controllers\Web\Masters\LanguageController;
 use App\Http\Controllers\Web\Masters\QuranDepartmentController;
 use App\Http\Controllers\Web\Masters\QuranStatusController;
+use App\Http\Controllers\Web\QuranAttendanceController;
+use App\Http\Controllers\Web\QuranClassController;
+use App\Http\Controllers\Web\QuranClassMemberController;
+use App\Http\Controllers\Web\QuranProgressController;
 use App\Http\Controllers\Web\TeacherController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +51,23 @@ Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->grou
     // ── Teachers ──────────────────────────────────────────────
     Route::resource('teachers', TeacherController::class);
     Route::post('teachers/{teacher}/restore', [TeacherController::class, 'restore'])->name('teachers.restore')->withTrashed();
+
+    // ── Quran Classes ────────────────────────────────────────────
+    Route::resource('quran-classes', QuranClassController::class);
+    Route::post('quran-classes/{quran_class}/restore', [QuranClassController::class, 'restore'])->name('quran-classes.restore')->withTrashed();
+
+    // ── Quran Class Members ──────────────────────────────────────
+    Route::get('quran-classes/{quran_class}/members', [QuranClassMemberController::class, 'index'])->name('quran-classes.members.index');
+    Route::post('quran-classes/{quran_class}/members', [QuranClassMemberController::class, 'store'])->name('quran-classes.members.store');
+    Route::delete('quran-classes/{quran_class}/members/{employee}', [QuranClassMemberController::class, 'destroy'])->name('quran-classes.members.destroy');
+
+    // ── Quran Attendance ─────────────────────────────────────────
+    Route::get('quran-attendance', [QuranAttendanceController::class, 'index'])->name('quran-attendance.index');
+    Route::get('quran-attendance/create', [QuranAttendanceController::class, 'create'])->name('quran-attendance.create');
+    Route::post('quran-attendance', [QuranAttendanceController::class, 'store'])->name('quran-attendance.store');
+
+    // ── Quran Progress ───────────────────────────────────────────
+    Route::resource('quran-progress', QuranProgressController::class)->except('destroy');
 
     // ── Master Data ─────────────────────────────────────────────
     Route::prefix('masters')->name('masters.')->group(function () {

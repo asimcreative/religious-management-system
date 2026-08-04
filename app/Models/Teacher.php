@@ -72,4 +72,20 @@ class Teacher extends Model
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
+
+    // ── Helpers ─────────────────────────────────────────────────────
+
+    /**
+     * Get the employee name from the linked employee record.
+     */
+    public function getEmployeeName(): string
+    {
+        $employee = $this->employee;
+
+        if ($employee instanceof Employee) {
+            return $employee->employee_name;
+        }
+
+        return $this->teacher_code;
+    }
 }

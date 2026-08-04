@@ -51,6 +51,27 @@
                         </li>
                     @endcan
 
+                    {{-- Quran Module Dropdown --}}
+                    @canany(['quran.class.view', 'quran.attendance.view', 'quran.progress.view'])
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ request()->routeIs('quran-classes.*', 'quran-attendance.*', 'quran-progress.*') ? 'active' : '' }}"
+                               href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-book me-1"></i> {{ __('quran_classes.quran_classes') }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                @can('quran.class.view')
+                                    <li><a class="dropdown-item" href="{{ route('quran-classes.index') }}">{{ __('quran_classes.quran_classes') }}</a></li>
+                                @endcan
+                                @can('quran.attendance.view')
+                                    <li><a class="dropdown-item" href="{{ route('quran-attendance.index') }}">{{ __('quran_attendance.quran_attendance') }}</a></li>
+                                @endcan
+                                @can('quran.progress.view')
+                                    <li><a class="dropdown-item" href="{{ route('quran-progress.index') }}">{{ __('quran_progress.quran_progress') }}</a></li>
+                                @endcan
+                            </ul>
+                        </li>
+                    @endcanany
+
                     {{-- Master Data Dropdown --}}
                     @canany(['branch.manage', 'department.manage', 'designation.manage', 'attendance_reason.manage', 'quran_department.manage', 'quran_status.manage', 'language.manage'])
                         <li class="nav-item dropdown">
