@@ -24,7 +24,46 @@
 
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav me-auto">
-                    {{-- Navigation items will be added per module --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+                           href="{{ route('dashboard') }}">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+
+                    {{-- Master Data Dropdown --}}
+                    @canany(['branch.manage', 'department.manage', 'designation.manage', 'attendance_reason.manage', 'quran_department.manage', 'quran_status.manage', 'language.manage'])
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ request()->routeIs('masters.*') ? 'active' : '' }}"
+                               href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-gear me-1"></i> {{ __('masters.master_data') }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                @can('branch.manage')
+                                    <li><a class="dropdown-item" href="{{ route('masters.branches.index') }}">{{ __('masters.branches') }}</a></li>
+                                @endcan
+                                @can('department.manage')
+                                    <li><a class="dropdown-item" href="{{ route('masters.departments.index') }}">{{ __('masters.departments') }}</a></li>
+                                @endcan
+                                @can('designation.manage')
+                                    <li><a class="dropdown-item" href="{{ route('masters.designations.index') }}">{{ __('masters.designations') }}</a></li>
+                                @endcan
+                                @can('attendance_reason.manage')
+                                    <li><a class="dropdown-item" href="{{ route('masters.attendance-reasons.index') }}">{{ __('masters.attendance_reasons') }}</a></li>
+                                @endcan
+                                <li><hr class="dropdown-divider"></li>
+                                @can('quran_department.manage')
+                                    <li><a class="dropdown-item" href="{{ route('masters.quran-departments.index') }}">{{ __('masters.quran_departments') }}</a></li>
+                                @endcan
+                                @can('quran_status.manage')
+                                    <li><a class="dropdown-item" href="{{ route('masters.quran-statuses.index') }}">{{ __('masters.quran_statuses') }}</a></li>
+                                @endcan
+                                @can('language.manage')
+                                    <li><a class="dropdown-item" href="{{ route('masters.languages.index') }}">{{ __('masters.languages') }}</a></li>
+                                @endcan
+                            </ul>
+                        </li>
+                    @endcanany
                 </ul>
 
                 <ul class="navbar-nav">
@@ -78,7 +117,9 @@
             </div>
         @endif
 
-        @yield('content')
+        <div class="container-fluid">
+            @yield('content')
+        </div>
     </main>
 
 </body>

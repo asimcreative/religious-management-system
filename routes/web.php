@@ -4,6 +4,13 @@ use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Web\Masters\AttendanceReasonController;
+use App\Http\Controllers\Web\Masters\BranchController;
+use App\Http\Controllers\Web\Masters\DepartmentController;
+use App\Http\Controllers\Web\Masters\DesignationController;
+use App\Http\Controllers\Web\Masters\LanguageController;
+use App\Http\Controllers\Web\Masters\QuranDepartmentController;
+use App\Http\Controllers\Web\Masters\QuranStatusController;
 use Illuminate\Support\Facades\Route;
 
 // ── Guest Routes ─────────────────────────────────────────────────
@@ -30,4 +37,28 @@ Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->grou
     Route::post('change-password', [ChangePasswordController::class, 'changePassword'])->name('password.change');
 
     Route::get('dashboard', fn () => view('dashboard'))->name('dashboard');
+
+    // ── Master Data ─────────────────────────────────────────────
+    Route::prefix('masters')->name('masters.')->group(function () {
+        Route::resource('branches', BranchController::class)->except('show');
+        Route::post('branches/{branch}/restore', [BranchController::class, 'restore'])->name('branches.restore')->withTrashed();
+
+        Route::resource('departments', DepartmentController::class)->except('show');
+        Route::post('departments/{department}/restore', [DepartmentController::class, 'restore'])->name('departments.restore')->withTrashed();
+
+        Route::resource('designations', DesignationController::class)->except('show');
+        Route::post('designations/{designation}/restore', [DesignationController::class, 'restore'])->name('designations.restore')->withTrashed();
+
+        Route::resource('attendance-reasons', AttendanceReasonController::class)->except('show');
+        Route::post('attendance-reasons/{attendance_reason}/restore', [AttendanceReasonController::class, 'restore'])->name('attendance-reasons.restore')->withTrashed();
+
+        Route::resource('quran-departments', QuranDepartmentController::class)->except('show');
+        Route::post('quran-departments/{quran_department}/restore', [QuranDepartmentController::class, 'restore'])->name('quran-departments.restore')->withTrashed();
+
+        Route::resource('quran-statuses', QuranStatusController::class)->except('show');
+        Route::post('quran-statuses/{quran_status}/restore', [QuranStatusController::class, 'restore'])->name('quran-statuses.restore')->withTrashed();
+
+        Route::resource('languages', LanguageController::class)->except('show');
+        Route::post('languages/{language}/restore', [LanguageController::class, 'restore'])->name('languages.restore')->withTrashed();
+    });
 });
