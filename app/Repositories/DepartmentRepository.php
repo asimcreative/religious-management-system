@@ -2,10 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\DepartmentRepositoryInterface;
 use App\Models\Department;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class DepartmentRepository extends BaseRepository
+class DepartmentRepository extends BaseRepository implements DepartmentRepositoryInterface
 {
     public function __construct(Department $model)
     {

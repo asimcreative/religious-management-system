@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Repositories\DesignationRepository;
+use App\Contracts\Repositories\DesignationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class DesignationService extends BaseService
 {
-    private readonly DesignationRepository $designationRepository;
+    private readonly DesignationRepositoryInterface $designationRepository;
 
-    public function __construct(DesignationRepository $repository)
+    public function __construct(DesignationRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->designationRepository = $repository;

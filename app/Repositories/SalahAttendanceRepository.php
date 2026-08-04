@@ -2,12 +2,13 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\SalahAttendanceRepositoryInterface;
 use App\Models\SalahAttendance;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
-class SalahAttendanceRepository extends BaseRepository
+class SalahAttendanceRepository extends BaseRepository implements SalahAttendanceRepositoryInterface
 {
     public function __construct(SalahAttendance $model)
     {

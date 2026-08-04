@@ -2,10 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\LanguageRepositoryInterface;
 use App\Models\Language;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class LanguageRepository extends BaseRepository
+class LanguageRepository extends BaseRepository implements LanguageRepositoryInterface
 {
     public function __construct(Language $model)
     {

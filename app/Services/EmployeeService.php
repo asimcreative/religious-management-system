@@ -3,14 +3,14 @@
 namespace App\Services;
 
 use App\Models\Employee;
-use App\Repositories\EmployeeRepository;
+use App\Contracts\Repositories\EmployeeRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EmployeeService extends BaseService
 {
-    private readonly EmployeeRepository $employeeRepository;
+    private readonly EmployeeRepositoryInterface $employeeRepository;
 
-    public function __construct(EmployeeRepository $repository)
+    public function __construct(EmployeeRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->employeeRepository = $repository;

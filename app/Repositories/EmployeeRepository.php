@@ -2,11 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\EmployeeRepositoryInterface;
 use App\Models\Employee;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-class EmployeeRepository extends BaseRepository
+class EmployeeRepository extends BaseRepository implements EmployeeRepositoryInterface
 {
     public function __construct(Employee $model)
     {

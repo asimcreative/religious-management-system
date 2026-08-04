@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\View\Composers\NotificationComposer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,5 +29,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Prevent silently discarding fills on non-fillable attributes.
         Model::preventSilentlyDiscardingAttributes(! app()->isProduction());
+
+        // Share unread notification count with the main layout via View Composer.
+        View::composer('layouts.app', NotificationComposer::class);
     }
 }

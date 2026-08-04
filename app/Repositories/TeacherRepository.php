@@ -2,11 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\TeacherRepositoryInterface;
 use App\Models\Teacher;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-class TeacherRepository extends BaseRepository
+class TeacherRepository extends BaseRepository implements TeacherRepositoryInterface
 {
     public function __construct(Teacher $model)
     {

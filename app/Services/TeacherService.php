@@ -3,15 +3,15 @@
 namespace App\Services;
 
 use App\Models\Teacher;
-use App\Repositories\TeacherRepository;
+use App\Contracts\Repositories\TeacherRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 
 class TeacherService extends BaseService
 {
-    private readonly TeacherRepository $teacherRepository;
+    private readonly TeacherRepositoryInterface $teacherRepository;
 
-    public function __construct(TeacherRepository $repository)
+    public function __construct(TeacherRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->teacherRepository = $repository;

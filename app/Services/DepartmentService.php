@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Repositories\DepartmentRepository;
+use App\Contracts\Repositories\DepartmentRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class DepartmentService extends BaseService
 {
-    private readonly DepartmentRepository $departmentRepository;
+    private readonly DepartmentRepositoryInterface $departmentRepository;
 
-    public function __construct(DepartmentRepository $repository)
+    public function __construct(DepartmentRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->departmentRepository = $repository;

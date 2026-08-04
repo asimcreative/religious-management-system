@@ -2,10 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\BranchRepositoryInterface;
 use App\Models\Branch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class BranchRepository extends BaseRepository
+class BranchRepository extends BaseRepository implements BranchRepositoryInterface
 {
     public function __construct(Branch $model)
     {

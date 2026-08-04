@@ -4,15 +4,15 @@ namespace App\Services;
 
 use App\Models\QuranProgress;
 use App\Models\QuranProgressHistory;
-use App\Repositories\QuranProgressRepository;
+use App\Contracts\Repositories\QuranProgressRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class QuranProgressService extends BaseService
 {
-    private readonly QuranProgressRepository $progressRepository;
+    private readonly QuranProgressRepositoryInterface $progressRepository;
 
-    public function __construct(QuranProgressRepository $repository)
+    public function __construct(QuranProgressRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->progressRepository = $repository;

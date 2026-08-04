@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Repositories\LanguageRepository;
+use App\Contracts\Repositories\LanguageRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class LanguageService extends BaseService
 {
-    private readonly LanguageRepository $languageRepository;
+    private readonly LanguageRepositoryInterface $languageRepository;
 
-    public function __construct(LanguageRepository $repository)
+    public function __construct(LanguageRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->languageRepository = $repository;

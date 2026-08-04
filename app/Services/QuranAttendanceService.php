@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\QuranAttendance;
 use App\Models\Setting;
-use App\Repositories\QuranAttendanceRepository;
+use App\Contracts\Repositories\QuranAttendanceRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class QuranAttendanceService extends BaseService
 {
-    private readonly QuranAttendanceRepository $attendanceRepository;
+    private readonly QuranAttendanceRepositoryInterface $attendanceRepository;
 
-    public function __construct(QuranAttendanceRepository $repository)
+    public function __construct(QuranAttendanceRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->attendanceRepository = $repository;

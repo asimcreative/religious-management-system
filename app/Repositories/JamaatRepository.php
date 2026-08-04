@@ -2,11 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\JamaatRepositoryInterface;
 use App\Models\Jamaat;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-class JamaatRepository extends BaseRepository
+class JamaatRepository extends BaseRepository implements JamaatRepositoryInterface
 {
     public function __construct(Jamaat $model)
     {

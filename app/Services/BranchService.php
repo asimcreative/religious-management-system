@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Repositories\BranchRepository;
+use App\Contracts\Repositories\BranchRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class BranchService extends BaseService
 {
-    private readonly BranchRepository $branchRepository;
+    private readonly BranchRepositoryInterface $branchRepository;
 
-    public function __construct(BranchRepository $repository)
+    public function __construct(BranchRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->branchRepository = $repository;

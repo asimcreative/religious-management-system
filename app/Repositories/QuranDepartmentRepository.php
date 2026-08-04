@@ -2,10 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\QuranDepartmentRepositoryInterface;
 use App\Models\QuranDepartment;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class QuranDepartmentRepository extends BaseRepository
+class QuranDepartmentRepository extends BaseRepository implements QuranDepartmentRepositoryInterface
 {
     public function __construct(QuranDepartment $model)
     {

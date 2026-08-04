@@ -24,7 +24,7 @@ class UpdateEmployeeRequest extends FormRequest
                 Rule::unique('employees')->where('company_id', $companyId)->ignore($employeeId),
             ],
             'employee_name' => ['required', 'string', 'max:255'],
-            'cnic' => ['nullable', 'string', 'max:15'],
+            'cnic' => ['nullable', 'string', 'regex:/^\d{5}-\d{7}-\d{1}$/'],
             'mobile' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:255'],
             'dob' => ['nullable', 'date', 'before:today'],

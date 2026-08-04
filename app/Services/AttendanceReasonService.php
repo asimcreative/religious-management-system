@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Repositories\AttendanceReasonRepository;
+use App\Contracts\Repositories\AttendanceReasonRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class AttendanceReasonService extends BaseService
 {
-    private readonly AttendanceReasonRepository $attendanceReasonRepository;
+    private readonly AttendanceReasonRepositoryInterface $attendanceReasonRepository;
 
-    public function __construct(AttendanceReasonRepository $repository)
+    public function __construct(AttendanceReasonRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->attendanceReasonRepository = $repository;

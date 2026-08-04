@@ -2,11 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\QuranProgressRepositoryInterface;
 use App\Models\QuranProgress;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-class QuranProgressRepository extends BaseRepository
+class QuranProgressRepository extends BaseRepository implements QuranProgressRepositoryInterface
 {
     public function __construct(QuranProgress $model)
     {

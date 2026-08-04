@@ -3,14 +3,14 @@
 namespace App\Services;
 
 use App\Models\Jamaat;
-use App\Repositories\JamaatRepository;
+use App\Contracts\Repositories\JamaatRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class JamaatService extends BaseService
 {
-    private readonly JamaatRepository $jamaatRepository;
+    private readonly JamaatRepositoryInterface $jamaatRepository;
 
-    public function __construct(JamaatRepository $repository)
+    public function __construct(JamaatRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->jamaatRepository = $repository;

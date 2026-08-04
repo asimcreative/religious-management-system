@@ -2,10 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\QuranStatusRepositoryInterface;
 use App\Models\QuranStatus;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class QuranStatusRepository extends BaseRepository
+class QuranStatusRepository extends BaseRepository implements QuranStatusRepositoryInterface
 {
     public function __construct(QuranStatus $model)
     {

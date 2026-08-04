@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\SalahAttendance;
 use App\Models\Setting;
-use App\Repositories\SalahAttendanceRepository;
+use App\Contracts\Repositories\SalahAttendanceRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class SalahAttendanceService extends BaseService
 {
-    private readonly SalahAttendanceRepository $attendanceRepository;
+    private readonly SalahAttendanceRepositoryInterface $attendanceRepository;
 
-    public function __construct(SalahAttendanceRepository $repository)
+    public function __construct(SalahAttendanceRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->attendanceRepository = $repository;

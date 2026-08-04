@@ -2,10 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\AttendanceReasonRepositoryInterface;
 use App\Models\AttendanceReason;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class AttendanceReasonRepository extends BaseRepository
+class AttendanceReasonRepository extends BaseRepository implements AttendanceReasonRepositoryInterface
 {
     public function __construct(AttendanceReason $model)
     {

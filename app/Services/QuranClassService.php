@@ -3,14 +3,14 @@
 namespace App\Services;
 
 use App\Models\QuranClass;
-use App\Repositories\QuranClassRepository;
+use App\Contracts\Repositories\QuranClassRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class QuranClassService extends BaseService
 {
-    private readonly QuranClassRepository $quranClassRepository;
+    private readonly QuranClassRepositoryInterface $quranClassRepository;
 
-    public function __construct(QuranClassRepository $repository)
+    public function __construct(QuranClassRepositoryInterface $repository)
     {
         parent::__construct($repository);
         $this->quranClassRepository = $repository;
