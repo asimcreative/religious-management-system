@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 <img src="https://img.shields.io/badge/RAMS-Religious%20Affairs%20Management%20System-1a6b3c?style=for-the-badge&labelColor=0d3d22" alt="RAMS">
 
@@ -16,7 +16,7 @@
 [![PHPStan](https://img.shields.io/badge/PHPStan-Level%205-blue?style=flat-square)](phpstan.neon)
 [![Code Style](https://img.shields.io/badge/Code%20Style-Laravel%20Pint-pink?style=flat-square)](pint.json)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
-[![GitHub last commit](https://img.shields.io/github/last-commit/asimcreative/rams?style=flat-square)](https://github.com/asimcreative/rams/commits/main)
+[![GitHub last commit](https://img.shields.io/github/last-commit/asimcreative/religious-management-system?style=flat-square)](https://github.com/asimcreative/religious-management-system/commits/main)
 
 <br>
 
@@ -84,6 +84,7 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 ## ✨ Features
 
 ### Core Platform
+
 - ✅ **Multi-Tenant SaaS** — complete data isolation per company at the Eloquent query layer
 - ✅ **RBAC** — role-based access control with granular permissions (31 permissions across all modules)
 - ✅ **Full Audit Trail** — every create/update/delete operation is logged with user, IP, browser, OS
@@ -95,6 +96,7 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 - ✅ **Responsive Design** — Bootstrap 5 with mobile-first layout
 
 ### Employee Management
+
 - ✅ Full CRUD with search, filters, and pagination
 - ✅ Excel import for bulk employee upload
 - ✅ Multi-branch and multi-department assignment
@@ -102,11 +104,13 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 - ✅ Employee detail view with audit history
 
 ### Teacher Management
+
 - ✅ Full CRUD with multi-branch assignment
 - ✅ Quran department and status assignment
 - ✅ Excel export
 
 ### Quran Module
+
 - ✅ Quran class management with member enrolment
 - ✅ Daily attendance recording with absence reasons
 - ✅ Student progress tracking (completion percentage, Juz/Surah)
@@ -114,17 +118,20 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 - ✅ Attendance reports with Excel export
 
 ### Salah Module
+
 - ✅ Jamaat (prayer group) management with member enrolment
 - ✅ Per-prayer attendance recording (Fajr, Zuhr, Asr, Maghrib, Isha)
 - ✅ Attendance reports with Excel export
 
 ### Reports & Analytics
+
 - ✅ 6 pre-built reports with date-range filtering
 - ✅ Excel export for all reports (via Laravel Excel / Maatwebsite)
 - ✅ Dashboard KPI cards with live statistics
 - ✅ Company-scoped — no cross-tenant data in any report
 
 ### REST API
+
 - ✅ Sanctum token authentication with `rams_` prefix
 - ✅ Versioned routes (`/api/v1/`)
 - ✅ 21 endpoints across 7 resource groups
@@ -133,6 +140,7 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 - ✅ Paginated list endpoints
 
 ### Performance
+
 - ✅ 10 composite database indexes on high-traffic columns
 - ✅ Redis caching with company-scoped cache keys (2–10 min TTL)
 - ✅ Laravel Horizon with 3 queue supervisors (high / default / low)
@@ -140,6 +148,7 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 - ✅ Background Excel exports on the `low` queue
 
 ### Security
+
 - ✅ CSRF protection on all web routes
 - ✅ Sanctum token auth for API
 - ✅ Password hashing (bcrypt, 12 rounds in production)
@@ -257,7 +266,7 @@ This is enforced at the **database query layer** — not in controllers or servi
 ## 📁 Folder Structure
 
 ```
-rams/
+religious-management-system/
 ├── app/
 │   ├── Console/
 │   │   └── Commands/
@@ -367,8 +376,8 @@ rams/
 ### Step 1 — Clone & Install Dependencies
 
 ```bash
-git clone https://github.com/asimcreative/rams.git
-cd rams
+git clone https://github.com/asimcreative/religious-management-system.git
+cd religious-management-system
 composer install
 npm install
 ```
@@ -406,7 +415,7 @@ php artisan horizon
 Add to your server crontab:
 
 ```bash
-* * * * * cd /path/to/rams && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /path/to/religious-management-system && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 ### Step 7 — Verify
@@ -527,6 +536,7 @@ company:{company_id}:dashboard:{segment}
 ```
 
 Examples:
+
 ```
 company:1:dashboard:overview       → TTL 5 min
 company:1:dashboard:today_quran    → TTL 2 min
@@ -1045,7 +1055,7 @@ All API responses follow a consistent JSON envelope:
 {
   "success": true,
   "message": "Optional message",
-  "data": { ... }
+  "data": { }
 }
 ```
 
@@ -1054,7 +1064,7 @@ Paginated responses include:
 ```json
 {
   "success": true,
-  "data": [ ... ],
+  "data": [],
   "meta": {
     "current_page": 1,
     "last_page": 5,
@@ -1078,29 +1088,34 @@ Paginated responses include:
 RAMS implements multiple layers of security:
 
 ### Authentication & Sessions
+
 - Bcrypt password hashing (12 rounds in production, 4 in tests)
 - Password history enforcement — users cannot reuse recent passwords
 - Session stored in Redis with configurable lifetime
 - "Remember Me" functionality with long-lived tokens
 
 ### API Security
+
 - Sanctum token authentication with `rams_` prefix for log identification
 - Configurable token expiry (default 30 days)
 - All previous tokens revoked on device login (per `device_name`)
 - Token-based password change revokes all other device tokens
 
 ### Audit & Compliance
+
 - **SEC-12**: AuditLog is immutable — `update()` and `delete()` throw `LogicException`
 - **SEC-13**: Data retention policy enforced via scheduled `logs:purge` command
 - Every create/update/delete operation is logged to `audit_logs` with: `user_id`, `module`, `action`, `table_name`, `record_id`, `old_values`, `new_values`, `ip_address`, `browser`, `operating_system`
 - Spatie ActivityLog for additional activity recording
 
 ### Multi-Tenant Isolation
+
 - Company scope enforced at the Eloquent global scope level — cannot be bypassed
 - Even `Employee::find(idFromAnotherCompany)` returns `null`
 - Cache keys are company-scoped — no cross-tenant cache bleed
 
 ### Infrastructure
+
 - CSRF protection on all web routes
 - Rate limiting on the login endpoint
 - Lazy loading prevention catches N+1 query bugs in development
@@ -1205,7 +1220,7 @@ Tests use SQLite in-memory for speed and isolation:
 ```php
 public function test_employee_find_cannot_cross_company_boundary(): void
 {
-    $userA  = $this->createUserWithCompany();
+    $userA    = $this->createUserWithCompany();
     $companyB = Company::factory()->create();
     $employeeB = Employee::factory()->create(['company_id' => $companyB->id]);
 
@@ -1293,39 +1308,46 @@ RAMS was built in 18 phases. All phases are complete and production-ready.
 Planned for upcoming phases:
 
 ### Phase 19 — Mobile Application
+
 - React Native or Flutter companion app
 - Uses the existing REST API
 - Push notifications via FCM
 
 ### Phase 20 — Advanced Reporting
+
 - Custom report builder (drag-and-drop)
 - Chart exports (PNG/PDF)
 - Scheduled email reports (weekly digest)
 - Power BI / Tableau integration via API
 
 ### Phase 21 — Financial Module
+
 - Staff salary management
 - Donation and fund tracking
 - Budget vs actual reporting
 - Zakat and charity fund management
 
 ### Phase 22 — Communication Module
+
 - Bulk SMS notifications (Twilio / local gateway)
 - WhatsApp notification integration
 - Broadcast announcements to all members
 
 ### Phase 23 — Student Portal
+
 - Self-service student login
 - View own attendance and progress
 - Receive notifications
 
 ### Phase 24 — Subscription Management
+
 - Tiered subscription plans (Basic / Standard / Enterprise)
 - Stripe integration for billing
 - Usage-based limits per plan
 - Automated invoice generation
 
 ### Phase 25 — Advanced Analytics
+
 - Attendance trend forecasting
 - Student progress predictive analytics
 - Automated alerts for low attendance rates
@@ -1385,6 +1407,7 @@ Fixes #123
 ```
 
 Examples:
+
 ```
 feat(employees): add bulk status update
 fix(api): correct token prefix assertion in auth test
@@ -1434,4 +1457,3 @@ Built with ❤️ using [Laravel](https://laravel.com)
 [![Redis](https://img.shields.io/badge/Redis-Cache%20%26%20Queue-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io)
 
 </div>
-]]>
