@@ -12,6 +12,7 @@ use App\Http\Controllers\Web\Masters\DesignationController;
 use App\Http\Controllers\Web\Masters\LanguageController;
 use App\Http\Controllers\Web\Masters\QuranDepartmentController;
 use App\Http\Controllers\Web\Masters\QuranStatusController;
+use App\Http\Controllers\Web\TeacherController;
 use Illuminate\Support\Facades\Route;
 
 // ── Guest Routes ─────────────────────────────────────────────────
@@ -42,6 +43,10 @@ Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->grou
     // ── Employees ─────────────────────────────────────────────
     Route::resource('employees', EmployeeController::class);
     Route::post('employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore')->withTrashed();
+
+    // ── Teachers ──────────────────────────────────────────────
+    Route::resource('teachers', TeacherController::class);
+    Route::post('teachers/{teacher}/restore', [TeacherController::class, 'restore'])->name('teachers.restore')->withTrashed();
 
     // ── Master Data ─────────────────────────────────────────────
     Route::prefix('masters')->name('masters.')->group(function () {

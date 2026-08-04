@@ -41,6 +41,16 @@
                         </li>
                     @endcan
 
+                    {{-- Teachers --}}
+                    @can('teacher.view')
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('teachers.*') ? 'active' : '' }}"
+                               href="{{ route('teachers.index') }}">
+                                <i class="bi bi-mortarboard me-1"></i> {{ __('teachers.teachers') }}
+                            </a>
+                        </li>
+                    @endcan
+
                     {{-- Master Data Dropdown --}}
                     @canany(['branch.manage', 'department.manage', 'designation.manage', 'attendance_reason.manage', 'quran_department.manage', 'quran_status.manage', 'language.manage'])
                         <li class="nav-item dropdown">

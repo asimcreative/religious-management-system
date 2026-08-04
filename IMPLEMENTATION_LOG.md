@@ -273,3 +273,46 @@
 - PHPStan Level 5: 0 errors
 - Laravel Pint: 0 issues
 - migrate:fresh --seed: 32 migrations + 5 seeders passed
+
+## Phase 8: Teacher Module (CRUD)
+**Status:** COMPLETED
+**Date:** 2026-08-04
+
+### Features
+- Full CRUD with show/detail page
+- Teacher IS an Employee — inherits personal data via BelongsTo Employee relationship
+- Multi-branch assignment via teacher_branch pivot table (many-to-many)
+- Search by teacher_code, employee name, mobile
+- Filters: branch, status
+- Branch checkboxes on create/edit forms
+- Employee dropdown filters out employees already linked to teachers
+- Soft delete + restore
+
+### Created Files
+- `app/Repositories/TeacherRepository.php` — search with filters, findWithRelations, restore
+- `app/Services/TeacherService.php` — createWithBranches, updateWithBranches, findWithRelations, restore
+- `app/Policies/TeacherPolicy.php` — viewAny, view, create, update, delete, restore
+- `app/Http/Requests/Teacher/StoreTeacherRequest.php` — company-scoped unique rules, branch_ids validation
+- `app/Http/Requests/Teacher/UpdateTeacherRequest.php` — same with ignore current record
+- `app/Http/Controllers/Web/TeacherController.php` — index, create, store, show, edit, update, destroy, restore
+- `resources/views/teachers/index.blade.php` — list with search, branch/status filters, branch badges
+- `resources/views/teachers/create.blade.php` — teacher info + employee dropdown + branch checkboxes
+- `resources/views/teachers/edit.blade.php` — same with pre-filled values, includes current employee in dropdown
+- `resources/views/teachers/show.blade.php` — teacher info, employee details (linked), assigned branches, audit
+- `lang/en/teachers.php` — English translations
+- `lang/ur/teachers.php` — Urdu translations
+
+### Modified Files
+- `routes/web.php` — resource route + restore route for teachers
+- `resources/views/layouts/app.blade.php` — Teachers nav link with permission check
+
+### Architecture Notes
+- Teacher service uses `createWithBranches()` / `updateWithBranches()` to handle pivot sync
+- Employee dropdown in form uses `whereDoesntHave('teacher')` to prevent duplicate teacher-employee links
+- Edit form includes current employee in dropdown even if already linked
+- Teacher show page links to employee detail page for full personal data
+
+### Quality
+- PHPStan Level 5: 0 errors
+- Laravel Pint: 0 issues
+- migrate:fresh --seed: 32 migrations + 5 seeders passed
