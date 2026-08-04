@@ -498,3 +498,93 @@
 - PHPStan Level 5: 0 errors (fixed 1 initial error — property.onlyWritten)
 - Laravel Pint: 0 issues (fixed 1 file — import ordering)
 - migrate:fresh --seed: 32 migrations + 5 seeders passed
+
+---
+
+## Phase 11: Reports Module
+**Commit:** (pending)
+**Date:** 2026-08-04
+
+### Sub-phases
+- 11a: Report Service
+- 11b: Report Controller
+- 11c: Report Views
+- 11d: Translations
+- 11e: Excel Exports
+- 11f: Routes, Navigation, Quality Checks
+
+### Features
+
+**Report Center**
+- Central report hub page with 6 permission-gated report cards
+- Each card links to the relevant report with description
+
+**Employee Report**
+- Paginated employee listing with search and 4 filters (branch, department, designation, status)
+- Excel export with same filters applied
+- Permission: `report.employee`
+
+**Teacher Report**
+- Paginated teacher listing with search and 2 filters (branch, status)
+- Shows assigned branches as badges, total/active class counts
+- Excel export with same filters applied
+- Permission: `report.teacher`
+
+**Quran Attendance Report**
+- Summary cards: total records, present count, absent count, attendance percentage
+- Paginated attendance records with 4 filters (class, teacher, date range)
+- Excel export with same filters applied
+- Permission: `report.quran`
+
+**Quran Progress Report**
+- Progress tracking with 3 filters (department, status, teacher)
+- Visual progress bars for completion percentage
+- Current lesson, surah, sipara, page display
+- Permission: `report.quran`
+
+**Salah Attendance Report**
+- Summary cards: total records, present count, absent count, attendance percentage
+- Prayer-wise breakdown table showing per-prayer attendance stats
+- Paginated attendance records with 4 filters (Jamaat, prayer, date range)
+- Excel export with same filters applied
+- Permission: `report.salah`
+
+**Dashboard Summary Report**
+- KPI cards with counts: employees, teachers, quran classes, jamaats (total + active)
+- Total attendance counts for quran and salah modules
+- Total quran progress records
+- Permission: `report.dashboard`
+
+### Created Files
+- `app/Services/ReportService.php` — unified service with 9 methods: employeeReport, teacherReport, quranAttendanceReport, quranAttendanceSummary, salahAttendanceReport, salahAttendanceSummary, salahPrayerWiseSummary, quranProgressReport, dashboardSummary
+- `app/Http/Controllers/Web/ReportController.php` — index, 5 report views, 1 dashboard view, 4 export methods
+- `app/Exports/EmployeeExport.php` — FromQuery, WithMapping, WithHeadings, ShouldAutoSize
+- `app/Exports/TeacherExport.php` — same pattern with getEmployeeName()
+- `app/Exports/QuranAttendanceExport.php` — same pattern
+- `app/Exports/SalahAttendanceExport.php` — same pattern
+- `resources/views/reports/index.blade.php` — report center with 6 permission-gated cards
+- `resources/views/reports/employees.blade.php` — employee report with 5 filters + export button
+- `resources/views/reports/teachers.blade.php` — teacher report with branch badges, class counts
+- `resources/views/reports/quran-attendance.blade.php` — summary cards + attendance table
+- `resources/views/reports/quran-progress.blade.php` — progress bars + filters
+- `resources/views/reports/salah-attendance.blade.php` — summary cards + prayer-wise breakdown + attendance table
+- `resources/views/reports/dashboard.blade.php` — KPI cards with entity counts
+- `lang/en/reports.php` — English translations
+- `lang/ur/reports.php` — Urdu translations
+
+### Modified Files
+- `routes/web.php` — report routes under `reports.` prefix (7 views + 4 exports)
+- `resources/views/layouts/app.blade.php` — Reports dropdown with permission-based visibility
+
+### Architecture Notes
+- Single ReportService handles all reports (no separate repositories — reports are read-only views)
+- ReportController uses `$this->authorize('report.xxx')` for per-report permission checks
+- Excel exports use Maatwebsite's FromQuery interface with WithMapping for custom row formatting
+- Prayer-wise summary uses DB::table() join (raw query) with QueryBuilder type hints for PHPStan
+- Export routes share same filter parameters as their corresponding view routes
+- All report views include "Back to Reports" link for navigation consistency
+
+### Quality
+- PHPStan Level 5: 0 errors (fixed 12 initial errors — nullsafe.neverNull, return.type, argument.type)
+- Laravel Pint: 0 issues (fixed 2 files — import ordering, fully_qualified_strict_types)
+- migrate:fresh --seed: 32 migrations + 5 seeders passed

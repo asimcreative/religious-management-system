@@ -90,6 +90,37 @@
                         </li>
                     @endcanany
 
+                    {{-- Reports Dropdown --}}
+                    @canany(['report.employee', 'report.teacher', 'report.quran', 'report.salah', 'report.dashboard'])
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ request()->routeIs('reports.*') ? 'active' : '' }}"
+                               href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-bar-chart me-1"></i> {{ __('reports.reports') }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ route('reports.index') }}">{{ __('reports.report_center') }}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                @can('report.employee')
+                                    <li><a class="dropdown-item" href="{{ route('reports.employees') }}">{{ __('reports.employee_report') }}</a></li>
+                                @endcan
+                                @can('report.teacher')
+                                    <li><a class="dropdown-item" href="{{ route('reports.teachers') }}">{{ __('reports.teacher_report') }}</a></li>
+                                @endcan
+                                @can('report.quran')
+                                    <li><a class="dropdown-item" href="{{ route('reports.quran-attendance') }}">{{ __('reports.quran_attendance_report') }}</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('reports.quran-progress') }}">{{ __('reports.quran_progress_report') }}</a></li>
+                                @endcan
+                                @can('report.salah')
+                                    <li><a class="dropdown-item" href="{{ route('reports.salah-attendance') }}">{{ __('reports.salah_attendance_report') }}</a></li>
+                                @endcan
+                                @can('report.dashboard')
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('reports.dashboard') }}">{{ __('reports.dashboard_summary') }}</a></li>
+                                @endcan
+                            </ul>
+                        </li>
+                    @endcanany
+
                     {{-- Master Data Dropdown --}}
                     @canany(['branch.manage', 'department.manage', 'designation.manage', 'attendance_reason.manage', 'quran_department.manage', 'quran_status.manage', 'language.manage'])
                         <li class="nav-item dropdown">

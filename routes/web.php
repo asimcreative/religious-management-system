@@ -18,6 +18,7 @@ use App\Http\Controllers\Web\QuranAttendanceController;
 use App\Http\Controllers\Web\QuranClassController;
 use App\Http\Controllers\Web\QuranClassMemberController;
 use App\Http\Controllers\Web\QuranProgressController;
+use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SalahAttendanceController;
 use App\Http\Controllers\Web\TeacherController;
 use Illuminate\Support\Facades\Route;
@@ -85,6 +86,23 @@ Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->grou
     Route::get('salah-attendance', [SalahAttendanceController::class, 'index'])->name('salah-attendance.index');
     Route::get('salah-attendance/create', [SalahAttendanceController::class, 'create'])->name('salah-attendance.create');
     Route::post('salah-attendance', [SalahAttendanceController::class, 'store'])->name('salah-attendance.store');
+
+    // ── Reports ─────────────────────────────────────────────────
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('employees', [ReportController::class, 'employees'])->name('employees');
+        Route::get('teachers', [ReportController::class, 'teachers'])->name('teachers');
+        Route::get('quran-attendance', [ReportController::class, 'quranAttendance'])->name('quran-attendance');
+        Route::get('quran-progress', [ReportController::class, 'quranProgress'])->name('quran-progress');
+        Route::get('salah-attendance', [ReportController::class, 'salahAttendance'])->name('salah-attendance');
+        Route::get('dashboard', [ReportController::class, 'dashboard'])->name('dashboard');
+
+        // Excel Exports
+        Route::get('export/employees', [ReportController::class, 'exportEmployees'])->name('export.employees');
+        Route::get('export/teachers', [ReportController::class, 'exportTeachers'])->name('export.teachers');
+        Route::get('export/quran-attendance', [ReportController::class, 'exportQuranAttendance'])->name('export.quran-attendance');
+        Route::get('export/salah-attendance', [ReportController::class, 'exportSalahAttendance'])->name('export.salah-attendance');
+    });
 
     // ── Master Data ─────────────────────────────────────────────
     Route::prefix('masters')->name('masters.')->group(function () {
