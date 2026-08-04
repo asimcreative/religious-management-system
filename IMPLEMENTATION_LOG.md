@@ -746,3 +746,38 @@
 - PHPStan Level 5: 0 errors
 - Laravel Pint: 0 issues (fixed 1 file — class_attributes_separation)
 - migrate:fresh --seed: 33 migrations + 5 seeders passed
+
+---
+
+## Phase 16: Production Readiness Review
+**Commit:** (pending)
+**Date:** 2026-08-04
+
+### Security Hardening Implemented
+- **SEC-12**: AuditLog immutability — update() and delete() overridden to throw LogicException
+- **SEC-06**: Sanctum token expiration set to 30 days (43,200 minutes) via SANCTUM_TOKEN_EXPIRATION env
+- **SEC-06**: Sanctum token prefix set to `rams_` for GitHub secret scanning detection
+- **SEC-13**: PurgeOldLogs command — daily purge of activity logs (>2 years) and notifications (>180 days)
+- Horizon snapshot scheduler added (every 5 minutes for metrics graphs)
+
+### Created Files
+- `app/Console/Commands/PurgeOldLogs.php` — retention purge command with --dry-run, --activity-days, --notification-days options
+- `config/sanctum.php` — published with 30-day token expiration and `rams_` token prefix
+
+### Modified Files
+- `app/Models/AuditLog.php` — immutability enforcement via update()/delete() overrides
+- `routes/console.php` — scheduler: logs:purge daily at 02:00, horizon:snapshot every 5min
+
+### Pre-existing Security (already implemented in prior phases)
+- SEC-04: BelongsToCompany global scope — enforces company isolation on ALL tenant models
+- SEC-09: HasEncryptedCnic trait — CNIC encrypted via Laravel Crypt with cnic_hash for lookups
+- Session regeneration on login (AuthService) and invalidation on logout
+- CSRF protection via Blade forms and middleware
+- Rate limiting: throttle:5,1 on login, throttle:60,1 on API routes
+- Spatie Permission for RBAC
+- Auth required on all web and API routes (except login)
+
+### Quality
+- PHPStan Level 5: 0 errors
+- Laravel Pint: 0 issues
+- migrate:fresh --seed: 33 migrations + 5 seeders passed

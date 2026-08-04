@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use LogicException;
 
 class AuditLog extends Model
 {
@@ -35,6 +36,26 @@ class AuditLog extends Model
             'new_values' => 'array',
             'record_id' => 'integer',
         ];
+    }
+
+    // ── Immutability enforcement (SEC-12) ──────────────────────────
+
+    /**
+     * Audit logs are write-once. Updates are forbidden.
+     *
+     * @param  array<string, mixed>  $options
+     */
+    public function update(array $attributes = [], array $options = []): bool
+    {
+        throw new LogicException('Audit logs are immutable and cannot be updated.');
+    }
+
+    /**
+     * Audit logs are write-once. Deletion is forbidden.
+     */
+    public function delete(): bool
+    {
+        throw new LogicException('Audit logs are immutable and cannot be deleted.');
     }
 
     // ── Relationships ──────────────────────────────────────────────
