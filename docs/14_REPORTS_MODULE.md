@@ -1,0 +1,367 @@
+# Reports Module
+
+## Overview
+
+Reports are one of the most important parts of the system.
+
+Every module must have its own reports.
+
+Every report must support filtering, searching, exporting and printing.
+
+Reports must respect Company, Role and Permission restrictions.
+
+No user should be able to access unauthorized reports.
+
+---
+
+# Report Categories
+
+## Architecture Decision: V1 Report Scope
+
+V1 reports are limited to the following 6 categories:
+
+1. Employee Report
+2. Teacher Report
+3. Quran Attendance Report
+4. Salah Attendance Report
+5. Quran Progress Report
+6. Dashboard Summary Report
+
+All other reports (Branch, Department, Jamaat, Audit, Activity, detailed analytics) are deferred to future versions.
+
+---
+
+The full system will include the following report categories (V1 items marked).
+
+- Dashboard Reports (V1)
+- Employee Reports (V1)
+- Teacher Reports (V1)
+- Quran Reports (V1 — attendance + progress only)
+- Salah Reports (V1 — attendance only)
+- Attendance Reports (covered by Quran + Salah above)
+- Progress Reports (V1 — covered by Quran Progress)
+- Branch Reports (Future)
+- Department Reports (Future)
+- Jamaat Reports (Future)
+- Audit Reports (Future)
+- Activity Reports (Future)
+
+---
+
+# Employee Reports
+
+Available Reports
+
+- Employee List
+- Active Employees
+- Inactive Employees
+- Department Wise Employees
+- Branch Wise Employees
+- Designation Wise Employees
+- Employee Joining Report
+- Employee Status Report
+- Employee Quran Status Report
+- Employee Jamaat Report
+
+Filters
+
+- Employee ID
+- Employee Name
+- Branch
+- Department
+- Designation
+- Quran Department
+- Quran Status
+- Employment Status
+- Date Range
+
+---
+
+# Teacher Reports
+
+Available Reports
+
+- Teacher List
+- Active Teachers
+- Teacher Branch Assignment
+- Teacher Class Assignment
+- Teacher Performance
+- Teacher Attendance Submission
+- Teacher Progress Updates
+
+Filters
+
+- Teacher
+- Branch
+- Class
+- Status
+- Date Range
+
+---
+
+# Quran Attendance Reports
+
+Available Reports
+
+- Daily Attendance
+- Weekly Attendance
+- Monthly Attendance
+- Yearly Attendance
+- Branch Wise Attendance
+- Department Wise Attendance
+- Teacher Wise Attendance
+- Class Wise Attendance
+- Employee Attendance History
+- Attendance Reason Report
+
+Filters
+
+- Date Range
+- Teacher
+- Class
+- Branch
+- Employee
+- Attendance Status
+- Attendance Reason
+
+---
+
+# Quran Progress Reports
+
+Available Reports
+
+- Employee Progress
+- Teacher Progress Summary
+- Branch Progress
+- Department Progress
+- Completed Students
+- Qaida Students
+- Nazra Students
+- Hifz Students
+- Tajweed Students
+- Revision Students
+
+Filters
+
+- Employee
+- Teacher
+- Branch
+- Department
+- Quran Department
+- Quran Status
+- Date Range
+
+---
+
+# Salah Reports
+
+Available Reports
+
+- Daily Prayer Attendance
+- Prayer Wise Attendance
+- Weekly Attendance
+- Monthly Attendance
+- Yearly Attendance
+- Jamaat Wise Attendance
+- Leader Performance
+- Branch Performance
+- Employee Prayer History
+
+Filters
+
+- Prayer
+- Jamaat
+- Leader
+- Branch
+- Employee
+- Attendance Status
+- Date Range
+
+---
+
+# Branch Reports
+
+Available Reports
+
+- Employee Summary
+- Teacher Summary
+- Quran Attendance
+- Salah Attendance
+- Progress Summary
+
+---
+
+# Department Reports
+
+Available Reports
+
+- Department Employees
+- Department Attendance
+- Department Progress
+- Department Statistics
+
+---
+
+# Jamaat Reports
+
+Available Reports
+
+- Jamaat List
+- Jamaat Members
+- Leader Performance
+- Vice Leader Performance
+- Jamaat Attendance
+- Jamaat Ranking
+
+---
+
+# Activity Reports
+
+Available Reports
+
+- Login History
+- User Activities
+- Attendance Updates
+- Progress Updates
+- Import History
+- Export History
+
+---
+
+# Audit Reports
+
+Available Reports
+
+- Record Changes
+- Deleted Records
+- Restored Records
+- Permission Changes
+- Role Changes
+- Settings Changes
+
+Audit Reports are Read Only.
+
+---
+
+# Report Features
+
+Every report must support
+
+- Search
+- Advanced Filters
+- Sorting
+- Pagination
+- Export Excel
+- Export PDF
+- Export CSV
+- Print
+- Column Selection (Future)
+- Saved Filters (Future)
+
+---
+
+# Export Rules
+
+Supported Formats
+
+- Excel (.xlsx)
+- PDF
+- CSV
+- Print
+
+Future
+
+- Email
+- Scheduled Reports
+
+---
+
+# Report Permissions
+
+Every report requires permission.
+
+Examples
+
+report.employee.view
+
+report.teacher.view
+
+report.quran.view
+
+report.salah.view
+
+report.audit.view
+
+report.activity.view
+
+report.export.excel
+
+report.export.pdf
+
+report.print
+
+---
+
+# Performance Rules
+
+Large reports must
+
+- Use Queue Jobs
+- Support Lazy Loading
+- Support Pagination
+- Use Database Indexes
+- Use Cache where appropriate
+
+Reports must never block the application.
+
+---
+
+# Business Rules
+
+Rule 1
+
+Reports must only display records belonging to the current Company.
+
+---
+
+Rule 2
+
+Reports must respect User Roles and Permissions.
+
+---
+
+Rule 3
+
+All report exports must be recorded in Activity Logs.
+
+---
+
+Rule 4
+
+Sensitive reports must only be accessible by authorized users.
+
+---
+
+Rule 5
+
+Every report should display
+
+- Generated By
+- Generated Date & Time
+- Company Name
+- Applied Filters
+- Total Records
+
+---
+
+# Future Features
+
+- Scheduled Reports
+- Email Reports
+- WhatsApp Reports
+- AI Report Summary
+- Interactive BI Dashboard
+- Custom Report Builder
+- Report Templates
+- Report Sharing
+- Report Version History
