@@ -23,6 +23,11 @@ trait BelongsToCompany
             $user = Auth::user();
 
             if ($user instanceof User && $user->getAttribute('company_id')) {
+                // Super Admin bypasses company isolation
+                if ($user->hasRole('Super Admin')) {
+                    return;
+                }
+
                 $builder->where(
                     $builder->getModel()->getTable().'.company_id',
                     $user->getAttribute('company_id')
