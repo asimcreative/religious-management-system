@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureCompanyIsActive;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\SetPermissionTeamContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,8 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'company.active' => EnsureCompanyIsActive::class,
-            'user.active' => EnsureUserIsActive::class,
+            'permission.team' => SetPermissionTeamContext::class,
             'set.locale' => SetLocale::class,
+            'user.active' => EnsureUserIsActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

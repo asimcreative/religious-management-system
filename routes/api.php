@@ -20,7 +20,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     // ── Authenticated Routes ──────────────────────────────────────
 
-    Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::middleware(['auth:sanctum', 'permission.team', 'throttle:60,1'])->group(function () {
 
         // Auth
         Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
