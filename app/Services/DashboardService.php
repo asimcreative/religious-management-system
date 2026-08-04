@@ -9,10 +9,53 @@ use App\Models\QuranClass;
 use App\Models\QuranProgress;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardService
 {
+    /**
+     * Cache TTL constants (in seconds).
+     * Key convention: company:{company_id}:dashboard:{segment}
+     */
+    private const TTL_KPI = 300;       // 5 minutes — overview stats
+
+    private const TTL_TODAY = 120;     // 2 minutes — today's live attendance
+
+    private const TTL_SUMMARY = 600;   // 10 minutes — module summaries
+
+    /**
+     * Resolve the current company_id for cache key scoping.
+     */
+    private function companyId(): int
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? (int) $user->getAttribute('company_id') : 0;
+    }
+
+    /**
+     * Build a company-scoped cache key.
+     */
+    private function key(string $segment): string
+    {
+        return 'company:'.$this->companyId().':dashboard:'.$segment;
+    }
+
+    /**
+     * Forget all dashboard caches for the current company.
+     * Call this after bulk data changes (imports, mass updates).
+     */
+    public function clearCache(): void
+    {
+        $id = $this->companyId();
+        foreach (['overview', 'today_quran', 'today_salah', 'quran_summary', 'salah_summary'] as $seg) {
+            Cache::forget("company:{$id}:dashboard:{$seg}");
+        }
+    }
+
     /**
      * Overview KPI cards — total and active counts for main entities.
      *
@@ -20,16 +63,18 @@ class DashboardService
      */
     public function overviewStats(): array
     {
-        return [
-            'total_employees' => Employee::count(),
-            'active_employees' => Employee::where('employment_status', 1)->count(),
-            'total_teachers' => Teacher::count(),
-            'active_teachers' => Teacher::where('status', 1)->count(),
-            'total_quran_classes' => QuranClass::count(),
-            'active_quran_classes' => QuranClass::where('status', 1)->count(),
-            'total_jamaats' => Jamaat::count(),
-            'active_jamaats' => Jamaat::where('status', 1)->count(),
-        ];
+        return Cache::remember($this->key('overview'), self::TTL_KPI, function () {
+            return [
+                'total_employees' => Employee::count(),
+                'active_employees' => Employee::where('employment_status', 1)->count(),
+                'total_teachers' => Teacher::count(),
+                'active_teachers' => Teacher::where('status', 1)->count(),
+                'total_quran_classes' => QuranClass::count(),
+                'active_quran_classes' => QuranClass::where('status', 1)->count(),
+                'total_jamaats' => Jamaat::count(),
+                'active_jamaats' => Jamaat::where('status', 1)->count(),
+            ];
+        });
     }
 
     /**
@@ -39,18 +84,20 @@ class DashboardService
      */
     public function todayQuranAttendance(): array
     {
-        $today = Carbon::today()->toDateString();
+        return Cache::remember($this->key('today_quran'), self::TTL_TODAY, function () {
+            $today = Carbon::today()->toDateString();
 
-        $total = QuranAttendance::where('attendance_date', $today)->count();
-        $present = QuranAttendance::where('attendance_date', $today)->whereNull('attendance_reason_id')->count();
-        $absent = $total - $present;
+            $total = QuranAttendance::where('attendance_date', $today)->count();
+            $present = QuranAttendance::where('attendance_date', $today)->whereNull('attendance_reason_id')->count();
+            $absent = $total - $present;
 
-        return [
-            'total' => $total,
-            'present' => $present,
-            'absent' => $absent,
-            'percentage' => $total > 0 ? round(($present / $total) * 100, 1) : 0,
-        ];
+            return [
+                'total' => $total,
+                'present' => $present,
+                'absent' => $absent,
+                'percentage' => $total > 0 ? round(($present / $total) * 100, 1) : 0,
+            ];
+        });
     }
 
     /**
@@ -60,18 +107,20 @@ class DashboardService
      */
     public function todaySalahAttendance(): array
     {
-        $today = Carbon::today()->toDateString();
+        return Cache::remember($this->key('today_salah'), self::TTL_TODAY, function () {
+            $today = Carbon::today()->toDateString();
 
-        $total = SalahAttendance::where('attendance_date', $today)->count();
-        $present = SalahAttendance::where('attendance_date', $today)->whereNull('attendance_reason_id')->count();
-        $absent = $total - $present;
+            $total = SalahAttendance::where('attendance_date', $today)->count();
+            $present = SalahAttendance::where('attendance_date', $today)->whereNull('attendance_reason_id')->count();
+            $absent = $total - $present;
 
-        return [
-            'total' => $total,
-            'present' => $present,
-            'absent' => $absent,
-            'percentage' => $total > 0 ? round(($present / $total) * 100, 1) : 0,
-        ];
+            return [
+                'total' => $total,
+                'present' => $present,
+                'absent' => $absent,
+                'percentage' => $total > 0 ? round(($present / $total) * 100, 1) : 0,
+            ];
+        });
     }
 
     /**
@@ -81,15 +130,17 @@ class DashboardService
      */
     public function quranSummary(): array
     {
-        $totalProgress = QuranProgress::count();
-        $avgCompletion = QuranProgress::avg('completion_percentage') ?? 0;
-        $totalAttendance = QuranAttendance::count();
+        return Cache::remember($this->key('quran_summary'), self::TTL_SUMMARY, function () {
+            $totalProgress = QuranProgress::count();
+            $avgCompletion = QuranProgress::avg('completion_percentage') ?? 0;
+            $totalAttendance = QuranAttendance::count();
 
-        return [
-            'total_progress_records' => $totalProgress,
-            'avg_completion' => round((float) $avgCompletion, 1),
-            'total_attendance_records' => $totalAttendance,
-        ];
+            return [
+                'total_progress_records' => $totalProgress,
+                'avg_completion' => round((float) $avgCompletion, 1),
+                'total_attendance_records' => $totalAttendance,
+            ];
+        });
     }
 
     /**
@@ -99,8 +150,10 @@ class DashboardService
      */
     public function salahSummary(): array
     {
-        return [
-            'total_attendance_records' => SalahAttendance::count(),
-        ];
+        return Cache::remember($this->key('salah_summary'), self::TTL_SUMMARY, function () {
+            return [
+                'total_attendance_records' => SalahAttendance::count(),
+            ];
+        });
     }
 }

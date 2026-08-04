@@ -14,6 +14,12 @@ class PasswordChangedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    public string $queue = 'high';
+
+    public int $tries = 3;
+
+    public int $timeout = 30;
+
     public function __construct(
         public readonly User $user,
     ) {}

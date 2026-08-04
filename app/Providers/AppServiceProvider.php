@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Throw an exception in non-production environments whenever a lazy
+        // load is detected, forcing eager-loading via with() / load().
+        // This prevents N+1 query bugs from slipping into production.
+        Model::preventLazyLoading(! app()->isProduction());
+
+        // Prevent silently discarding fills on non-fillable attributes.
+        Model::preventSilentlyDiscardingAttributes(! app()->isProduction());
     }
 }

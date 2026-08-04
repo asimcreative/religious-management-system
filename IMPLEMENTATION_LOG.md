@@ -709,3 +709,40 @@
 - PHPStan Level 5: 0 errors (fixed 40+ initial errors — property.notFound, property.nonObject, method.nonObject, argument.type)
 - Laravel Pint: 0 issues
 - migrate:fresh --seed: passed
+
+---
+
+## Phase 15: Performance Optimization
+**Commit:** (pending)
+**Date:** 2026-08-04
+
+### Features
+- Company-scoped Redis caching in DashboardService (TTL: 5min KPI, 2min today's attendance, 10min summaries)
+- Composite database indexes on the 4 most-queried tables (10 new indexes total)
+- N+1 prevention via Model::preventLazyLoading in non-production environments
+- Model::preventSilentlyDiscardingAttributes in non-production environments
+- Horizon 3-supervisor queue separation: high (emails/notifications), default, low (exports)
+- Mail classes assigned to `high` queue with retry/timeout config (tries=3, timeout=30s)
+
+### Modified Files
+- `app/Services/DashboardService.php` — added company-scoped cache with clearCache() method
+- `app/Providers/AppServiceProvider.php` — preventLazyLoading + preventSilentlyDiscardingAttributes
+- `config/horizon.php` — 3 supervisors (supervisor-high/default/low), 3-queue waits thresholds
+- `app/Mail/WelcomeMail.php` — queue='high', tries=3, timeout=30
+- `app/Mail/AttendanceReminderMail.php` — queue='high', tries=3, timeout=30
+- `app/Mail/PasswordChangedMail.php` — queue='high', tries=3, timeout=30
+
+### Created Files
+- `database/migrations/2026_08_04_093850_add_composite_indexes.php` — 10 composite indexes on quran_attendance, salah_attendance, employees, audit_logs
+
+### Architecture Notes
+- Cache key convention: `company:{company_id}:dashboard:{segment}` (PERF-01/PERF-02 compliant)
+- DashboardService.clearCache() provides explicit cache invalidation for bulk operations
+- Mail jobs use `high` queue so emails are never blocked by slow exports
+- Composite indexes are named (qa_*, sa_*, emp_*, al_*) for safe rollback via dropIndex()
+- preventLazyLoading forces eager-loading review in development — prevents N+1 reaching production
+
+### Quality
+- PHPStan Level 5: 0 errors
+- Laravel Pint: 0 issues (fixed 1 file — class_attributes_separation)
+- migrate:fresh --seed: 33 migrations + 5 seeders passed
