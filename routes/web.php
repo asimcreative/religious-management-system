@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Web\EmployeeController;
+use App\Http\Controllers\Web\JamaatController;
+use App\Http\Controllers\Web\JamaatMemberController;
 use App\Http\Controllers\Web\Masters\AttendanceReasonController;
 use App\Http\Controllers\Web\Masters\BranchController;
 use App\Http\Controllers\Web\Masters\DepartmentController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\Web\QuranAttendanceController;
 use App\Http\Controllers\Web\QuranClassController;
 use App\Http\Controllers\Web\QuranClassMemberController;
 use App\Http\Controllers\Web\QuranProgressController;
+use App\Http\Controllers\Web\SalahAttendanceController;
 use App\Http\Controllers\Web\TeacherController;
 use Illuminate\Support\Facades\Route;
 
@@ -68,6 +71,20 @@ Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->grou
 
     // ── Quran Progress ───────────────────────────────────────────
     Route::resource('quran-progress', QuranProgressController::class)->except('destroy');
+
+    // ── Jamaats ─────────────────────────────────────────────────
+    Route::resource('jamaats', JamaatController::class);
+    Route::post('jamaats/{jamaat}/restore', [JamaatController::class, 'restore'])->name('jamaats.restore')->withTrashed();
+
+    // ── Jamaat Members ──────────────────────────────────────────
+    Route::get('jamaats/{jamaat}/members', [JamaatMemberController::class, 'index'])->name('jamaats.members.index');
+    Route::post('jamaats/{jamaat}/members', [JamaatMemberController::class, 'store'])->name('jamaats.members.store');
+    Route::delete('jamaats/{jamaat}/members/{employee}', [JamaatMemberController::class, 'destroy'])->name('jamaats.members.destroy');
+
+    // ── Salah Attendance ────────────────────────────────────────
+    Route::get('salah-attendance', [SalahAttendanceController::class, 'index'])->name('salah-attendance.index');
+    Route::get('salah-attendance/create', [SalahAttendanceController::class, 'create'])->name('salah-attendance.create');
+    Route::post('salah-attendance', [SalahAttendanceController::class, 'store'])->name('salah-attendance.store');
 
     // ── Master Data ─────────────────────────────────────────────
     Route::prefix('masters')->name('masters.')->group(function () {

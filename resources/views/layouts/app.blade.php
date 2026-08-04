@@ -72,6 +72,24 @@
                         </li>
                     @endcanany
 
+                    {{-- Salah Module Dropdown --}}
+                    @canany(['jamaat.view', 'salah.attendance.view'])
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ request()->routeIs('jamaats.*', 'salah-attendance.*') ? 'active' : '' }}"
+                               href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-moon me-1"></i> {{ __('jamaats.salah_module') }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                @can('jamaat.view')
+                                    <li><a class="dropdown-item" href="{{ route('jamaats.index') }}">{{ __('jamaats.jamaats') }}</a></li>
+                                @endcan
+                                @can('salah.attendance.view')
+                                    <li><a class="dropdown-item" href="{{ route('salah-attendance.index') }}">{{ __('salah_attendance.salah_attendance') }}</a></li>
+                                @endcan
+                            </ul>
+                        </li>
+                    @endcanany
+
                     {{-- Master Data Dropdown --}}
                     @canany(['branch.manage', 'department.manage', 'designation.manage', 'attendance_reason.manage', 'quran_department.manage', 'quran_status.manage', 'language.manage'])
                         <li class="nav-item dropdown">

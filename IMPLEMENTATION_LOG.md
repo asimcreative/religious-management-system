@@ -418,3 +418,83 @@
 - PHPStan Level 5: 0 errors (fixed 12 initial errors — property.notFound, nullsafe.neverNull, return.type)
 - Laravel Pint: 0 issues (fixed 5 files)
 - migrate:fresh --seed: 32 migrations + 5 seeders passed
+
+---
+
+## Phase 10: Salah Module
+**Commit:** (pending)
+**Date:** 2026-08-04
+
+### Sub-phases
+- 10a: Salah Jamaats CRUD
+- 10b: Jamaat Members Management
+- 10c: Salah Attendance
+- 10d: Routes, Navigation, Quality Checks
+
+### Features
+
+**Jamaats (10a)**
+- Full CRUD with show/detail page
+- Jamaat linked to Branch (BelongsTo), Leader (Employee), Vice Leader (Employee)
+- Search by jamaat_name, jamaat_number, leader name
+- Filters: branch, status
+- Active member count display
+- Soft delete + restore (blocked if attendance records exist)
+
+**Jamaat Members (10b)**
+- Add/remove employees from a Jamaat
+- One-active-Jamaat rule: adding to a new Jamaat auto-deactivates previous membership
+- Reactivation support: re-adding a previous member reactivates existing record
+- History preservation: removal sets is_active=false + left_at date
+
+**Salah Attendance (10c)**
+- Three-step flow: select Jamaat + Prayer + Date → mark attendance for active members
+- Five daily prayers: Fajr, Dhuhr, Asr, Maghrib, Isha (from prayers master table)
+- Attendance reasons dropdown (from master data)
+- Remarks field per employee
+- Backdating validation: configurable max days (default 3) from settings table
+- Future dates never allowed
+- Upsert pattern: delete + insert within DB transaction
+- Unique constraint: one record per employee per prayer per date
+- Attendance history list with Jamaat/prayer/date filters
+
+### Created Files
+- `app/Repositories/JamaatRepository.php` — search with filters, findWithRelations, hasAttendanceRecords, restore
+- `app/Services/JamaatService.php` — search, findWithRelations, canDelete, restore
+- `app/Policies/JamaatPolicy.php` — viewAny, view, create, update, delete, restore
+- `app/Http/Requests/Jamaat/StoreJamaatRequest.php` — company-scoped unique, exists rules, different leader/vice-leader
+- `app/Http/Requests/Jamaat/UpdateJamaatRequest.php` — same with ignore
+- `app/Http/Controllers/Web/JamaatController.php` — full CRUD + restore
+- `resources/views/jamaats/index.blade.php` — list with search, filters, member count
+- `resources/views/jamaats/create.blade.php` — Jamaat info + leadership card
+- `resources/views/jamaats/edit.blade.php` — same with pre-filled values
+- `resources/views/jamaats/show.blade.php` — Jamaat info, leadership, active members, audit
+- `lang/en/jamaats.php` — English translations (includes member keys)
+- `lang/ur/jamaats.php` — Urdu translations (includes member keys)
+- `app/Services/JamaatMemberService.php` — addMember (one-active-Jamaat rule), removeMember, getActiveMembers
+- `app/Http/Controllers/Web/JamaatMemberController.php` — index, store, destroy
+- `resources/views/jamaats/members.blade.php` — add member form + active members table
+- `app/Repositories/SalahAttendanceRepository.php` — search with filters, getForJamaatDatePrayer, existsForJamaatDatePrayer
+- `app/Services/SalahAttendanceService.php` — search, getForJamaatDatePrayer, isDateAllowed, saveAttendance (transaction)
+- `app/Policies/SalahAttendancePolicy.php` — viewAny, view, create, update, delete, lock
+- `app/Http/Controllers/Web/SalahAttendanceController.php` — index, create (three-step), store
+- `resources/views/salah-attendance/index.blade.php` — history list with filters
+- `resources/views/salah-attendance/create.blade.php` — three-step attendance marking form
+- `lang/en/salah_attendance.php` — English translations
+- `lang/ur/salah_attendance.php` — Urdu translations
+
+### Modified Files
+- `routes/web.php` — Jamaats resource, members routes, salah-attendance routes
+- `resources/views/layouts/app.blade.php` — Salah Module dropdown with permission-based visibility
+
+### Architecture Notes
+- JamaatMemberService mirrors QuranClassMemberService pattern for one-active-membership rule
+- SalahAttendanceService mirrors QuranAttendanceService with additional prayer dimension
+- Attendance is per employee per prayer per date (unique constraint in DB)
+- Leader ID is auto-populated from Jamaat's leader_id on attendance save
+- Backdating shares the same settings key (max_backdated_attendance_days) as Quran attendance
+
+### Quality
+- PHPStan Level 5: 0 errors (fixed 1 initial error — property.onlyWritten)
+- Laravel Pint: 0 issues (fixed 1 file — import ordering)
+- migrate:fresh --seed: 32 migrations + 5 seeders passed
