@@ -592,7 +592,7 @@
 ---
 
 ## Phase 12: Dashboard
-**Commit:** (pending)
+**Commit:** d2394bc
 **Date:** 2026-08-04
 
 ### Features
@@ -625,3 +625,87 @@
 - PHPStan Level 5: 0 errors
 - Laravel Pint: 0 issues (fixed 1 file — single_quote)
 - migrate:fresh --seed: 32 migrations + 5 seeders passed
+
+---
+
+## Phase 13: Notification System
+**Commit:** 612be50
+**Date:** 2026-08-04
+
+### Features
+- In-app notification storage (custom Notification model, not Laravel's built-in)
+- Real-time unread badge in navbar (updates on page load)
+- Notification list with type icons, priority badges, mark-read / delete actions
+- Email queue-based notifications: welcome, attendance-reminder, password-changed
+- NotificationService with TYPE_* and PRIORITY_* constants
+
+### Created Files
+- `app/Services/NotificationService.php` — notify, notifyCompany, sendWelcome, sendAttendanceReminder, sendPasswordChanged, sendRoleChanged, getForUser, getUnreadCount, markAsRead, markAllAsRead, delete
+- `app/Http/Controllers/Web/NotificationController.php` — index, markRead, markAllRead, destroy, unreadCount
+- `app/Mail/WelcomeMail.php`, `AttendanceReminderMail.php`, `PasswordChangedMail.php` — all ShouldQueue
+- `resources/views/notifications/index.blade.php`
+- `resources/views/emails/welcome.blade.php`, `attendance-reminder.blade.php`, `password-changed.blade.php`
+- `lang/en/notifications.php`, `lang/ur/notifications.php`
+
+### Modified Files
+- `resources/views/layouts/app.blade.php` — notification bell with unread badge
+- `routes/web.php` — notification routes (index, mark-read, mark-all-read, destroy, unread-count)
+
+### Architecture Notes
+- Custom Notification model (not Laravel Notifiable trait) for full company isolation
+- Mail classes implement ShouldQueue for non-blocking email delivery
+- Unread count resolved inline in app.blade.php via app(NotificationService::class)
+- Priority: low, medium, high, critical — Type: system, reminder, security, administrative
+
+### Quality
+- PHPStan Level 5: 0 errors
+- Laravel Pint: 0 issues
+- migrate:fresh --seed: passed
+
+---
+
+## Phase 14: REST API
+**Commit:** (pending)
+**Date:** 2026-08-04
+
+### Features
+- Versioned API under `/api/v1/` prefix
+- Sanctum token authentication (login, logout, profile, change-password)
+- Rate limiting: 5 req/min for login, 60 req/min for authenticated routes
+- JSON API resources with `@property` typed model for PHPStan compatibility
+- Endpoints: auth, dashboard, employees, teachers, quran classes, jamaats, quran attendance, salah attendance, notifications
+- Company-scoped queries on all list endpoints (multi-tenant safe)
+
+### Created Files
+- `routes/api.php` — full versioned API routes with throttle middleware
+- `app/Http/Controllers/Api/AuthController.php` — login, logout, profile, updateProfile, changePassword, unreadNotificationsCount
+- `app/Http/Controllers/Api/EmployeeApiController.php` — index (paginated + filters), show
+- `app/Http/Controllers/Api/TeacherApiController.php` — index (paginated + filters), show
+- `app/Http/Controllers/Api/QuranApiController.php` — classes, showClass, attendance
+- `app/Http/Controllers/Api/SalahApiController.php` — jamaats, showJamaat, attendance
+- `app/Http/Controllers/Api/DashboardApiController.php` — index (delegates to DashboardService)
+- `app/Http/Controllers/Api/NotificationApiController.php` — index, markRead, markAllRead, destroy
+- `app/Http/Resources/Api/EmployeeResource.php`
+- `app/Http/Resources/Api/TeacherResource.php`
+- `app/Http/Resources/Api/QuranClassResource.php`
+- `app/Http/Resources/Api/JamaatResource.php`
+- `app/Http/Resources/Api/QuranAttendanceResource.php`
+- `app/Http/Resources/Api/SalahAttendanceResource.php`
+- `app/Http/Resources/Api/NotificationResource.php`
+- `app/Http/Resources/Api/DashboardResource.php`
+
+### Modified Files
+- `bootstrap/app.php` — added `api: __DIR__.'/../routes/api.php'` to withRouting()
+
+### Architecture Notes
+- Resources use `/** @property ModelType $resource */` class-level annotation for PHPStan
+- Custom date-cast columns use getRawOriginal() to avoid larastan cast inference issues
+- Status enum comparisons use isActive()/isInactive() model methods (not ->value) to avoid larastan cast issues
+- All controllers extend BaseApiController (successResponse, errorResponse, etc.)
+- Company data scoped via BelongsToCompany global scope on all models
+- API login revokes existing device tokens before creating new one
+
+### Quality
+- PHPStan Level 5: 0 errors (fixed 40+ initial errors — property.notFound, property.nonObject, method.nonObject, argument.type)
+- Laravel Pint: 0 issues
+- migrate:fresh --seed: passed
