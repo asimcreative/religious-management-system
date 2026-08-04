@@ -16,7 +16,9 @@ class NotificationComposer
     {
         $userId = Auth::id();
 
-        $view->with('unreadNotificationCount', $userId
+        $view->with(
+            'unreadNotificationCount',
+            $userId
             ? $this->notificationService->getUnreadCount($userId)
             : 0
         );

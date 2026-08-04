@@ -20,6 +20,7 @@ use App\Models\QuranProgress;
 use App\Models\QuranStatus;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 /**
@@ -206,7 +207,7 @@ class DemoDataSeeder extends Seeder
         $branchList = array_values($branches);
 
         foreach ($teacherEmployees as $i => $employee) {
-            $code = 'TCH-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT);
+            $code = 'TCH-'.str_pad($i + 1, 4, '0', STR_PAD_LEFT);
             $teacher = Teacher::updateOrCreate(
                 ['company_id' => $companyId, 'teacher_code' => $code],
                 [
@@ -214,7 +215,7 @@ class DemoDataSeeder extends Seeder
                     'employee_id' => $employee->id,
                     'teacher_code' => $code,
                     'status' => Status::Active,
-                    'notes' => 'Certified Quran teacher with ' . (5 + $i * 2) . ' years experience.',
+                    'notes' => 'Certified Quran teacher with '.(5 + $i * 2).' years experience.',
                 ]
             );
 
@@ -313,7 +314,7 @@ class DemoDataSeeder extends Seeder
                     'company_id' => $companyId,
                     'employee_id' => $employee->id,
                     'quran_status_id' => $status->id,
-                    'current_lesson' => 'Lesson ' . (($i * 3) + 1),
+                    'current_lesson' => 'Lesson '.(($i * 3) + 1),
                     'current_surah' => $surahs[$i % count($surahs)],
                     'current_sipara' => ($i % 30) + 1,
                     'current_page' => ($i * 20) + 10,

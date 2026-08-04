@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\QuranAttendanceRepositoryInterface;
 use App\Models\QuranAttendance;
 use App\Models\Setting;
-use App\Contracts\Repositories\QuranAttendanceRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;

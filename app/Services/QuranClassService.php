@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\QuranClass;
 use App\Contracts\Repositories\QuranClassRepositoryInterface;
+use App\Models\QuranClass;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class QuranClassService extends BaseService

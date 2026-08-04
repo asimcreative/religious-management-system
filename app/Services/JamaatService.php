@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Jamaat;
 use App\Contracts\Repositories\JamaatRepositoryInterface;
+use App\Models\Jamaat;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class JamaatService extends BaseService

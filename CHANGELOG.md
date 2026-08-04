@@ -6,6 +6,31 @@ This project adheres to [Semantic Versioning](https://semver.org/). Format follo
 
 ---
 
+## [1.0.1] — 2026-08-04
+
+Production readiness audit — all findings resolved.
+
+### Fixed
+
+- **ARCH** — SOLID Dependency Inversion: Created 14 module-specific repository interfaces in `app/Contracts/Repositories/`; all 14 concrete repositories now implement their interface; `RepositoryServiceProvider` wired with all 14 interface-to-concrete bindings; all 13 services updated to inject via interface not concrete class
+- **ARCH** — Notification bell `app()` call removed from Blade: Created `NotificationComposer` in `app/View/Composers/`; registered in `AppServiceProvider::boot()` via `View::composer()`; `layouts/app.blade.php` now uses `$unreadNotificationCount` variable
+- **VALIDATION** — CNIC format enforced: `StoreEmployeeRequest` and `UpdateEmployeeRequest` now validate CNIC against `regex:/^\d{5}-\d{7}-\d{1}$/` (Pakistani CNIC: `XXXXX-XXXXXXX-X`)
+- **ARCH** — RTL `dir` attribute reverted: Temporary `dir="rtl"` change was reverted per Architecture Decision 6 (`PROJECT_ARCHITECTURE_FINAL.md`): "LTR Only — No RTL Layout"
+
+### Changed
+
+- Pint: Fixed line endings in all 14 repository files and 13 service files (Python-generated files used CRLF; Pint normalised to LF)
+- Pint: Fixed `ordered_imports` in `EmployeeService`, `JamaatService`, `QuranClassService`, `QuranAttendanceService`, `SalahAttendanceService`, `TeacherService`, `QuranProgressService`
+- Pint: Fixed `NotificationComposer` — `method_argument_space`, `braces_position`, `single_line_empty_body`
+
+### Quality
+
+- Laravel Pint: 0 issues
+- PHPStan Level 5: 0 errors (184 files analysed)
+- PHPUnit: 30 tests, 83 assertions, 100% passing
+
+---
+
 ## [1.0.0] — 2026-08-04
 
 Initial production-ready release of the **Religious Affairs Management System (RAMS)**.

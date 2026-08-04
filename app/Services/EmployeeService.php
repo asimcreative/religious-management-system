@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Employee;
 use App\Contracts\Repositories\EmployeeRepositoryInterface;
+use App\Models\Employee;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EmployeeService extends BaseService

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\QuranProgressRepositoryInterface;
 use App\Models\QuranProgress;
 use App\Models\QuranProgressHistory;
-use App\Contracts\Repositories\QuranProgressRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 

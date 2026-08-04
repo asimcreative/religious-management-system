@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\SalahAttendanceRepositoryInterface;
 use App\Models\SalahAttendance;
 use App\Models\Setting;
-use App\Contracts\Repositories\SalahAttendanceRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;

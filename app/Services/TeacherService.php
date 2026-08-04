@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Teacher;
 use App\Contracts\Repositories\TeacherRepositoryInterface;
+use App\Models\Teacher;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 
