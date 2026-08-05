@@ -31,9 +31,9 @@ set_time_limit(300);
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 define('PROJECT_ROOT', dirname(__DIR__));
-define('ARTISAN_PATH', PROJECT_ROOT . '/artisan');
-define('DEPLOY_LOG',   PROJECT_ROOT . '/storage/logs/deploy.log');
-define('DEPLOY_LOCK',  PROJECT_ROOT . '/storage/framework/deploy.lock');
+define('ARTISAN_PATH', PROJECT_ROOT.'/artisan');
+define('DEPLOY_LOG', PROJECT_ROOT.'/storage/logs/deploy.log');
+define('DEPLOY_LOCK', PROJECT_ROOT.'/storage/framework/deploy.lock');
 define('DEPLOY_BRANCH', 'main');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ define('DEPLOY_BRANCH', 'main');
 function pullLog(string $message): void
 {
     $timestamp = date('Y-m-d H:i:s T');
-    @file_put_contents(DEPLOY_LOG, "[{$timestamp}] {$message}" . PHP_EOL, FILE_APPEND | LOCK_EX);
+    @file_put_contents(DEPLOY_LOG, "[{$timestamp}] {$message}".PHP_EOL, FILE_APPEND | LOCK_EX);
 }
 
 function pullRespond(int $status, string $message, array $steps = []): never
@@ -62,8 +62,8 @@ function pullRespond(int $status, string $message, array $steps = []): never
  */
 function pullReadEnv(): array
 {
-    $env  = [];
-    $path = PROJECT_ROOT . '/.env';
+    $env = [];
+    $path = PROJECT_ROOT.'/.env';
 
     if (! file_exists($path) || ! is_readable($path)) {
         return $env;
@@ -80,7 +80,7 @@ function pullReadEnv(): array
             continue;
         }
         [$key, $value] = explode('=', $line, 2);
-        $key   = trim($key);
+        $key = trim($key);
         $value = trim(trim($value), '"\'');
         if ($key !== '') {
             $env[$key] = $value;
@@ -123,9 +123,10 @@ function pullFindBin(string $name, string $envKey, array $env): string
 
 function pullRun(string $command): array
 {
-    $output   = [];
+    $output = [];
     $exitCode = 0;
-    exec($command . ' 2>&1', $output, $exitCode);
+    exec($command.' 2>&1', $output, $exitCode);
+
     return ['exit_code' => $exitCode, 'output' => implode("\n", $output)];
 }
 
@@ -135,11 +136,11 @@ function pullRun(string $command): array
 $token = trim((string) ($_GET['token'] ?? $_POST['token'] ?? ''));
 
 if ($token === '') {
-    pullLog('REJECTED: No token provided — IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+    pullLog('REJECTED: No token provided — IP: '.($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
     pullRespond(403, 'Forbidden: token required');
 }
 
-$env          = pullReadEnv();
+$env = pullReadEnv();
 $correctToken = $env['DEPLOY_PULL_TOKEN'] ?? '';
 
 if ($correctToken === '') {
@@ -149,7 +150,7 @@ if ($correctToken === '') {
 
 // Constant-time comparison to prevent timing attacks
 if (! hash_equals($correctToken, $token)) {
-    pullLog('REJECTED: Invalid token — IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+    pullLog('REJECTED: Invalid token — IP: '.($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
     pullRespond(403, 'Forbidden: invalid token');
 }
 
@@ -175,35 +176,36 @@ register_shutdown_function(static function () use ($lockHandle): void {
 
 // ─── Pull ────────────────────────────────────────────────────────────────────
 
-$phpBin      = pullFindBin('php',      'DEPLOY_PHP_BINARY',      $env);
-$gitBin      = pullFindBin('git',      'DEPLOY_GIT_BINARY',      $env);
+$phpBin = pullFindBin('php', 'DEPLOY_PHP_BINARY', $env);
+$gitBin = pullFindBin('git', 'DEPLOY_GIT_BINARY', $env);
 $composerBin = pullFindBin('composer', 'DEPLOY_COMPOSER_BINARY', $env);
 
-$pullId    = date('YmdHis');
+$pullId = date('YmdHis');
 $startTime = microtime(true);
-$steps     = [];
-$failed    = false;
+$steps = [];
+$failed = false;
 
 pullLog('======================================================');
 pullLog("PULL START [{$pullId}]");
 pullLog("PHP: {$phpBin} | Git: {$gitBin}");
 pullLog('======================================================');
 
-$step = function (string $name, string $cmd) use (&$steps, &$failed, $phpBin, $gitBin): void {
+$step = function (string $name, string $cmd) use (&$steps, &$failed): void {
     if ($failed) {
         pullLog("STEP [{$name}]: SKIPPED");
         $steps[$name] = 'skipped';
+
         return;
     }
 
     pullLog("STEP [{$name}]: running");
-    $r      = pullRun($cmd);
+    $r = pullRun($cmd);
     $status = $r['exit_code'] === 0 ? 'ok' : 'failed';
 
     if ($r['output'] !== '') {
         // Log output but never expose it in the HTTP response
         foreach (array_slice(explode("\n", $r['output']), 0, 20) as $line) {
-            pullLog("  > " . trim($line));
+            pullLog('  > '.trim($line));
         }
     }
 
@@ -216,45 +218,52 @@ $step = function (string $name, string $cmd) use (&$steps, &$failed, $phpBin, $g
 };
 
 // 1. Maintenance on
-$step('maintenance:on',
-    $phpBin . ' ' . escapeshellarg(ARTISAN_PATH) . ' down --no-interaction'
+$step(
+    'maintenance:on',
+    $phpBin.' '.escapeshellarg(ARTISAN_PATH).' down --no-interaction'
 );
 
 // 2. Git pull
-$step('git:pull',
-    $gitBin . ' -C ' . escapeshellarg(PROJECT_ROOT)
-    . ' pull origin ' . DEPLOY_BRANCH . ' --ff-only'
+$step(
+    'git:pull',
+    $gitBin.' -C '.escapeshellarg(PROJECT_ROOT)
+    .' pull origin '.DEPLOY_BRANCH.' --ff-only'
 );
 
 // 3. Composer install (no dev)
-$step('composer:install',
-    $composerBin . ' install --no-dev --optimize-autoloader --no-interaction --prefer-dist'
-    . ' --working-dir=' . escapeshellarg(PROJECT_ROOT)
+$step(
+    'composer:install',
+    $composerBin.' install --no-dev --optimize-autoloader --no-interaction --prefer-dist'
+    .' --working-dir='.escapeshellarg(PROJECT_ROOT)
 );
 
 // 4. Migrate
-$step('migrate',
-    $phpBin . ' ' . escapeshellarg(ARTISAN_PATH) . ' migrate --force --no-interaction'
+$step(
+    'migrate',
+    $phpBin.' '.escapeshellarg(ARTISAN_PATH).' migrate --force --no-interaction'
 );
 
 // 5. Clear + warm caches
-$step('optimize:clear',
-    $phpBin . ' ' . escapeshellarg(ARTISAN_PATH) . ' optimize:clear --no-interaction'
+$step(
+    'optimize:clear',
+    $phpBin.' '.escapeshellarg(ARTISAN_PATH).' optimize:clear --no-interaction'
 );
 
-$step('optimize',
-    $phpBin . ' ' . escapeshellarg(ARTISAN_PATH) . ' optimize --no-interaction'
+$step(
+    'optimize',
+    $phpBin.' '.escapeshellarg(ARTISAN_PATH).' optimize --no-interaction'
 );
 
 // 6. Restart queue workers
-$step('queue:restart',
-    $phpBin . ' ' . escapeshellarg(ARTISAN_PATH) . ' queue:restart --no-interaction'
+$step(
+    'queue:restart',
+    $phpBin.' '.escapeshellarg(ARTISAN_PATH).' queue:restart --no-interaction'
 );
 
 // 7. Maintenance off — always run regardless of failures
-$r    = pullRun($phpBin . ' ' . escapeshellarg(ARTISAN_PATH) . ' up --no-interaction');
+$r = pullRun($phpBin.' '.escapeshellarg(ARTISAN_PATH).' up --no-interaction');
 $upOk = $r['exit_code'] === 0;
-pullLog('STEP [maintenance:off]: ' . ($upOk ? 'ok' : 'failed'));
+pullLog('STEP [maintenance:off]: '.($upOk ? 'ok' : 'failed'));
 $steps['maintenance:off'] = $upOk ? 'ok' : 'failed';
 
 // ─── Result ──────────────────────────────────────────────────────────────────

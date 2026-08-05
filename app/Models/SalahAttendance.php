@@ -29,12 +29,9 @@ class SalahAttendance extends Model
         'remarks',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'attendance_date' => 'date',
-        ];
-    }
+    protected $casts = [
+        'attendance_date' => 'date',
+    ];
 
     protected static function booted(): void
     {

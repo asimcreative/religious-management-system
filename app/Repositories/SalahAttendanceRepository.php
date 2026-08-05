@@ -53,7 +53,7 @@ class SalahAttendanceRepository extends BaseRepository implements SalahAttendanc
      */
     public function searchGrouped(?string $search, array $filters, int $perPage = 50): LengthAwarePaginator
     {
-        $records = $this->model->newQuery()
+        $records = SalahAttendance::query()
             ->with(['prayer', 'jamaat', 'employee', 'attendanceReason'])
             ->when($filters['jamaat_id'] ?? null, fn (Builder $q, $v) => $q->where('jamaat_id', $v))
             ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '>=', $v))
@@ -66,21 +66,21 @@ class SalahAttendanceRepository extends BaseRepository implements SalahAttendanc
             ->get();
 
         $grouped = $records
-            ->groupBy(fn ($r) => $r->attendance_date->format('Y-m-d').'|'.$r->jamaat_id.'|'.$r->employee_id)
+            ->groupBy(fn (SalahAttendance $r) => $r->attendance_date->format('Y-m-d').'|'.$r->jamaat_id.'|'.$r->employee_id)
             ->map(fn ($rows) => [
-                'date'     => $rows->first()->attendance_date,
-                'jamaat'   => $rows->first()->jamaat,
+                'date' => $rows->first()->attendance_date,
+                'jamaat' => $rows->first()->jamaat,
                 'employee' => $rows->first()->employee,
-                'prayers'  => $rows->keyBy('prayer_id'),
+                'prayers' => $rows->keyBy('prayer_id'),
             ])
             ->values();
 
-        $page  = (int) request()->get('page', 1);
+        $page = (int) request()->get('page', 1);
         $total = $grouped->count();
         $items = $grouped->forPage($page, $perPage);
 
         return new ManualPaginator($items, $total, $perPage, $page, [
-            'path'  => request()->url(),
+            'path' => request()->url(),
             'query' => request()->query(),
         ]);
     }

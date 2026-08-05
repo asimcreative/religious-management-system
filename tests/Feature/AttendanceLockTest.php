@@ -49,9 +49,8 @@ class AttendanceLockTest extends TestCase
             ])->assertForbidden();
             $this->post(route('salah-attendance.store'), [
                 'jamaat_id' => $jamaat->id,
-                'prayer_id' => $prayer->id,
                 'date' => $date,
-                'attendance' => [$jamaatMember->id => null],
+                'attendance' => [$jamaatMember->id => [$prayer->id => null]],
             ])->assertForbidden();
 
             $this->assertDatabaseCount('quran_attendance', 0);
@@ -83,9 +82,8 @@ class AttendanceLockTest extends TestCase
             ])->assertRedirect();
             $this->post(route('salah-attendance.store'), [
                 'jamaat_id' => $jamaat->id,
-                'prayer_id' => $prayer->id,
                 'date' => $date,
-                'attendance' => [$jamaatMember->id => null],
+                'attendance' => [$jamaatMember->id => [$prayer->id => null]],
             ])->assertRedirect();
 
             $quranLog = AuditLog::query()
@@ -116,7 +114,6 @@ class AttendanceLockTest extends TestCase
             $this->assertSame('00:00', $quranLog->new_values['lock_time']);
             $this->assertSame($date, $salahLog->new_values['attendance_date']);
             $this->assertSame($jamaat->id, $salahLog->new_values['jamaat_id']);
-            $this->assertSame($prayer->id, $salahLog->new_values['prayer_id']);
         } finally {
             Carbon::setTestNow();
         }

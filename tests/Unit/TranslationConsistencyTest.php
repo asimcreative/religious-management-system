@@ -25,15 +25,15 @@ class TranslationConsistencyTest extends TestCase
         $langPath = app()->langPath();
 
         $this->assertStringNotContainsString(
-            'resources' . DIRECTORY_SEPARATOR . 'lang',
+            'resources'.DIRECTORY_SEPARATOR.'lang',
             $langPath,
             'Laravel is resolving translations from resources/lang/ — this shadows the real lang/ directory. '
-            . 'Delete resources/lang/ so Laravel falls back to the root lang/ directory.'
+            .'Delete resources/lang/ so Laravel falls back to the root lang/ directory.'
         );
 
         $this->assertDirectoryExists($langPath, 'lang_path() must point to an existing directory.');
-        $this->assertDirectoryExists($langPath . '/en', 'lang/en/ must exist.');
-        $this->assertDirectoryExists($langPath . '/ur', 'lang/ur/ must exist.');
+        $this->assertDirectoryExists($langPath.'/en', 'lang/en/ must exist.');
+        $this->assertDirectoryExists($langPath.'/ur', 'lang/ur/ must exist.');
     }
 
     public function test_resources_lang_directory_does_not_exist(): void
@@ -41,7 +41,7 @@ class TranslationConsistencyTest extends TestCase
         $this->assertDirectoryDoesNotExist(
             resource_path('lang'),
             'An empty resources/lang/ directory was found. Remove it — its presence causes Laravel 12 to '
-            . 'ignore the real translation files in the root lang/ directory.'
+            .'ignore the real translation files in the root lang/ directory.'
         );
     }
 
@@ -54,16 +54,16 @@ class TranslationConsistencyTest extends TestCase
         App::setLocale('en');
 
         $keys = [
-            'auth.app_tagline'   => 'Religious Affairs Management System',
-            'auth.login'         => 'Login',
-            'auth.logout'        => 'Logout',
-            'auth.email'         => 'Email Address',
-            'auth.password'      => 'Password',
-            'auth.remember_me'   => 'Remember Me',
+            'auth.app_tagline' => 'Religious Affairs Management System',
+            'auth.login' => 'Login',
+            'auth.logout' => 'Logout',
+            'auth.email' => 'Email Address',
+            'auth.password' => 'Password',
+            'auth.remember_me' => 'Remember Me',
             'auth.forgot_password' => 'Forgot Password?',
-            'auth.failed'        => 'These credentials do not match our records.',
+            'auth.failed' => 'These credentials do not match our records.',
             'auth.change_password' => 'Change Password',
-            'auth.reset_password'  => 'Reset Password',
+            'auth.reset_password' => 'Reset Password',
         ];
 
         foreach ($keys as $key => $expected) {
@@ -79,9 +79,9 @@ class TranslationConsistencyTest extends TestCase
     {
         App::setLocale('en');
 
-        $langPath = app()->langPath() . '/en';
+        $langPath = app()->langPath().'/en';
 
-        foreach (glob($langPath . '/*.php') as $file) {
+        foreach (glob($langPath.'/*.php') as $file) {
             $namespace = basename($file, '.php');
             $translations = require $file;
 
@@ -107,11 +107,11 @@ class TranslationConsistencyTest extends TestCase
         App::setLocale('ur');
 
         $keys = [
-            'auth.app_tagline'     => 'مذہبی امور کا انتظامی نظام',
-            'auth.login'           => 'لاگ ان',
-            'auth.email'           => 'ای میل',
-            'auth.password'        => 'پاسورڈ',
-            'auth.remember_me'     => 'مجھے یاد رکھیں',
+            'auth.app_tagline' => 'مذہبی امور کا انتظامی نظام',
+            'auth.login' => 'لاگ ان',
+            'auth.email' => 'ای میل',
+            'auth.password' => 'پاسورڈ',
+            'auth.remember_me' => 'مجھے یاد رکھیں',
             'auth.forgot_password' => 'پاسورڈ بھول گئے؟',
         ];
 
@@ -128,9 +128,9 @@ class TranslationConsistencyTest extends TestCase
     {
         App::setLocale('ur');
 
-        $langPath = app()->langPath() . '/ur';
+        $langPath = app()->langPath().'/ur';
 
-        foreach (glob($langPath . '/*.php') as $file) {
+        foreach (glob($langPath.'/*.php') as $file) {
             $namespace = basename($file, '.php');
             $translations = require $file;
 
@@ -154,11 +154,11 @@ class TranslationConsistencyTest extends TestCase
     public function test_en_and_ur_have_identical_keys_for_all_files(): void
     {
         $langPath = app()->langPath();
-        $enDir    = $langPath . '/en';
-        $urDir    = $langPath . '/ur';
+        $enDir = $langPath.'/en';
+        $urDir = $langPath.'/ur';
 
-        $enFiles = array_map('basename', glob($enDir . '/*.php'));
-        $urFiles = array_map('basename', glob($urDir . '/*.php'));
+        $enFiles = array_map('basename', glob($enDir.'/*.php'));
+        $urFiles = array_map('basename', glob($urDir.'/*.php'));
 
         sort($enFiles);
         sort($urFiles);
@@ -170,8 +170,8 @@ class TranslationConsistencyTest extends TestCase
         );
 
         foreach ($enFiles as $filename) {
-            $enKeys = array_keys(require $enDir . '/' . $filename);
-            $urKeys = array_keys(require $urDir . '/' . $filename);
+            $enKeys = array_keys(require $enDir.'/'.$filename);
+            $urKeys = array_keys(require $urDir.'/'.$filename);
 
             $missing = array_diff($enKeys, $urKeys);
             $this->assertEmpty(
