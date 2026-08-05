@@ -39,6 +39,7 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 
 # --no-scripts: skip post-autoload-dump (artisan not runnable here)
+# --ignore-platform-reqs: composer:2.8 image lacks ext-gd (installed in production stage)
 # scripts are executed in the entrypoint after env is available
 RUN composer install \
     --no-dev \
@@ -46,7 +47,8 @@ RUN composer install \
     --no-progress \
     --no-scripts \
     --optimize-autoloader \
-    --prefer-dist
+    --prefer-dist \
+    --ignore-platform-reqs
 
 # -----------------------------------------------------------------
 # Stage 3: PHP 8.4-FPM Alpine — Production image
