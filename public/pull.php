@@ -30,7 +30,22 @@ set_time_limit(300);
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-define('PROJECT_ROOT', dirname(__DIR__));
+// Locate the Laravel project root. On standard setups this file is inside
+// public/ so the root is one level up (dirname(__DIR__)). On shared hosting
+// where the entire project is served from public_html/, this file lives in
+// the same directory as artisan. Walk upward until we find artisan or .env.
+(static function (): void {
+    $candidates = [dirname(__DIR__), __DIR__];
+    foreach ($candidates as $dir) {
+        if (file_exists($dir.'/artisan') || file_exists($dir.'/.env')) {
+            define('PROJECT_ROOT', $dir);
+
+            return;
+        }
+    }
+    define('PROJECT_ROOT', dirname(__DIR__));
+})();
+
 define('ARTISAN_PATH', PROJECT_ROOT.'/artisan');
 define('DEPLOY_LOG', PROJECT_ROOT.'/storage/logs/deploy.log');
 define('DEPLOY_LOCK', PROJECT_ROOT.'/storage/framework/deploy.lock');
