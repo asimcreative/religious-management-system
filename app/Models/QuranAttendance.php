@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Models\Concerns\RestrictsRoleDataAccess;
 use Database\Factories\QuranAttendanceFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 class QuranAttendance extends Model
 {
     /** @use HasFactory<QuranAttendanceFactory> */
-    use BelongsToCompany, HasFactory;
+    use BelongsToCompany, HasFactory, RestrictsRoleDataAccess;
 
     protected $table = 'quran_attendance';
 

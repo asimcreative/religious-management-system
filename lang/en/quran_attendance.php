@@ -38,6 +38,7 @@ return [
     // Messages
     'saved' => 'Attendance saved successfully.',
     'date_not_allowed' => 'This date is outside the allowed backdating window.',
+    'attendance_locked' => 'Attendance is locked for this date.',
     'no_records' => 'No attendance records found.',
     'no_members_in_class' => 'This class has no active members.',
 ];

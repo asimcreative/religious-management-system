@@ -17,6 +17,8 @@ class NotificationController extends Controller
 
     public function index(): View
     {
+        $this->authorize('notification.view');
+
         $notifications = $this->service->getForUser(Auth::id());
         $unreadCount = $this->service->getUnreadCount(Auth::id());
 
@@ -25,7 +27,9 @@ class NotificationController extends Controller
 
     public function markRead(int $id): JsonResponse|RedirectResponse
     {
-        $this->service->markAsRead($id, Auth::id());
+        $this->authorize('notification.read');
+
+        abort_unless($this->service->markAsRead($id, (int) Auth::id()), 404);
 
         if (request()->expectsJson()) {
             return response()->json(['success' => true]);
@@ -36,6 +40,8 @@ class NotificationController extends Controller
 
     public function markAllRead(): JsonResponse|RedirectResponse
     {
+        $this->authorize('notification.read');
+
         $count = $this->service->markAllAsRead(Auth::id());
 
         if (request()->expectsJson()) {
@@ -47,7 +53,9 @@ class NotificationController extends Controller
 
     public function destroy(int $id): JsonResponse|RedirectResponse
     {
-        $this->service->delete($id, Auth::id());
+        $this->authorize('notification.delete');
+
+        abort_unless($this->service->delete($id, (int) Auth::id()), 404);
 
         if (request()->expectsJson()) {
             return response()->json(['success' => true]);
@@ -58,6 +66,8 @@ class NotificationController extends Controller
 
     public function unreadCount(): JsonResponse
     {
+        $this->authorize('notification.view');
+
         return response()->json([
             'count' => $this->service->getUnreadCount(Auth::id()),
         ]);

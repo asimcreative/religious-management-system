@@ -13,6 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -65,8 +66,44 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Return a user only when an email identifies exactly one account.
+     *
+     * Legacy data permits duplicate emails across companies. Authentication and
+     * password reset flows must fail closed until those records are resolved.
+     */
+    public static function findByUniqueEmail(string $email): ?self
+    {
+        $users = static::query()
+            ->where('email', $email)
+            ->limit(2)
+            ->get();
+
+        return $users->count() === 1 ? $users->first() : null;
+    }
+
+    /**
+     * Determine whether this user is the platform administrator.
+     *
+     * A tenant-local role with the same name must never disable company
+     * scoping. The system company is the sole platform-administration context.
+     */
+    public function isSystemAdministrator(): bool
+    {
+        $company = $this->company;
+
+        if ($company === null || $company->company_code !== 'SYSTEM') {
+            return false;
+        }
+
+        app(PermissionRegistrar::class)->setPermissionsTeamId($company->id);
+
+        return $this->hasRole('Super Admin');
+    }
+
     // ── Relationships ──────────────────────────────────────────────
 
+    /** @return BelongsTo<Company, $this> */
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);

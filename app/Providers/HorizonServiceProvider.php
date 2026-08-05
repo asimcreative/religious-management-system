@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Company;
+use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
 
@@ -23,12 +25,18 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewHorizon', function ($user = null) {
-            if ($user === null) {
+            if (! $user instanceof User || ! $user->isActive()) {
                 return false;
             }
 
-            // Allow Super Admins and any email addresses listed in HORIZON_ALLOWED_EMAILS
-            if ($user->hasRole('Super Admin')) {
+            $company = $user->company;
+
+            if (! $company instanceof Company || ! $company->isActive()) {
+                return false;
+            }
+
+            // Allow the dedicated system administrator and explicitly allowlisted emails.
+            if ($user->isSystemAdministrator()) {
                 return true;
             }
 

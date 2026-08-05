@@ -80,6 +80,10 @@ CLAUDE.md
 IMPLEMENTATION_LOG.md
 *.md
 
+# The checked-out-host webhook deployer requires .git, which production images
+# intentionally exclude. Docker releases use the documented image deployment flow.
+public/deploy.php
+
 # -----------------------------------------------------------------
 # CI / dev tooling
 # -----------------------------------------------------------------

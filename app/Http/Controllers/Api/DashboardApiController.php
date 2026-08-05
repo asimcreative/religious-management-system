@@ -16,6 +16,8 @@ class DashboardApiController extends BaseApiController
      */
     public function index(): JsonResponse
     {
+        $this->authorize('report.dashboard');
+
         return $this->successResponse([
             'overview' => $this->service->overviewStats(),
             'today_quran_attendance' => $this->service->todayQuranAttendance(),

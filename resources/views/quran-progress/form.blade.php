@@ -24,6 +24,10 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="employee_id" class="form-label">{{ __('quran_progress.employee') }} <span class="text-danger">*</span></label>
+                    @if($quranProgress)
+                        <input type="hidden" name="employee_id" value="{{ $quranProgress->employee_id }}">
+                        <input type="text" class="form-control" value="{{ $quranProgress->employee?->employee_name }} ({{ $quranProgress->employee?->employee_code }})" readonly>
+                    @else
                     <select id="employee_id" name="employee_id" class="form-select @error('employee_id') is-invalid @enderror" required>
                         <option value="">{{ __('quran_progress.select_employee') }}</option>
                         @foreach($employees as $employee)
@@ -32,6 +36,7 @@
                             </option>
                         @endforeach
                     </select>
+                    @endif
                     @error('employee_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-6">

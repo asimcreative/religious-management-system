@@ -31,19 +31,19 @@ class StoreEmployeeRequest extends FormRequest
             'photo' => ['nullable', 'image', 'max:2048'],
             'branch_id' => [
                 'required',
-                Rule::exists('branches', 'id')->where('company_id', $companyId),
+                Rule::exists('branches', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
             ],
             'department_id' => [
                 'required',
-                Rule::exists('departments', 'id')->where('company_id', $companyId),
+                Rule::exists('departments', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
             ],
             'designation_id' => [
                 'required',
-                Rule::exists('designations', 'id')->where('company_id', $companyId),
+                Rule::exists('designations', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
             ],
             'employment_status' => ['required', 'integer', 'in:0,1,2'],
-            'quran_department_id' => ['nullable', Rule::exists('quran_departments', 'id')->where('company_id', $companyId)],
-            'quran_status_id' => ['nullable', Rule::exists('quran_statuses', 'id')->where('company_id', $companyId)],
+            'quran_department_id' => ['nullable', Rule::exists('quran_departments', 'id')->where('company_id', $companyId)->whereNull('deleted_at')],
+            'quran_status_id' => ['nullable', Rule::exists('quran_statuses', 'id')->where('company_id', $companyId)->whereNull('deleted_at')],
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
     }

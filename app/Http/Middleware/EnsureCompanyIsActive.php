@@ -32,6 +32,12 @@ class EnsureCompanyIsActive
 
             if ($companyId) {
                 app(PermissionRegistrar::class)->setPermissionsTeamId($companyId);
+                // SubstituteBindings runs before this middleware and may cache the
+                // user's roles with team_id=null (the default). Unset the Eloquent
+                // relation cache so the next hasRole()/can() call reloads them with
+                // the correct team_id already in place.
+                $user->unsetRelation('roles');
+                $user->unsetRelation('permissions');
             }
 
             /** @var Company|null $company */

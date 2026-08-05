@@ -10,13 +10,11 @@
 #
 #   php-fpm  (app container)
 #       1. Validate APP_KEY is set
-#       2. Populate app_public volume from /var/www/public-init
-#          (only if public/index.php is missing — first run only)
+#       2. Refresh app_public volume from /var/www/public-init
 #       3. php artisan package:discover
 #       4. php artisan optimize        (config / route / view / event cache)
-#       5. php artisan migrate --force (idempotent)
-#       6. php artisan storage:link
-#       7. exec su-exec www php-fpm
+#       5. php artisan storage:link
+#       6. exec su-exec www php-fpm
 #
 #   php artisan horizon / schedule:work  (horizon / scheduler containers)
 #       → skip init (app container already ran it)
@@ -69,18 +67,14 @@ init_app() {
     wait_for "${DB_HOST:-mysql}"    "${DB_PORT:-3306}"  "MySQL"
     wait_for "${REDIS_HOST:-redis}" "${REDIS_PORT:-6379}" "Redis"
 
-    # 3. Populate the app_public volume on first run
-    #    The volume is initially empty; Docker hides the image's
-    #    /var/www/html/public behind the empty mount.
-    #    We keep a second copy at /var/www/public-init for this.
-    if [ ! -f "${APP_DIR}/public/index.php" ]; then
-        log "Populating public volume from build image..."
-        cp -r "${PUBLIC_INIT}/." "${APP_DIR}/public/"
-        chown -R www:www "${APP_DIR}/public"
-        log "Public volume populated."
-    else
-        log "Public volume already populated — skipping copy."
-    fi
+    # 3. Refresh the public volume so updated Vite manifests and their hashed
+    #    assets cannot remain stale after a new image is deployed.
+    mkdir -p "${APP_DIR}/public"
+    find "${APP_DIR}/public" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+    log "Refreshing public volume from build image..."
+    cp -r "${PUBLIC_INIT}/." "${APP_DIR}/public/"
+    chown -R www:www "${APP_DIR}/public"
 
     # 4. Package discovery (composer --no-scripts was used at build time)
     log "Running package:discover..."
@@ -90,11 +84,7 @@ init_app() {
     log "Running optimize..."
     su-exec www php "${APP_DIR}/artisan" optimize --ansi
 
-    # 6. Database migrations (idempotent — safe on every restart)
-    log "Running migrations..."
-    su-exec www php "${APP_DIR}/artisan" migrate --force --ansi
-
-    # 7. Storage symlink (public/storage → storage/app/public)
+    # 6. Storage symlink (public/storage → storage/app/public)
     log "Creating storage link..."
     su-exec www php "${APP_DIR}/artisan" storage:link --ansi 2>/dev/null || true
 

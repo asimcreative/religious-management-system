@@ -40,10 +40,11 @@ return [
     // Messages
     'saved' => 'Attendance saved successfully.',
     'date_not_allowed' => 'This date is outside the allowed backdating window.',
+    'attendance_locked' => 'Attendance is locked for this date.',
     'no_records' => 'No attendance records found.',
     'attendance_exists' => 'Attendance already exists for this selection. You can update it below.',
 
     // Step labels
-    'step1' => 'Step 1: Select Jamaat, Prayer & Date',
+    'step1' => 'Step 1: Select Jamaat & Date',
     'step2' => 'Step 2: Mark Attendance',
 ];

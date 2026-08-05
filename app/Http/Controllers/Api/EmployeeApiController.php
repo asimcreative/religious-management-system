@@ -14,7 +14,7 @@ class EmployeeApiController extends BaseApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('employee.view');
+        $this->authorize('viewAny', Employee::class);
 
         $employees = Employee::query()
             ->with(['branch', 'department', 'designation'])
@@ -27,7 +27,7 @@ class EmployeeApiController extends BaseApiController
             ->when($request->branch_id, fn ($q, $v) => $q->where('branch_id', $v))
             ->when($request->status !== null && $request->status !== '', fn ($q) => $q->where('employment_status', $request->status))
             ->orderBy('employee_name')
-            ->paginate($request->per_page ?? 25);
+            ->paginate($this->perPage($request));
 
         return $this->successResponse(
             EmployeeResource::collection($employees)->response()->getData(true)
@@ -39,9 +39,8 @@ class EmployeeApiController extends BaseApiController
      */
     public function show(int $id): JsonResponse
     {
-        $this->authorize('employee.view');
-
         $employee = Employee::with(['branch', 'department', 'designation'])->findOrFail($id);
+        $this->authorize('view', $employee);
 
         return $this->successResponse(new EmployeeResource($employee));
     }

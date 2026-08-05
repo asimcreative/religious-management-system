@@ -8,6 +8,7 @@ use App\Models\Jamaat;
 use App\Services\JamaatMemberService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class JamaatMemberController extends Controller
@@ -37,7 +38,12 @@ class JamaatMemberController extends Controller
         $this->authorize('update', $jamaat);
 
         $validated = $request->validate([
-            'employee_id' => ['required', 'exists:employees,id'],
+            'employee_id' => [
+                'required',
+                Rule::exists('employees', 'id')
+                    ->where('company_id', $jamaat->company_id)
+                    ->whereNull('deleted_at'),
+            ],
         ]);
 
         $this->service->addMember($jamaat->id, (int) $validated['employee_id']);

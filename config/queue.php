@@ -68,7 +68,9 @@ return [
             'driver' => 'redis',
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 90),
+            // Must remain greater than Horizon's longest worker timeout (300s)
+            // to prevent a long-running job from being reserved twice.
+            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 360),
             'block_for' => null,
             'after_commit' => false,
         ],

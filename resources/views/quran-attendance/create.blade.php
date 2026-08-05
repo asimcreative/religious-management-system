@@ -30,7 +30,7 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label">{{ __('quran_attendance.date') }}</label>
-                <input type="date" name="date" class="form-control form-control-sm" value="{{ $selectedDate }}" max="{{ date('Y-m-d') }}" required>
+                <input type="date" name="date" class="form-control form-control-sm" value="{{ $selectedDate }}" max="{{ $maxDate }}" required>
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary btn-sm">
@@ -46,6 +46,10 @@
     @if(!$dateAllowed)
         <div class="alert alert-warning">
             <i class="bi bi-exclamation-triangle me-1"></i> {{ __('quran_attendance.date_not_allowed') }}
+        </div>
+    @elseif($attendanceReadOnly)
+        <div class="alert alert-warning">
+            <i class="bi bi-lock me-1"></i> {{ __('quran_attendance.attendance_locked') }}
         </div>
     @else
         <form method="POST" action="{{ route('quran-attendance.store') }}">

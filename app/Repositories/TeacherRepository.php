@@ -43,6 +43,16 @@ class TeacherRepository extends BaseRepository implements TeacherRepositoryInter
             ->findOrFail($id);
     }
 
+    public function hasDependencies(int $id): bool
+    {
+        /** @var Teacher $teacher */
+        $teacher = $this->model->newQuery()->findOrFail($id);
+
+        return $teacher->quranClasses()->exists()
+            || $teacher->quranAttendances()->exists()
+            || $teacher->quranProgress()->exists();
+    }
+
     public function restore(int $id): bool
     {
         $model = Teacher::onlyTrashed()->findOrFail($id);

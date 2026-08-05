@@ -6,6 +6,7 @@ use App\Contracts\Repositories\TeacherRepositoryInterface;
 use App\Models\Teacher;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class TeacherService extends BaseService
 {
@@ -24,30 +25,39 @@ class TeacherService extends BaseService
 
     public function createWithBranches(array $data, array $branchIds): Model
     {
-        $teacher = $this->teacherRepository->create($data);
+        return DB::transaction(function () use ($data, $branchIds): Model {
+            $teacher = $this->teacherRepository->create($data);
 
-        if ($branchIds !== []) {
-            /** @var Teacher $teacher */
-            $teacher->branches()->sync($branchIds);
-        }
+            if ($branchIds !== []) {
+                /** @var Teacher $teacher */
+                $teacher->branches()->sync($branchIds);
+            }
 
-        return $teacher;
+            return $teacher;
+        });
     }
 
     public function updateWithBranches(int $id, array $data, array $branchIds): bool
     {
-        $result = $this->update($id, $data);
+        return DB::transaction(function () use ($id, $data, $branchIds): bool {
+            $result = $this->update($id, $data);
 
-        /** @var Teacher $teacher */
-        $teacher = $this->findOrFail($id);
-        $teacher->branches()->sync($branchIds);
+            /** @var Teacher $teacher */
+            $teacher = $this->findOrFail($id);
+            $teacher->branches()->sync($branchIds);
 
-        return $result;
+            return $result;
+        });
     }
 
     public function findWithRelations(int $id): Teacher
     {
         return $this->teacherRepository->findWithRelations($id);
+    }
+
+    public function canDelete(int $id): bool
+    {
+        return ! $this->teacherRepository->hasDependencies($id);
     }
 
     public function restore(int $id): bool

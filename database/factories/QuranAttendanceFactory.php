@@ -18,8 +18,12 @@ class QuranAttendanceFactory extends Factory
         return [
             'company_id' => Company::factory(),
             'attendance_date' => fake()->date(),
-            'class_id' => QuranClass::factory(),
-            'employee_id' => Employee::factory(),
+            'class_id' => static fn (array $attributes): int => QuranClass::factory()
+                ->create(['company_id' => $attributes['company_id']])
+                ->id,
+            'employee_id' => static fn (array $attributes): int => Employee::factory()
+                ->create(['company_id' => $attributes['company_id']])
+                ->id,
         ];
     }
 }

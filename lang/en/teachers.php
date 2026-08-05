@@ -44,6 +44,7 @@ return [
     'created' => 'Teacher created successfully.',
     'updated' => 'Teacher updated successfully.',
     'deleted' => 'Teacher deleted successfully.',
+    'cannot_delete_has_dependencies' => 'Cannot delete teacher with linked class, attendance, or progress records.',
     'restored' => 'Teacher restored successfully.',
     'confirm_delete' => 'Are you sure you want to delete this teacher?',
     'no_records' => 'No teachers found.',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
@@ -25,6 +26,10 @@ class ForgotPasswordController extends Controller
     {
         $request->ensureIsNotRateLimited();
         $request->hitRateLimiter();
+
+        if (User::findByUniqueEmail($request->validated('email')) === null) {
+            return back()->with('status', __('passwords.sent'));
+        }
 
         $status = Password::sendResetLink(
             $request->only('email')

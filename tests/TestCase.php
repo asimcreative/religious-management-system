@@ -19,8 +19,11 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        // Reset cached permission/role state between tests
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        // Reset both cached permission data and the static Spatie team context
+        // so a prior test cannot affect the next tenant's authorization checks.
+        $permissionRegistrar = app(PermissionRegistrar::class);
+        $permissionRegistrar->forgetCachedPermissions();
+        $permissionRegistrar->setPermissionsTeamId(null);
     }
 
     /**
@@ -43,7 +46,7 @@ abstract class TestCase extends BaseTestCase
             }
 
             $role = Role::firstOrCreate(
-                ['name' => 'Test-Admin-'.$company->id, 'team_id' => $company->id, 'guard_name' => 'web'],
+                ['name' => 'Test-Admin-'.$company->id, 'guard_name' => 'web'],
             );
 
             $role->givePermissionTo($permissions);
@@ -53,16 +56,10 @@ abstract class TestCase extends BaseTestCase
         return $user;
     }
 
-    /**
-     * Create a Super Admin user that bypasses company scoping.
-     *
-     * The role is scoped to the user's own company (team_foreign_key is NOT NULL).
-     * Callers must call setPermissionsTeamId($user->company_id) before invoking
-     * hasRole() checks (e.g. before queries that trigger BelongsToCompany scope).
-     */
+    /** Create a platform Super Admin in the dedicated system company. */
     protected function createSuperAdmin(): User
     {
-        $company = Company::factory()->create();
+        $company = Company::factory()->create(['company_code' => 'SYSTEM']);
         $user = User::factory()->create(['company_id' => $company->id]);
 
         // model_has_roles.company_id is NOT NULL, so use the company as team context.

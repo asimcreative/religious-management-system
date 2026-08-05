@@ -18,9 +18,11 @@ class NotificationApiController extends BaseApiController
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('notification.view');
+
         $notifications = $this->service->getForUser(
             $request->user()->id,
-            $request->per_page ?? 20
+            $this->perPage($request, 20)
         );
 
         return $this->successResponse(
@@ -33,6 +35,8 @@ class NotificationApiController extends BaseApiController
      */
     public function markRead(Request $request, int $id): JsonResponse
     {
+        $this->authorize('notification.read');
+
         $success = $this->service->markAsRead($id, $request->user()->id);
 
         if (! $success) {
@@ -47,6 +51,8 @@ class NotificationApiController extends BaseApiController
      */
     public function markAllRead(Request $request): JsonResponse
     {
+        $this->authorize('notification.read');
+
         $count = $this->service->markAllAsRead($request->user()->id);
 
         return $this->successResponse(['marked' => $count], 'All notifications marked as read');
@@ -57,6 +63,8 @@ class NotificationApiController extends BaseApiController
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
+        $this->authorize('notification.delete');
+
         $success = $this->service->delete($id, $request->user()->id);
 
         if (! $success) {

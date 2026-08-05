@@ -28,7 +28,7 @@
                 <div class="row mb-2">
                     @if($employee->photo)
                         <div class="col-12 mb-3">
-                            <img src="{{ asset('storage/' . $employee->photo) }}" alt="{{ $employee->employee_name }}"
+                            <img src="{{ route('employees.photo', $employee) }}" alt="{{ $employee->employee_name }}"
                                  class="rounded" style="max-width: 120px; max-height: 120px; object-fit: cover;">
                         </div>
                     @endif

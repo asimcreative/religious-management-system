@@ -27,7 +27,7 @@ class QuranProgressController extends Controller
         $progress = $this->service->search(
             $request->query('search'),
             $request->only(['quran_department_id', 'quran_status_id', 'teacher_id']),
-            (int) $request->query('per_page', 25)
+            $this->perPage($request)
         );
 
         $quranDepartments = QuranDepartment::active()->orderBy('display_order')->pluck('department_name', 'id');
@@ -74,7 +74,7 @@ class QuranProgressController extends Controller
         $data = $request->validated();
         $data['company_id'] = $request->user()->company_id;
 
-        $progress = $this->service->saveProgress($data);
+        $progress = $this->service->createProgress($data);
 
         return redirect()
             ->route('quran-progress.show', $progress)
@@ -84,6 +84,7 @@ class QuranProgressController extends Controller
     public function edit(QuranProgress $quranProgress): View
     {
         $this->authorize('update', $quranProgress);
+        $quranProgress->load('employee');
 
         return view('quran-progress.form', array_merge(
             [
@@ -97,9 +98,8 @@ class QuranProgressController extends Controller
     public function update(SaveQuranProgressRequest $request, QuranProgress $quranProgress): RedirectResponse
     {
         $data = $request->validated();
-        $data['company_id'] = $request->user()->company_id;
 
-        $progress = $this->service->saveProgress($data);
+        $progress = $this->service->updateProgress($quranProgress, $data);
 
         return redirect()
             ->route('quran-progress.show', $progress)

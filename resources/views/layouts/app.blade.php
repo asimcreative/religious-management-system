@@ -18,7 +18,8 @@
                 {{ config('app.name', 'RAMS') }}
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                    aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -208,7 +209,7 @@
             <div class="container-fluid">
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </div>
         @endif
@@ -217,7 +218,7 @@
             <div class="container-fluid">
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </div>
         @endif
@@ -227,5 +228,6 @@
         </div>
     </main>
 
+    @stack('scripts')
 </body>
 </html>

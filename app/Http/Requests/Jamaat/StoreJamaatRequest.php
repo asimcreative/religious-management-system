@@ -25,15 +25,15 @@ class StoreJamaatRequest extends FormRequest
             ],
             'branch_id' => [
                 'required',
-                Rule::exists('branches', 'id')->where('company_id', $companyId),
+                Rule::exists('branches', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
             ],
             'leader_id' => [
                 'required',
-                Rule::exists('employees', 'id')->where('company_id', $companyId),
+                Rule::exists('employees', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
             ],
             'vice_leader_id' => [
                 'nullable',
-                Rule::exists('employees', 'id')->where('company_id', $companyId),
+                Rule::exists('employees', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
                 'different:leader_id',
             ],
             'status' => ['required', 'integer', 'in:0,1,2'],

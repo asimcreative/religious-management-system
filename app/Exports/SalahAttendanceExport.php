@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\SanitizesSpreadsheetValues;
 use App\Models\SalahAttendance;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -11,6 +12,10 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class SalahAttendanceExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping
 {
+    use SanitizesSpreadsheetValues;
+
+    private int $index = 0;
+
     /** @param  array<string, mixed>  $filters */
     public function __construct(
         private readonly array $filters = [],
@@ -36,16 +41,14 @@ class SalahAttendanceExport implements FromQuery, ShouldAutoSize, WithHeadings, 
     /** @return array<int, mixed> */
     public function map(mixed $row): array
     {
-        static $index = 0;
-
-        return [
-            ++$index,
+        return $this->sanitizeSpreadsheetValues([
+            ++$this->index,
             $row->attendance_date->format('d M Y'),
             $row->prayer->prayer_name ?? '-',
             $row->jamaat->jamaat_name ?? '-',
             $row->employee->employee_name ?? '-',
             $row->isPresent() ? 'Present' : ($row->attendanceReason->reason_name ?? 'Absent'),
             $row->remarks ?? '-',
-        ];
+        ]);
     }
 }

@@ -2,48 +2,57 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceReason;
 use App\Models\Jamaat;
 use App\Models\Prayer;
 use App\Models\SalahAttendance;
+use App\Models\User;
+use App\Services\AttendanceLockService;
 use App\Services\SalahAttendanceService;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SalahAttendanceController extends Controller
 {
     public function __construct(
         private readonly SalahAttendanceService $service,
+        private readonly AttendanceLockService $attendanceLockService,
     ) {}
 
     /**
-     * Attendance history list with filters.
+     * Attendance history — one row per (date, jamaat, employee) with all prayers as columns.
      */
     public function index(Request $request): View
     {
         $this->authorize('viewAny', SalahAttendance::class);
 
-        $attendance = $this->service->search(
+        $attendance = $this->service->searchGrouped(
             $request->query('search'),
-            $request->only(['jamaat_id', 'prayer_id', 'date_from', 'date_to']),
-            (int) $request->query('per_page', 50)
+            $request->only(['jamaat_id', 'date_from', 'date_to']),
+            $this->perPage($request, 50)
         );
 
         $jamaats = Jamaat::orderBy('jamaat_name')->pluck('jamaat_name', 'id');
-        $prayers = Prayer::active()->orderBy('prayer_order')->pluck('prayer_name', 'id');
+        $prayers = Prayer::active()->orderBy('prayer_order')->get();
 
         return view('salah-attendance.index', compact('attendance', 'jamaats', 'prayers'));
     }
 
     /**
-     * Select Jamaat, prayer, and date to mark attendance.
+     * Select Jamaat and date to mark attendance for all prayers at once.
      */
     public function create(Request $request): View
     {
         $this->authorize('create', SalahAttendance::class);
+
+        /** @var User $user */
+        $user = $request->user();
+        $companyId = (int) $user->company_id;
+        $maxDate = now(TimezoneHelper::getCompanyTimezone($companyId))->toDateString();
 
         $jamaats = Jamaat::active()
             ->with(['branch', 'leader'])
@@ -53,26 +62,28 @@ class SalahAttendanceController extends Controller
         $prayers = Prayer::active()->orderBy('prayer_order')->get();
 
         $selectedJamaatId = $request->query('jamaat_id');
-        $selectedPrayerId = $request->query('prayer_id');
-        $selectedDate = $request->query('date', Carbon::today()->format('Y-m-d'));
+        $selectedDate = $request->query('date', $maxDate);
 
         $members = collect();
         $existingAttendance = collect();
         $reasons = AttendanceReason::active()->orderBy('reason_name')->get();
         $selectedJamaat = null;
         $dateAllowed = true;
+        $attendanceReadOnly = false;
 
-        if ($selectedJamaatId && $selectedPrayerId && $selectedDate) {
+        if ($selectedJamaatId && $selectedDate) {
             $selectedJamaat = Jamaat::with('activeMembers')->find($selectedJamaatId);
 
             if ($selectedJamaat) {
                 $members = $selectedJamaat->activeMembers()->orderBy('employee_name')->get();
-                $existingAttendance = $this->service->getForJamaatDatePrayer(
+                // Nested: [employee_id => [prayer_id => SalahAttendance]]
+                $existingAttendance = $this->service->getForJamaatDate(
                     (int) $selectedJamaatId,
                     $selectedDate,
-                    (int) $selectedPrayerId
-                )->keyBy('employee_id');
-                $dateAllowed = $this->service->isDateAllowed($selectedDate, (int) $request->user()->company_id);
+                );
+                $dateAllowed = $this->service->isDateAllowed($selectedDate, $companyId);
+                $attendanceLocked = $this->attendanceLockService->isLocked($companyId, $selectedDate);
+                $attendanceReadOnly = $attendanceLocked && ! $user->can('salah.attendance.lock');
             }
         }
 
@@ -80,52 +91,58 @@ class SalahAttendanceController extends Controller
             'jamaats',
             'prayers',
             'selectedJamaatId',
-            'selectedPrayerId',
             'selectedDate',
             'selectedJamaat',
             'members',
             'existingAttendance',
             'reasons',
-            'dateAllowed'
+            'dateAllowed',
+            'attendanceReadOnly',
+            'maxDate',
         ));
     }
 
     /**
-     * Save attendance submission.
+     * Save attendance for all prayers in one submission.
      */
     public function store(Request $request): RedirectResponse
     {
-        $this->authorize('create', SalahAttendance::class);
+        /** @var User $user */
+        $user = $request->user();
+        $companyId = (int) $user->company_id;
 
         $validated = $request->validate([
-            'jamaat_id' => ['required', 'exists:jamaats,id'],
-            'prayer_id' => ['required', 'exists:prayers,id'],
-            'date' => ['required', 'date', 'before_or_equal:today'],
+            'jamaat_id' => [
+                'required',
+                Rule::exists('jamaats', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereNull('deleted_at'),
+            ],
+            'date' => ['required', 'date'],
             'attendance' => ['required', 'array'],
-            'attendance.*' => ['nullable', 'integer', 'exists:attendance_reasons,id'],
+            'attendance.*' => ['required', 'array'],
+            'attendance.*.*' => [
+                'nullable',
+                Rule::exists('attendance_reasons', 'id')
+                    ->where('company_id', $companyId)
+                    ->where('status', 1)
+                    ->whereNull('deleted_at'),
+            ],
             'remarks' => ['nullable', 'array'],
             'remarks.*' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $companyId = (int) $request->user()->company_id;
-
-        // Validate date is within allowed backdate window
         if (! $this->service->isDateAllowed($validated['date'], $companyId)) {
             return redirect()
                 ->back()
                 ->with('error', __('salah_attendance.date_not_allowed'));
         }
 
-        // Get leader_id from the Jamaat
-        /** @var Jamaat $jamaat */
-        $jamaat = Jamaat::findOrFail($validated['jamaat_id']);
-
-        $this->service->saveAttendance(
+        $this->service->saveAllPrayersAttendance(
             (int) $validated['jamaat_id'],
-            (int) $validated['prayer_id'],
             $validated['date'],
             $companyId,
-            $jamaat->leader_id,
+            $user,
             $validated['attendance'],
             $validated['remarks'] ?? []
         );
@@ -133,7 +150,6 @@ class SalahAttendanceController extends Controller
         return redirect()
             ->route('salah-attendance.create', [
                 'jamaat_id' => $validated['jamaat_id'],
-                'prayer_id' => $validated['prayer_id'],
                 'date' => $validated['date'],
             ])
             ->with('success', __('salah_attendance.saved'));

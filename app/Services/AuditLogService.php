@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AuditLog;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
@@ -68,6 +69,57 @@ class AuditLogService
     public function logPasswordReset(User $user): void
     {
         $this->log($user, 'auth', 'password_reset', 'users', $user->id);
+    }
+
+    /**
+     * Record a privileged attendance edit after its configured lock time.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    public function logAttendanceLockOverride(
+        User $user,
+        string $module,
+        string $tableName,
+        string $attendanceDate,
+        string $lockTime,
+        array $context = [],
+    ): void {
+        $this->log($user, $module, 'lock_override', $tableName, null, null, array_merge([
+            'attendance_date' => $attendanceDate,
+            'lock_time' => $lockTime,
+        ], $context));
+    }
+
+    /**
+     * Record an authenticated change to a company-owned business record.
+     *
+     * The caller runs inside the model mutation transaction, so an audit row
+     * cannot outlive a rolled-back business change.
+     *
+     * @param  array<string, mixed>|null  $oldValues
+     * @param  array<string, mixed>|null  $newValues
+     */
+    public function logModelChange(
+        User $user,
+        Model $model,
+        int $companyId,
+        string $action,
+        ?array $oldValues,
+        ?array $newValues,
+    ): void {
+        AuditLog::create([
+            'company_id' => $companyId,
+            'user_id' => $user->id,
+            'module' => $model->getTable(),
+            'action' => $action,
+            'table_name' => $model->getTable(),
+            'record_id' => $model->getKey(),
+            'old_values' => $oldValues,
+            'new_values' => $newValues,
+            'ip_address' => $this->request->ip(),
+            'browser' => $this->getBrowser(),
+            'operating_system' => $this->getOperatingSystem(),
+        ]);
     }
 
     /**

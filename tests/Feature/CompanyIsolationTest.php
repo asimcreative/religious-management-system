@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\Notification;
 use App\Models\Teacher;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -106,6 +107,29 @@ class CompanyIsolationTest extends TestCase
         app(PermissionRegistrar::class)->setPermissionsTeamId($superAdmin->company_id);
 
         $this->assertSame(2, Employee::count());
+    }
+
+    /** A tenant-local role named Super Admin cannot bypass company isolation. */
+    public function test_tenant_super_admin_does_not_bypass_company_scope(): void
+    {
+        $companyA = Company::factory()->create();
+        $tenantAdmin = User::factory()->create(['company_id' => $companyA->id]);
+
+        app(PermissionRegistrar::class)->setPermissionsTeamId($companyA->id);
+        $role = Role::firstOrCreate([
+            'name' => 'Super Admin',
+            'guard_name' => 'web',
+        ]);
+        $tenantAdmin->assignRole($role);
+
+        Employee::factory()->create(['company_id' => $companyA->id]);
+        $companyB = Company::factory()->create();
+        Employee::factory()->create(['company_id' => $companyB->id]);
+
+        $this->actingAs($tenantAdmin);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($companyA->id);
+
+        $this->assertSame(1, Employee::count());
     }
 
     // ── Two isolated companies ────────────────────────────────────────────

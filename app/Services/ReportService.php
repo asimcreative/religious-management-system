@@ -9,10 +9,11 @@ use App\Models\QuranClass;
 use App\Models\QuranProgress;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ReportService
@@ -148,13 +149,18 @@ class ReportService
      *
      * @return Collection<int, \stdClass>
      */
-    public function salahPrayerWiseSummary(array $filters): Collection
+    /**
+     * @param  list<int>|null  $allowedJamaatIds
+     */
+    public function salahPrayerWiseSummary(array $filters, ?int $companyId, ?array $allowedJamaatIds = null): Collection
     {
-        return DB::table('salah_attendance')
+        return SalahAttendance::query()
             ->join('prayers', 'salah_attendance.prayer_id', '=', 'prayers.id')
-            ->when($filters['jamaat_id'] ?? null, fn (QueryBuilder $q, $v) => $q->where('salah_attendance.jamaat_id', $v))
-            ->when($filters['date_from'] ?? null, fn (QueryBuilder $q, $v) => $q->where('salah_attendance.attendance_date', '>=', $v))
-            ->when($filters['date_to'] ?? null, fn (QueryBuilder $q, $v) => $q->where('salah_attendance.attendance_date', '<=', $v))
+            ->when($companyId !== null, fn (Builder $q) => $q->where('salah_attendance.company_id', $companyId))
+            ->when($allowedJamaatIds !== null, fn (Builder $q) => $q->whereIn('salah_attendance.jamaat_id', $allowedJamaatIds))
+            ->when($filters['jamaat_id'] ?? null, fn (Builder $q, $v) => $q->where('salah_attendance.jamaat_id', $v))
+            ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->where('salah_attendance.attendance_date', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->where('salah_attendance.attendance_date', '<=', $v))
             ->select(
                 'prayers.prayer_name',
                 DB::raw('COUNT(*) as total'),
@@ -163,6 +169,7 @@ class ReportService
             )
             ->groupBy('prayers.id', 'prayers.prayer_name')
             ->orderBy('prayers.prayer_order')
+            ->toBase()
             ->get();
     }
 
@@ -189,18 +196,29 @@ class ReportService
      */
     public function dashboardSummary(): array
     {
+        $user = Auth::user();
+        $canEmployee = $this->can($user, 'report.employee');
+        $canTeacher = $this->can($user, 'report.teacher');
+        $canQuran = $this->can($user, 'report.quran');
+        $canSalah = $this->can($user, 'report.salah');
+
         return [
-            'total_employees' => Employee::count(),
-            'active_employees' => Employee::where('employment_status', 1)->count(),
-            'total_teachers' => Teacher::count(),
-            'active_teachers' => Teacher::where('status', 1)->count(),
-            'total_quran_classes' => QuranClass::count(),
-            'active_quran_classes' => QuranClass::where('status', 1)->count(),
-            'total_jamaats' => Jamaat::count(),
-            'active_jamaats' => Jamaat::where('status', 1)->count(),
-            'total_quran_attendance' => QuranAttendance::count(),
-            'total_salah_attendance' => SalahAttendance::count(),
-            'total_quran_progress' => QuranProgress::count(),
+            'total_employees' => $canEmployee ? Employee::count() : 0,
+            'active_employees' => $canEmployee ? Employee::where('employment_status', 1)->count() : 0,
+            'total_teachers' => $canTeacher ? Teacher::count() : 0,
+            'active_teachers' => $canTeacher ? Teacher::where('status', 1)->count() : 0,
+            'total_quran_classes' => $canQuran ? QuranClass::count() : 0,
+            'active_quran_classes' => $canQuran ? QuranClass::where('status', 1)->count() : 0,
+            'total_jamaats' => $canSalah ? Jamaat::count() : 0,
+            'active_jamaats' => $canSalah ? Jamaat::where('status', 1)->count() : 0,
+            'total_quran_attendance' => $canQuran ? QuranAttendance::count() : 0,
+            'total_salah_attendance' => $canSalah ? SalahAttendance::count() : 0,
+            'total_quran_progress' => $canQuran ? QuranProgress::count() : 0,
         ];
+    }
+
+    private function can(?User $user, string $permission): bool
+    {
+        return $user instanceof User && $user->can($permission);
     }
 }

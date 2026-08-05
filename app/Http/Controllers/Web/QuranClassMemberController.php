@@ -8,6 +8,7 @@ use App\Models\QuranClass;
 use App\Services\QuranClassMemberService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class QuranClassMemberController extends Controller
@@ -38,7 +39,12 @@ class QuranClassMemberController extends Controller
         $this->authorize('update', $quranClass);
 
         $validated = $request->validate([
-            'employee_id' => ['required', 'exists:employees,id'],
+            'employee_id' => [
+                'required',
+                Rule::exists('employees', 'id')
+                    ->where('company_id', $quranClass->company_id)
+                    ->whereNull('deleted_at'),
+            ],
         ]);
 
         if ($quranClass->isFull()) {

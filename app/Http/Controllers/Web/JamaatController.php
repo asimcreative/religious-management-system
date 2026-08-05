@@ -26,7 +26,7 @@ class JamaatController extends Controller
         $jamaats = $this->service->search(
             $request->query('search'),
             $request->only(['branch_id', 'status']),
-            (int) $request->query('per_page', 25)
+            $this->perPage($request)
         );
 
         $branches = Branch::orderBy('branch_name')->pluck('branch_name', 'id');

@@ -11,6 +11,15 @@ use Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 
+$backupDisks = array_values(array_filter(array_map(
+    'trim',
+    explode(',', (string) env('BACKUP_DISK', 'local'))
+)));
+
+if ($backupDisks === []) {
+    $backupDisks = ['local'];
+}
+
 return [
 
     'backup' => [
@@ -36,6 +45,13 @@ return [
                  * Directories used by the backup process will automatically be excluded.
                  */
                 'exclude' => [
+                    // Deployment secrets must be restored through the secret manager,
+                    // never recovered from an application backup archive.
+                    base_path('.env'),
+                    base_path('.env.*'),
+                    base_path('auth.json'),
+                    base_path('bootstrap/cache'),
+                    base_path('.git'),
                     base_path('vendor'),
                     base_path('node_modules'),
                     storage_path('framework'),
@@ -163,9 +179,7 @@ return [
             /*
              * The disk names on which the backups will be stored.
              */
-            'disks' => [
-                'local',
-            ],
+            'disks' => $backupDisks,
 
             /*
              * Determines whether to allow backups to continue when some targets fail instead of failing completely.
@@ -198,7 +212,7 @@ return [
          * After creating the zip, verify it can be opened and contains files.
          * Recommended for critical backups but adds a small overhead.
          */
-        'verify_backup' => false,
+        'verify_backup' => true,
 
         /*
          * The number of attempts, in case the backup command encounters an exception
@@ -236,7 +250,7 @@ return [
         'notifiable' => Notifiable::class,
 
         'mail' => [
-            'to' => 'your@example.com',
+            'to' => env('BACKUP_NOTIFICATION_EMAIL', env('MAIL_FROM_ADDRESS')),
 
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
@@ -297,7 +311,7 @@ return [
     'monitor_backups' => [
         [
             'name' => env('APP_NAME', 'laravel-backup'),
-            'disks' => ['local'],
+            'disks' => $backupDisks,
             'health_checks' => [
                 MaximumAgeInDays::class => 1,
                 MaximumStorageInMegabytes::class => 5000,

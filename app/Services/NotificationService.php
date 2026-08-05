@@ -70,13 +70,31 @@ class NotificationService
             $query->whereIn('id', $userIds);
         }
 
-        $users = $query->get();
         $count = 0;
 
-        foreach ($users as $user) {
-            $this->notify($user, $title, $message, $type, $priority);
-            $count++;
-        }
+        $query->select('id')->orderBy('id')->chunkById(500, function ($users) use (
+            $companyId,
+            $title,
+            $message,
+            $type,
+            $priority,
+            &$count,
+        ): void {
+            $now = now();
+            $notifications = $users->map(fn (User $user): array => [
+                'company_id' => $companyId,
+                'user_id' => $user->id,
+                'title' => $title,
+                'message' => $message,
+                'type' => $type,
+                'priority' => $priority,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->all();
+
+            Notification::insert($notifications);
+            $count += count($notifications);
+        });
 
         return $count;
     }

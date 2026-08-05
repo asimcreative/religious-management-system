@@ -18,7 +18,7 @@ class SalahApiController extends BaseApiController
      */
     public function jamaats(Request $request): JsonResponse
     {
-        $this->authorize('jamaat.view');
+        $this->authorize('viewAny', Jamaat::class);
 
         $jamaats = Jamaat::query()
             ->with(['branch', 'leader'])
@@ -26,7 +26,7 @@ class SalahApiController extends BaseApiController
             ->when($request->search, fn ($q, $v) => $q->where('jamaat_name', 'like', "%{$v}%"))
             ->when($request->status !== null && $request->status !== '', fn ($q) => $q->where('status', $request->status))
             ->orderBy('jamaat_name')
-            ->paginate($request->per_page ?? 25);
+            ->paginate($this->perPage($request));
 
         return $this->successResponse(
             JamaatResource::collection($jamaats)->response()->getData(true)
@@ -38,9 +38,8 @@ class SalahApiController extends BaseApiController
      */
     public function showJamaat(int $id): JsonResponse
     {
-        $this->authorize('jamaat.view');
-
         $jamaat = Jamaat::with(['branch', 'leader'])->withCount('activeMembers')->findOrFail($id);
+        $this->authorize('view', $jamaat);
 
         return $this->successResponse(new JamaatResource($jamaat));
     }
@@ -52,7 +51,7 @@ class SalahApiController extends BaseApiController
      */
     public function attendance(Request $request): JsonResponse
     {
-        $this->authorize('salah.attendance.view');
+        $this->authorize('viewAny', SalahAttendance::class);
 
         $attendance = SalahAttendance::query()
             ->with(['prayer', 'jamaat', 'employee', 'attendanceReason'])
@@ -62,7 +61,7 @@ class SalahApiController extends BaseApiController
             ->when($request->date_from, fn ($q, $v) => $q->where('attendance_date', '>=', $v))
             ->when($request->date_to, fn ($q, $v) => $q->where('attendance_date', '<=', $v))
             ->latest('attendance_date')
-            ->paginate($request->per_page ?? 50);
+            ->paginate($this->perPage($request, 50));
 
         return $this->successResponse(
             SalahAttendanceResource::collection($attendance)->response()->getData(true)

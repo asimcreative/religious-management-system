@@ -9,7 +9,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
- * Seeds the 10 system roles with their permissions for each company.
+ * Seeds tenant roles for every company and the platform role for SYSTEM.
  *
  * Roles are created per company (Spatie team_id = company_id).
  * Super Admin gets ALL permissions.
@@ -33,7 +33,13 @@ class RoleSeeder extends Seeder
         $registrar = app(PermissionRegistrar::class);
         $registrar->setPermissionsTeamId($company->id);
 
-        foreach ($this->getRolePermissions() as $roleName => $permissions) {
+        $roles = $this->getRolePermissions();
+
+        if ($company->company_code !== 'SYSTEM') {
+            unset($roles['Super Admin']);
+        }
+
+        foreach ($roles as $roleName => $permissions) {
             // findOrCreate uses the team_id set via setPermissionsTeamId()
             $role = Role::findOrCreate($roleName, 'web');
 
@@ -151,6 +157,7 @@ class RoleSeeder extends Seeder
             ],
 
             'Employee' => [
+                'employee.view',
                 'quran.progress.view',
                 'quran.attendance.view',
                 'salah.attendance.view',

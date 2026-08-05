@@ -17,7 +17,7 @@ class UpdateQuranStatusRequest extends FormRequest
         return [
             'status_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'color' => ['nullable', 'string', 'max:30'],
+            'color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'icon' => ['nullable', 'string', 'max:50'],
             'display_order' => ['required', 'integer', 'min:0', 'max:255'],
             'status' => ['required', 'integer', 'in:0,1'],

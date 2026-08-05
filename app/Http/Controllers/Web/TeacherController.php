@@ -26,7 +26,7 @@ class TeacherController extends Controller
         $teachers = $this->service->search(
             $request->query('search'),
             $request->only(['branch_id', 'status']),
-            (int) $request->query('per_page', 25)
+            $this->perPage($request)
         );
 
         $branches = Branch::orderBy('branch_name')->pluck('branch_name', 'id');
@@ -93,6 +93,12 @@ class TeacherController extends Controller
     public function destroy(Teacher $teacher): RedirectResponse
     {
         $this->authorize('delete', $teacher);
+
+        if (! $this->service->canDelete($teacher->id)) {
+            return redirect()
+                ->route('teachers.index')
+                ->with('error', __('teachers.cannot_delete_has_dependencies'));
+        }
 
         $this->service->delete($teacher->id);
 

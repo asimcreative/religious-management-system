@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceReason;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
 use App\Models\Teacher;
+use App\Models\User;
+use App\Services\AttendanceLockService;
 use App\Services\QuranAttendanceService;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class QuranAttendanceController extends Controller
 {
     public function __construct(
         private readonly QuranAttendanceService $service,
+        private readonly AttendanceLockService $attendanceLockService,
     ) {}
 
     /**
@@ -29,7 +33,7 @@ class QuranAttendanceController extends Controller
         $attendance = $this->service->search(
             $request->query('search'),
             $request->only(['class_id', 'teacher_id', 'date_from', 'date_to']),
-            (int) $request->query('per_page', 50)
+            $this->perPage($request, 50)
         );
 
         $classes = QuranClass::orderBy('class_name')->pluck('class_name', 'id');
@@ -48,19 +52,29 @@ class QuranAttendanceController extends Controller
     {
         $this->authorize('create', QuranAttendance::class);
 
+        /** @var User $user */
+        $user = $request->user();
+        $companyId = (int) $user->company_id;
+        $maxDate = now(TimezoneHelper::getCompanyTimezone($companyId))->toDateString();
+
         $classes = QuranClass::active()
             ->with('teacher.employee', 'branch')
             ->orderBy('class_name')
             ->get();
 
         $selectedClassId = $request->query('class_id');
-        $selectedDate = $request->query('date', Carbon::today()->format('Y-m-d'));
+        $selectedDate = $request->query(
+            'date',
+            $maxDate,
+        );
 
         $members = collect();
         $existingAttendance = collect();
         $reasons = AttendanceReason::active()->orderBy('reason_name')->get();
         $selectedClass = null;
         $dateAllowed = true;
+        $attendanceLocked = false;
+        $attendanceReadOnly = false;
 
         if ($selectedClassId && $selectedDate) {
             $selectedClass = QuranClass::with('activeMembers')->find($selectedClassId);
@@ -69,7 +83,9 @@ class QuranAttendanceController extends Controller
                 $members = $selectedClass->activeMembers()->orderBy('employee_name')->get();
                 $existingAttendance = $this->service->getForClassDate((int) $selectedClassId, $selectedDate)
                     ->keyBy('employee_id');
-                $dateAllowed = $this->service->isDateAllowed($selectedDate, (int) $request->user()->company_id);
+                $dateAllowed = $this->service->isDateAllowed($selectedDate, $companyId);
+                $attendanceLocked = $this->attendanceLockService->isLocked($companyId, $selectedDate);
+                $attendanceReadOnly = $attendanceLocked && ! $user->can('quran.attendance.lock');
             }
         }
 
@@ -81,7 +97,9 @@ class QuranAttendanceController extends Controller
             'members',
             'existingAttendance',
             'reasons',
-            'dateAllowed'
+            'dateAllowed',
+            'attendanceReadOnly',
+            'maxDate',
         ));
     }
 
@@ -90,18 +108,30 @@ class QuranAttendanceController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $this->authorize('create', QuranAttendance::class);
+        /** @var User $user */
+        $user = $request->user();
+        $companyId = (int) $user->company_id;
 
         $validated = $request->validate([
-            'class_id' => ['required', 'exists:quran_classes,id'],
-            'date' => ['required', 'date', 'before_or_equal:today'],
+            'class_id' => [
+                'required',
+                Rule::exists('quran_classes', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereNull('deleted_at'),
+            ],
+            'date' => ['required', 'date'],
             'attendance' => ['required', 'array'],
-            'attendance.*' => ['nullable', 'integer', 'exists:attendance_reasons,id'],
+            'attendance.*' => [
+                'nullable',
+                'integer',
+                Rule::exists('attendance_reasons', 'id')
+                    ->where('company_id', $companyId)
+                    ->where('status', 1)
+                    ->whereNull('deleted_at'),
+            ],
             'remarks' => ['nullable', 'array'],
             'remarks.*' => ['nullable', 'string', 'max:500'],
         ]);
-
-        $companyId = (int) $request->user()->company_id;
 
         // Validate date is within allowed backdate window
         if (! $this->service->isDateAllowed($validated['date'], $companyId)) {
@@ -114,11 +144,18 @@ class QuranAttendanceController extends Controller
         /** @var QuranClass $class */
         $class = QuranClass::findOrFail($validated['class_id']);
 
+        $existingAttendance = $this->service->getForClassDate((int) $class->id, $validated['date']);
+        if ($existingAttendance->isNotEmpty()) {
+            $this->authorize('update', $existingAttendance->first());
+        } else {
+            $this->authorize('create', QuranAttendance::class);
+        }
+
         $this->service->saveAttendance(
-            (int) $validated['class_id'],
-            $class->teacher_id,
+            (int) $class->id,
             $validated['date'],
             $companyId,
+            $user,
             $validated['attendance'],
             $validated['remarks'] ?? []
         );

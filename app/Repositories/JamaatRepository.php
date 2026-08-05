@@ -48,7 +48,8 @@ class JamaatRepository extends BaseRepository implements JamaatRepositoryInterfa
         /** @var Jamaat $model */
         $model = $this->model->newQuery()->findOrFail($id);
 
-        return $model->salahAttendances()->exists();
+        return $model->salahAttendances()->exists()
+            || $model->activeMembers()->exists();
     }
 
     public function restore(int $id): bool

@@ -12,5 +12,7 @@ interface TeacherRepositoryInterface extends BaseRepositoryInterface
 
     public function findWithRelations(int $id): Teacher;
 
+    public function hasDependencies(int $id): bool;
+
     public function restore(int $id): bool;
 }

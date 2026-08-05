@@ -78,6 +78,7 @@ RUN apk add --no-cache \
     # Required by pcntl (Horizon)
     linux-headers \
     # Misc
+    mariadb-client \
     unzip \
     git
 

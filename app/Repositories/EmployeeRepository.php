@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\EmployeeRepositoryInterface;
 use App\Models\Employee;
+use App\Models\Jamaat;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -63,7 +64,18 @@ class EmployeeRepository extends BaseRepository implements EmployeeRepositoryInt
 
         /** @var Employee $employee */
         return $employee->quranAttendances()->exists()
-            || $employee->salahAttendances()->exists();
+            || $employee->salahAttendances()->exists()
+            || $employee->teacher()->exists()
+            || $employee->quranProgress()->exists()
+            || $employee->quranProgressHistory()->exists()
+            || $employee->quranClasses()->wherePivot('is_active', true)->exists()
+            || $employee->jamaats()->wherePivot('is_active', true)->exists()
+            || Jamaat::query()
+                ->where(function (Builder $query) use ($employee) {
+                    $query->where('leader_id', $employee->id)
+                        ->orWhere('vice_leader_id', $employee->id);
+                })
+                ->exists();
     }
 
     public function restore(int $id): bool

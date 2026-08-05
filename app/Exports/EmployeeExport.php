@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\SanitizesSpreadsheetValues;
 use App\Models\Employee;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -11,6 +12,8 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class EmployeeExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping
 {
+    use SanitizesSpreadsheetValues;
+
     private int $index = 0;
 
     /** @param  array<string, mixed>  $filters */
@@ -44,7 +47,7 @@ class EmployeeExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMap
     /** @return array<int, mixed> */
     public function map(mixed $row): array
     {
-        return [
+        return $this->sanitizeSpreadsheetValues([
             ++$this->index,
             $row->employee_code,
             $row->employee_name,
@@ -53,6 +56,6 @@ class EmployeeExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMap
             $row->designation->designation_name ?? '-',
             $row->mobile ?? '-',
             $row->employment_status->label(),
-        ];
+        ]);
     }
 }

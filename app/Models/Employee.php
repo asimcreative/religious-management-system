@@ -6,6 +6,7 @@ use App\Enums\Status;
 use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasAuditColumns;
 use App\Models\Concerns\HasEncryptedCnic;
+use App\Models\Concerns\RestrictsRoleDataAccess;
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Employee extends Model
 {
     /** @use HasFactory<EmployeeFactory> */
-    use BelongsToCompany, HasAuditColumns, HasEncryptedCnic, HasFactory, SoftDeletes;
+    use BelongsToCompany, HasAuditColumns, HasEncryptedCnic, HasFactory, RestrictsRoleDataAccess, SoftDeletes;
 
     protected bool $tracksDeletedBy = true;
 
@@ -41,6 +42,11 @@ class Employee extends Model
         'quran_department_id',
         'quran_status_id',
         'notes',
+    ];
+
+    protected $hidden = [
+        'cnic',
+        'cnic_hash',
     ];
 
     protected function casts(): array

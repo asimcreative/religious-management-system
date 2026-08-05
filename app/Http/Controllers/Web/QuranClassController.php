@@ -26,7 +26,7 @@ class QuranClassController extends Controller
         $classes = $this->service->search(
             $request->query('search'),
             $request->only(['branch_id', 'teacher_id', 'status']),
-            (int) $request->query('per_page', 25)
+            $this->perPage($request)
         );
 
         $branches = Branch::orderBy('branch_name')->pluck('branch_name', 'id');

@@ -23,8 +23,8 @@ trait BelongsToCompany
             $user = Auth::user();
 
             if ($user instanceof User && $user->getAttribute('company_id')) {
-                // Super Admin bypasses company isolation
-                if ($user->hasRole('Super Admin')) {
+                // Only the dedicated platform account may bypass company isolation.
+                if ($user->isSystemAdministrator()) {
                     return;
                 }
 

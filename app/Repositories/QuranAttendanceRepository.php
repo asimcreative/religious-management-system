@@ -41,7 +41,7 @@ class QuranAttendanceRepository extends BaseRepository implements QuranAttendanc
         return $this->model->newQuery()
             ->with(['employee', 'attendanceReason'])
             ->where('class_id', $classId)
-            ->where('attendance_date', $date)
+            ->whereDate('attendance_date', $date)
             ->get();
     }
 
@@ -52,7 +52,7 @@ class QuranAttendanceRepository extends BaseRepository implements QuranAttendanc
     {
         return $this->model->newQuery()
             ->where('class_id', $classId)
-            ->where('attendance_date', $date)
+            ->whereDate('attendance_date', $date)
             ->exists();
     }
 }

@@ -33,44 +33,52 @@ class QuranProgressService extends BaseService
         return $this->progressRepository->findByEmployee($employeeId);
     }
 
-    /**
-     * Create or update progress for an employee.
-     * Every update creates an immutable history record.
-     */
-    public function saveProgress(array $data): QuranProgress
+    /** @param array<string, mixed> $data */
+    public function createProgress(array $data): QuranProgress
     {
         return DB::transaction(function () use ($data) {
-            $existing = $this->findByEmployee((int) $data['employee_id']);
-
-            if ($existing) {
-                // Update existing progress
-                $existing->update($data);
-                $progress = $existing->fresh();
-            } else {
-                // Create new progress
-                /** @var QuranProgress $progress */
-                $progress = $this->progressRepository->create($data);
-            }
-
             /** @var QuranProgress $progress */
+            $progress = $this->progressRepository->create($data);
 
-            // Create immutable history record
-            QuranProgressHistory::create([
-                'company_id' => $progress->company_id,
-                'progress_id' => $progress->id,
-                'employee_id' => $progress->employee_id,
-                'teacher_id' => $progress->teacher_id,
-                'quran_department_id' => $progress->quran_department_id,
-                'quran_status_id' => $progress->quran_status_id,
-                'lesson' => $progress->current_lesson,
-                'surah' => $progress->current_surah,
-                'sipara' => $progress->current_sipara,
-                'page' => $progress->current_page,
-                'percentage' => $progress->completion_percentage,
-                'remarks' => $progress->remarks,
-            ]);
+            $this->recordHistory($progress);
 
             return $progress;
         });
+    }
+
+    /** @param array<string, mixed> $data */
+    public function updateProgress(QuranProgress $quranProgress, array $data): QuranProgress
+    {
+        return DB::transaction(function () use ($quranProgress, $data) {
+            /** @var QuranProgress $progress */
+            $progress = QuranProgress::query()
+                ->lockForUpdate()
+                ->findOrFail($quranProgress->id);
+
+            $progress->update($data);
+            $progress->refresh();
+
+            $this->recordHistory($progress);
+
+            return $progress;
+        });
+    }
+
+    private function recordHistory(QuranProgress $progress): void
+    {
+        QuranProgressHistory::create([
+            'company_id' => $progress->company_id,
+            'progress_id' => $progress->id,
+            'employee_id' => $progress->employee_id,
+            'teacher_id' => $progress->teacher_id,
+            'quran_department_id' => $progress->quran_department_id,
+            'quran_status_id' => $progress->quran_status_id,
+            'lesson' => $progress->current_lesson,
+            'surah' => $progress->current_surah,
+            'sipara' => $progress->current_sipara,
+            'page' => $progress->current_page,
+            'percentage' => $progress->completion_percentage,
+            'remarks' => $progress->remarks,
+        ]);
     }
 }

@@ -52,6 +52,7 @@ Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->grou
 
     // ── Employees ─────────────────────────────────────────────
     Route::resource('employees', EmployeeController::class);
+    Route::get('employees/{employee}/photo', [EmployeeController::class, 'photo'])->name('employees.photo');
     Route::post('employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore')->withTrashed();
 
     // ── Teachers ──────────────────────────────────────────────

@@ -25,7 +25,7 @@ class UpdateTeacherRequest extends FormRequest
             ],
             'employee_id' => [
                 'required',
-                Rule::exists('employees', 'id')->where('company_id', $companyId),
+                Rule::exists('employees', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
                 Rule::unique('teachers')->where('company_id', $companyId)->ignore($teacherId),
             ],
             'status' => ['required', 'integer', 'in:0,1,2'],
@@ -33,7 +33,7 @@ class UpdateTeacherRequest extends FormRequest
             'branch_ids' => ['required', 'array', 'min:1'],
             'branch_ids.*' => [
                 'required', 'integer',
-                Rule::exists('branches', 'id')->where('company_id', $companyId),
+                Rule::exists('branches', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
             ],
         ];
     }

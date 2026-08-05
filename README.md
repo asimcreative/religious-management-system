@@ -11,8 +11,8 @@
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.x-7952B3?style=flat-square&logo=bootstrap&logoColor=white)](https://getbootstrap.com)
 
-[![Tests](https://img.shields.io/badge/Tests-30%20Passed-brightgreen?style=flat-square&logo=phpunit&logoColor=white)](tests/)
-[![Assertions](https://img.shields.io/badge/Assertions-83-brightgreen?style=flat-square)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-CI%20enforced-brightgreen?style=flat-square&logo=phpunit&logoColor=white)](tests/)
+[![Static Analysis](https://img.shields.io/badge/PHPStan-CI%20enforced-blue?style=flat-square)](phpstan.neon)
 [![PHPStan](https://img.shields.io/badge/PHPStan-Level%205-blue?style=flat-square)](phpstan.neon)
 [![Code Style](https://img.shields.io/badge/Code%20Style-Laravel%20Pint-pink?style=flat-square)](pint.json)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
@@ -77,7 +77,7 @@ Manage employees, Quran classes, Salah attendance, reports, and notifications �
 
 Every piece of data is fully isolated per tenant (company). One organisation can never see or access another's data — by design, enforced at the database query layer.
 
-RAMS is built to **enterprise standards**: SOLID principles, Service-Repository pattern, RBAC with Spatie Permission, full audit trails, immutable audit logs, Redis caching, queue-based processing, PHPStan Level 5 static analysis, and a comprehensive test suite.
+RAMS uses a Service-Repository application structure, Spatie Permission RBAC, tenant-scoped data access, immutable audit records, Redis-backed cache/session/queue infrastructure, PHPStan, Pint, and an automated test suite.
 
 ---
 
@@ -86,20 +86,17 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 ### Core Platform
 
 - ✅ **Multi-Tenant SaaS** — complete data isolation per company at the Eloquent query layer
-- ✅ **RBAC** — role-based access control with granular permissions (31 permissions across all modules)
-- ✅ **Full Audit Trail** — every create/update/delete operation is logged with user, IP, browser, OS
+- ✅ **RBAC** — role-based access control with granular tenant-scoped permissions
+- ✅ **Audit Trail** — authenticated operational record changes, authentication events, and attendance lock overrides are logged with user and request context
 - ✅ **Immutable Audit Logs** — audit records are write-once (SEC-12 compliant)
-- ✅ **Activity Log** — Spatie Laravel ActivityLog integration
 - ✅ **In-App Notifications** — with read/unread tracking, priority levels, and badge counter
-- ✅ **Email Notifications** — queued welcome, password change, and attendance reminder emails
 - ✅ **Bilingual UI** — English and Urdu language support
 - ✅ **Responsive Design** — Bootstrap 5 with mobile-first layout
 
 ### Employee Management
 
 - ✅ Full CRUD with search, filters, and pagination
-- ✅ Excel import for bulk employee upload
-- ✅ Multi-branch and multi-department assignment
+- ✅ Branch and department assignment
 - ✅ Employment status management (Active / Inactive)
 - ✅ Employee detail view with audit history
 
@@ -134,7 +131,7 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 
 - ✅ Sanctum token authentication with `rams_` prefix
 - ✅ Versioned routes (`/api/v1/`)
-- ✅ 21 endpoints across 7 resource groups
+- ✅ Versioned read API endpoints for core resources and notifications
 - ✅ Rate limiting (5 req/min login, 60 req/min authenticated)
 - ✅ Consistent JSON response envelope
 - ✅ Paginated list endpoints
@@ -143,15 +140,14 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 
 - ✅ 10 composite database indexes on high-traffic columns
 - ✅ Redis caching with company-scoped cache keys (2–10 min TTL)
-- ✅ Laravel Horizon with 3 queue supervisors (high / default / low)
-- ✅ Queued mail processing on the `high` queue
-- ✅ Background Excel exports on the `low` queue
+- ✅ Laravel Horizon configuration with high / default / low supervisors
+- ✅ Query-backed Excel exports that avoid loading whole result sets into PHP memory
 
 ### Security
 
 - ✅ CSRF protection on all web routes
 - ✅ Sanctum token auth for API
-- ✅ Password hashing (bcrypt, 12 rounds in production)
+- ✅ Laravel password hashing (Argon2id in the supplied environment templates)
 - ✅ Password history enforcement
 - ✅ Immutable audit logs (`LogicException` on update/delete)
 - ✅ Data retention policy (`logs:purge` — 730-day activity, 180-day notifications)
@@ -162,17 +158,43 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 
 ## 📸 Screenshots
 
-> Screenshots will be added after the UI is finalised.
+> All screenshots are taken from a live local instance with seeded demo data.
 
-| Screen | Preview |
-|---|---|
-| Login | ![Login](docs/screenshots/login.png) |
-| Dashboard | ![Dashboard](docs/screenshots/dashboard.png) |
-| Employee List | ![Employees](docs/screenshots/employees.png) |
-| Quran Attendance | ![Quran Attendance](docs/screenshots/quran-attendance.png) |
-| Salah Attendance | ![Salah Attendance](docs/screenshots/salah-attendance.png) |
-| Reports Centre | ![Reports](docs/screenshots/reports.png) |
-| Notifications | ![Notifications](docs/screenshots/notifications.png) |
+### Login
+
+![Login](docs/screenshots/01-login.png)
+
+### Dashboard
+
+![Dashboard](docs/screenshots/02-dashboard.png)
+
+### Employee Management
+
+![Employees](docs/screenshots/03-employees.png)
+
+### Teacher Management
+
+![Teachers](docs/screenshots/04-teachers.png)
+
+### Quran Classes
+
+![Quran Classes](docs/screenshots/05-quran-classes.png)
+
+### Quran Student Progress
+
+![Quran Progress](docs/screenshots/06-quran-progress.png)
+
+### Salah Attendance
+
+![Salah Attendance](docs/screenshots/07-salah-attendance.png)
+
+### Reports Centre
+
+![Reports](docs/screenshots/08-reports.png)
+
+### Master Data / Settings
+
+![Masters Settings](docs/screenshots/09-masters-settings.png)
 
 ---
 
@@ -190,7 +212,7 @@ RAMS is built to **enterprise standards**: SOLID principles, Service-Repository 
 | Authentication (API) | Laravel Sanctum | 4.x |
 | Authorisation | Spatie Laravel Permission | 8.x |
 | Queue Dashboard | Laravel Horizon | 5.x |
-| Activity Logging | Spatie Laravel ActivityLog | 4.x |
+| Activity Log Tooling | Spatie Laravel ActivityLog | 4.x |
 | Excel Reports | Maatwebsite Laravel Excel | 3.x |
 | PDF Generation | DomPDF (barryvdh) | 3.x |
 | Backup | Spatie Laravel Backup | 10.x |
@@ -291,7 +313,7 @@ religious-management-system/
 │   │   │   └── SetLocale.php
 │   │   └── Resources/
 │   │       └── Api/                    # JSON resource transformers
-│   ├── Mail/                           # Queued mail classes
+│   ├── Mail/                           # Mail templates
 │   │   ├── WelcomeMail.php
 │   │   ├── PasswordChangedMail.php
 │   │   └── AttendanceReminderMail.php
@@ -477,24 +499,13 @@ SANCTUM_TOKEN_PREFIX=rams_
 
 ## 🔄 Queue Configuration
 
-RAMS uses **Laravel Horizon** with three isolated queue supervisors for optimal throughput:
+RAMS provisions **Laravel Horizon** with three queue supervisors. The current application does not dispatch first-party mail or export jobs; the queues are available for future asynchronous workloads.
 
 | Supervisor | Queue | Purpose | Max Processes (Prod) |
 |---|---|---|---|
-| `supervisor-high` | `high` | Email notifications | 4 |
+| `supervisor-high` | `high` | Time-sensitive future jobs | 4 |
 | `supervisor-default` | `default` | General background jobs | 6 |
-| `supervisor-low` | `low` | Excel exports (memory-heavy) | 3 |
-
-### Mail classes are always queued
-
-```php
-class WelcomeMail extends Mailable implements ShouldQueue
-{
-    public string $queue = 'high';
-    public int $tries    = 3;
-    public int $timeout  = 30;
-}
-```
+| `supervisor-low` | `low` | Deferred, non-urgent future jobs | 3 |
 
 ### Starting Horizon
 
@@ -502,7 +513,7 @@ class WelcomeMail extends Mailable implements ShouldQueue
 php artisan horizon
 ```
 
-Access the Horizon dashboard at `/horizon` (Super Admin only).
+Access the Horizon dashboard at `/horizon` (the dedicated `SYSTEM` Super Admin or an explicitly allowlisted email only).
 
 For production, run Horizon under Supervisor:
 
@@ -673,17 +684,9 @@ RAMS uses [Spatie Laravel Permission](https://spatie.be/docs/laravel-permission)
 | **Manager** | Per-Company | Can view and record attendance, limited editing |
 | **Viewer** | Per-Company | Read-only access |
 
-### Permission Matrix (31 permissions)
+### Permission Matrix
 
-| Module | Permissions |
-|---|---|
-| Employees | `view-employees`, `create-employees`, `edit-employees`, `delete-employees`, `import-employees` |
-| Teachers | `view-teachers`, `create-teachers`, `edit-teachers`, `delete-teachers` |
-| Quran | `view-quran-classes`, `manage-quran-classes`, `record-quran-attendance`, `view-quran-progress`, `manage-quran-progress` |
-| Salah | `view-jamaats`, `manage-jamaats`, `record-salah-attendance` |
-| Reports | `view-reports`, `export-reports` |
-| Master Data | `manage-branches`, `manage-departments`, `manage-designations`, `manage-languages`, `manage-attendance-reasons`, `manage-quran-departments`, `manage-quran-statuses`, `manage-prayers` |
-| Notifications | `view-notifications`, `manage-notifications` |
+`database/seeders/PermissionSeeder.php` is the canonical permission catalog. Permissions use dotted names such as `employee.view`, `quran.attendance.update`, `report.export_excel`, and `audit.view`; `RoleSeeder` maps the standard roles to those permissions.
 
 ### Checking Permissions
 
@@ -692,12 +695,12 @@ RAMS uses [Spatie Laravel Permission](https://spatie.be/docs/laravel-permission)
 $this->authorize('create', Employee::class);
 
 // In Blade views:
-@can('create-employees')
+@can('employee.create')
     <a href="{{ route('employees.create') }}">Add Employee</a>
 @endcan
 
 // Programmatically:
-if ($user->can('export-reports')) { ... }
+if ($user->can('report.export_excel')) { ... }
 ```
 
 ---
@@ -719,13 +722,12 @@ Employee
 ### Features
 
 - **Full CRUD** — create, view, edit, and soft-delete employees with search, filter, and pagination
-- **Multi-Branch Assignment** — employees can be assigned to any branch within the company
+- **Branch Assignment** — each employee is assigned to a branch within the company
 - **Department & Designation** — assign employees to departments with specific designations
 - **Employment Status** — manage Active / Inactive status with audit trail
-- **Excel Import** — bulk-upload employees from a formatted Excel file
 - **Excel Export** — export filtered employee lists to Excel for HR reporting
-- **Audit History** — every field change is logged with user, timestamp, IP, and old/new values
-- **Detail View** — full employee profile with change history timeline
+- **Audit History** — authenticated employee changes are recorded with actor, timestamp, request context, and redacted sensitive fields
+- **Detail View** — full employee profile with creation and update metadata
 
 ### Creating an Employee (Web)
 
@@ -746,19 +748,6 @@ Form fields validated via `StoreEmployeeRequest`:
 | `designation_id` | exists:designations | Yes |
 | `employment_status` | enum: active/inactive | Yes |
 | `joined_date` | date | Yes |
-
-### Bulk Import
-
-Upload employees via Excel using the import template:
-
-```
-GET  /employees/import/template   → Download blank template
-POST /employees/import            → Upload populated file
-```
-
-The importer validates each row and reports errors per row — partial imports are supported (valid rows are saved, invalid rows reported back).
-
----
 
 ## 🌐 Localization
 
@@ -943,7 +932,7 @@ The Reports Centre provides 6 pre-built reports, all scoped to the current tenan
 All reports support Excel export via **Maatwebsite Laravel Excel**:
 
 ```php
-// Trigger an export (runs on 'low' queue for memory management):
+// Trigger a streamed query-backed export:
 return Excel::download(new EmployeeExport($filters), 'employees.xlsx');
 ```
 
@@ -1089,7 +1078,7 @@ RAMS implements multiple layers of security:
 
 ### Authentication & Sessions
 
-- Bcrypt password hashing (12 rounds in production, 4 in tests)
+- Laravel password hashing with Argon2id configured in the supplied environment templates
 - Password history enforcement — users cannot reuse recent passwords
 - Session stored in Redis with configurable lifetime
 - "Remember Me" functionality with long-lived tokens
@@ -1105,8 +1094,8 @@ RAMS implements multiple layers of security:
 
 - **SEC-12**: AuditLog is immutable — `update()` and `delete()` throw `LogicException`
 - **SEC-13**: Data retention policy enforced via scheduled `logs:purge` command
-- Every create/update/delete operation is logged to `audit_logs` with: `user_id`, `module`, `action`, `table_name`, `record_id`, `old_values`, `new_values`, `ip_address`, `browser`, `operating_system`
-- Spatie ActivityLog for additional activity recording
+- Authenticated changes to registered operational models, authentication events, and attendance lock overrides are logged to `audit_logs` with: `user_id`, `module`, `action`, `table_name`, `record_id`, `old_values`, `new_values`, `ip_address`, `browser`, `operating_system`
+- Passwords, tokens, CNIC values, and setting values are redacted from observer-generated audit payloads
 
 ### Multi-Tenant Isolation
 
@@ -1161,9 +1150,9 @@ Cache::remember("company:{$id}:dashboard:today_salah", 120, fn() => [...]);
 ### Queue Separation
 
 ```
-High priority  → emails (WelcomeMail, PasswordChangedMail)
+High priority  → time-sensitive future jobs
 Default        → general background jobs
-Low priority   → Excel exports (memory-intensive, gracefully degraded)
+Low priority   → deferred, non-urgent future jobs
 ```
 
 ---
@@ -1186,22 +1175,9 @@ php artisan test tests/Feature/CompanyIsolationTest.php
 php artisan test --coverage
 ```
 
-### Test Summary
+### Quality Gates
 
-```
-Tests:      30 passed
-Assertions: 83
-Duration:   ~5 seconds
-```
-
-### Test Suites
-
-```
-Tests\Unit\AuditLogImmutabilityTest    ✓  5 tests
-Tests\Feature\CompanyIsolationTest     ✓  6 tests
-Tests\Feature\Api\ApiAuthTest          ✓ 12 tests
-Tests\Feature\Console\PurgeOldLogsTest ✓  7 tests
-```
+CI runs the complete PHPUnit suite, `vendor/bin/pint --test`, PHPStan, dependency audits, the frontend build, and a production container build on every push and pull request. Test counts are intentionally not hard-coded because the suite evolves with each release.
 
 ### Test Infrastructure
 
@@ -1276,6 +1252,84 @@ curl https://your-domain.com/up
 - [ ] SSL certificate active
 
 > See [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) for the complete production deployment checklist.
+
+---
+
+## ⚡ Automatic Deployment
+
+Every push to the `main` branch automatically deploys to production via GitHub Webhooks.
+
+This workflow is for writable, checkout-based hosts. Docker releases use the
+image build, migration, and restart flow in `docs/DEPLOYMENT_GUIDE.md`.
+
+### Architecture
+
+```
+git push origin main
+        │
+        ▼
+  GitHub Webhook (POST + HMAC SHA256)
+        │
+        ▼
+  https://rams.babiesworld.com.pk/deploy.php
+        │
+        ├── Verify signature   (reject if invalid → 403)
+        ├── Check branch       (skip if not main  → 200)
+        │
+        ▼
+  ┌──────────────────────────────────┐
+  │  1. Maintenance Mode ON          │
+  │  2. git fetch --all              │
+  │  3. git reset --hard origin/main │
+  │  4. composer install --no-dev    │
+  │  5. php artisan migrate --force  │
+  │  6. php artisan optimize:clear   │
+  │  7. php artisan optimize         │
+  │  8. php artisan horizon:terminate│
+  │  9. Maintenance Mode OFF         │
+  └──────────────────────────────────┘
+        │
+        ▼
+  202 Accepted response, then storage/logs/deploy.log records the outcome
+```
+
+### One-Time Setup
+
+**1. Generate webhook secret (run locally):**
+
+```bash
+openssl rand -hex 32
+```
+
+**2. Add to production `.env` (never commit this):**
+
+```env
+DEPLOY_WEBHOOK_SECRET=<your-64-char-secret>
+```
+
+**3. Add GitHub Webhook:**
+
+| Field | Value |
+|---|---|
+| Payload URL | `https://rams.babiesworld.com.pk/deploy.php` |
+| Content type | `application/json` |
+| Secret | The secret from step 1 |
+| Events | Just the **push** event |
+| Active | Checked |
+
+**4. Push to `main` — deployment runs automatically.**
+
+### Rollback
+
+```bash
+# Find the commit to rollback to from the deploy log
+grep "Rollback ref" storage/logs/deploy.log | tail -3
+
+# Run the rollback script
+bash scripts/rollback.sh <commit-hash>
+```
+
+> Full documentation: [docs/DEPLOYMENT_AUTOMATION.md](docs/DEPLOYMENT_AUTOMATION.md)
 
 ---
 
@@ -1432,11 +1486,11 @@ Copyright (c) 2026 [Asim](https://github.com/asimcreative)
 |---|---|---|
 | [Laravel](https://laravel.com) | Taylor Otwell | Core framework |
 | [Spatie Laravel Permission](https://spatie.be/docs/laravel-permission) | Spatie | RBAC & team-scoped permissions |
-| [Spatie Laravel ActivityLog](https://spatie.be/docs/laravel-activitylog) | Spatie | Activity logging |
+| [Spatie Laravel ActivityLog](https://spatie.be/docs/laravel-activitylog) | Spatie | Activity-log storage and retention tooling |
 | [Spatie Laravel Backup](https://spatie.be/docs/laravel-backup) | Spatie | Automated backups |
 | [Laravel Sanctum](https://laravel.com/docs/sanctum) | Taylor Otwell | API token authentication |
 | [Laravel Horizon](https://laravel.com/docs/horizon) | Taylor Otwell | Queue dashboard & monitoring |
-| [Maatwebsite Excel](https://laravel-excel.com) | Maatwebsite | Excel import/export |
+| [Maatwebsite Excel](https://laravel-excel.com) | Maatwebsite | Excel export |
 | [DomPDF](https://github.com/barryvdh/laravel-dompdf) | Barry vd. Heuvel | PDF generation |
 | [Bootstrap 5](https://getbootstrap.com) | The Bootstrap Team | UI framework |
 | [PHPStan / Larastan](https://phpstan.org) | Ondřej Mirtes | Static analysis |

@@ -32,9 +32,13 @@
                     <tr>
                         <td class="text-muted" style="width: 40%">{{ __('quran_progress.employee') }}</td>
                         <td>
-                            <a href="{{ route('employees.show', $quranProgress->employee) }}">
-                                {{ $quranProgress->employee?->employee_name ?? '-' }}
-                            </a>
+                            @if($quranProgress->employee)
+                                <a href="{{ route('employees.show', $quranProgress->employee) }}">
+                                    {{ $quranProgress->employee->employee_name }}
+                                </a>
+                            @else
+                                -
+                            @endif
                         </td>
                     </tr>
                     <tr>

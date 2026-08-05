@@ -26,7 +26,7 @@ class TeacherApiController extends BaseApiController
             })
             ->when($request->status !== null && $request->status !== '', fn ($q) => $q->where('status', $request->status))
             ->orderBy('teacher_code')
-            ->paginate($request->per_page ?? 25);
+            ->paginate($this->perPage($request));
 
         return $this->successResponse(
             TeacherResource::collection($teachers)->response()->getData(true)

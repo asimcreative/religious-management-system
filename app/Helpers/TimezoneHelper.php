@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Models\Company;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -61,11 +62,17 @@ class TimezoneHelper
     }
 
     /**
-     * Get the authenticated user's company timezone.
+     * Get a company's timezone, or the authenticated user's company timezone.
      * Falls back to Asia/Karachi (Pakistan) as the default.
      */
-    public static function getCompanyTimezone(): string
+    public static function getCompanyTimezone(?int $companyId = null): string
     {
+        if ($companyId !== null) {
+            $timezone = Company::query()->whereKey($companyId)->value('timezone');
+
+            return is_string($timezone) && $timezone !== '' ? $timezone : 'Asia/Karachi';
+        }
+
         $user = Auth::user();
 
         if ($user instanceof User) {

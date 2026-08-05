@@ -12,10 +12,12 @@ use App\Models\Employee;
 use App\Models\QuranDepartment;
 use App\Models\QuranStatus;
 use App\Services\EmployeeService;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmployeeController extends Controller
 {
@@ -33,7 +35,7 @@ class EmployeeController extends Controller
                 'branch_id', 'department_id', 'designation_id',
                 'employment_status', 'quran_department_id', 'quran_status_id',
             ]),
-            (int) $request->query('per_page', 25)
+            $this->perPage($request)
         );
 
         $branches = Branch::orderBy('branch_name')->pluck('branch_name', 'id');
@@ -64,7 +66,7 @@ class EmployeeController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('employees/photos', 'public');
+            $data['photo'] = $request->file('photo')->store('employees/photos', 'local');
         }
 
         // company_id is set automatically by the BelongsToCompany model concern (creating event)
@@ -108,9 +110,9 @@ class EmployeeController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($employee->photo) {
-                Storage::disk('public')->delete($employee->photo);
+                $this->photoDisk($employee->photo)->delete($employee->photo);
             }
-            $data['photo'] = $request->file('photo')->store('employees/photos', 'public');
+            $data['photo'] = $request->file('photo')->store('employees/photos', 'local');
         }
 
         $this->service->update($employee->id, $data);
@@ -149,6 +151,18 @@ class EmployeeController extends Controller
             ->with('success', __('employees.restored'));
     }
 
+    public function photo(Employee $employee): StreamedResponse
+    {
+        $this->authorize('view', $employee);
+
+        abort_if($employee->photo === null, 404);
+
+        $disk = $this->photoDisk($employee->photo);
+        abort_unless($disk->exists($employee->photo), 404);
+
+        return $disk->response($employee->photo);
+    }
+
     /** @return array<string, mixed> */
     private function formData(): array
     {
@@ -159,5 +173,14 @@ class EmployeeController extends Controller
             'quranDepartments' => QuranDepartment::orderBy('display_order')->pluck('department_name', 'id'),
             'quranStatuses' => QuranStatus::orderBy('display_order')->pluck('status_name', 'id'),
         ];
+    }
+
+    private function photoDisk(string $path): FilesystemAdapter
+    {
+        if (Storage::disk('local')->exists($path)) {
+            return Storage::disk('local');
+        }
+
+        return Storage::disk('public');
     }
 }

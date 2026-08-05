@@ -10,14 +10,16 @@
             <span class="badge bg-danger">{{ $unreadCount }}</span>
         @endif
     </h4>
-    @if($unreadCount > 0)
-        <form method="POST" action="{{ route('notifications.mark-all-read') }}">
-            @csrf
-            <button type="submit" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-check2-all me-1"></i> {{ __('notifications.mark_all_read') }}
-            </button>
-        </form>
-    @endif
+    @can('notification.read')
+        @if($unreadCount > 0)
+            <form method="POST" action="{{ route('notifications.mark-all-read') }}">
+                @csrf
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-check2-all me-1"></i> {{ __('notifications.mark_all_read') }}
+                </button>
+            </form>
+        @endif
+    @endcan
 </div>
 
 <div class="card">
@@ -56,22 +58,26 @@
 
                 {{-- Actions --}}
                 <div class="ms-2 d-flex gap-1">
-                    @if(!$notification->isRead())
-                        <form method="POST" action="{{ route('notifications.mark-read', $notification->id) }}">
+                    @can('notification.read')
+                        @if(!$notification->isRead())
+                            <form method="POST" action="{{ route('notifications.mark-read', $notification->id) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-success" title="{{ __('notifications.mark_read') }}">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            </form>
+                        @endif
+                    @endcan
+                    @can('notification.delete')
+                        <form method="POST" action="{{ route('notifications.destroy', $notification->id) }}">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-success" title="{{ __('notifications.mark_read') }}">
-                                <i class="bi bi-check"></i>
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('notifications.delete') }}"
+                                onclick="return confirm('{{ __('notifications.confirm_delete') }}')">
+                                <i class="bi bi-trash"></i>
                             </button>
                         </form>
-                    @endif
-                    <form method="POST" action="{{ route('notifications.destroy', $notification->id) }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('notifications.delete') }}"
-                            onclick="return confirm('{{ __('notifications.confirm_delete') }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </form>
+                    @endcan
                 </div>
             </div>
         @empty

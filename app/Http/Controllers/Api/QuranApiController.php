@@ -18,16 +18,16 @@ class QuranApiController extends BaseApiController
      */
     public function classes(Request $request): JsonResponse
     {
-        $this->authorize('quran.class.view');
+        $this->authorize('viewAny', QuranClass::class);
 
         $classes = QuranClass::query()
-            ->with(['branch', 'teacher'])
+            ->with(['branch', 'teacher.employee'])
             ->withCount('activeMembers')
             ->when($request->search, fn ($q, $v) => $q->where('class_name', 'like', "%{$v}%")
                 ->orWhere('class_code', 'like', "%{$v}%"))
             ->when($request->status !== null && $request->status !== '', fn ($q) => $q->where('status', $request->status))
             ->orderBy('class_name')
-            ->paginate($request->per_page ?? 25);
+            ->paginate($this->perPage($request));
 
         return $this->successResponse(
             QuranClassResource::collection($classes)->response()->getData(true)
@@ -39,9 +39,8 @@ class QuranApiController extends BaseApiController
      */
     public function showClass(int $id): JsonResponse
     {
-        $this->authorize('quran.class.view');
-
-        $class = QuranClass::with(['branch', 'teacher'])->withCount('activeMembers')->findOrFail($id);
+        $class = QuranClass::with(['branch', 'teacher.employee'])->withCount('activeMembers')->findOrFail($id);
+        $this->authorize('view', $class);
 
         return $this->successResponse(new QuranClassResource($class));
     }
@@ -53,7 +52,7 @@ class QuranApiController extends BaseApiController
      */
     public function attendance(Request $request): JsonResponse
     {
-        $this->authorize('quran.attendance.view');
+        $this->authorize('viewAny', QuranAttendance::class);
 
         $attendance = QuranAttendance::query()
             ->with(['quranClass', 'employee', 'attendanceReason'])
@@ -62,7 +61,7 @@ class QuranApiController extends BaseApiController
             ->when($request->date_from, fn ($q, $v) => $q->where('attendance_date', '>=', $v))
             ->when($request->date_to, fn ($q, $v) => $q->where('attendance_date', '<=', $v))
             ->latest('attendance_date')
-            ->paginate($request->per_page ?? 50);
+            ->paginate($this->perPage($request, 50));
 
         return $this->successResponse(
             QuranAttendanceResource::collection($attendance)->response()->getData(true)

@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * Handles authentication business logic.
@@ -28,13 +29,11 @@ class AuthService
     /**
      * Attempt to authenticate a user by email and password.
      *
-     * @return array{success: bool, user?: User, error?: string}
+     * @return array{success: true, user: User}|array{success: false, error: 'failed'|'company_inactive'|'account_inactive'}
      */
     public function attemptLogin(string $email, string $password): array
     {
-        $user = User::withoutGlobalScopes()
-            ->where('email', $email)
-            ->first();
+        $user = User::findByUniqueEmail($email);
 
         if (! $user || ! Hash::check($password, $user->password)) {
             $this->auditLogService->logFailedLogin($email);
@@ -60,6 +59,8 @@ class AuthService
             return ['success' => false, 'error' => 'account_inactive'];
         }
 
+        $this->rehashPasswordIfNeeded($user, $password);
+
         return ['success' => true, 'user' => $user];
     }
 
@@ -70,9 +71,13 @@ class AuthService
     {
         Auth::login($user, $remember);
 
-        $user->updateQuietly(['last_login' => now()]);
+        $this->recordSuccessfulLogin($user);
+    }
 
-        $this->auditLogService->logLogin($user);
+    /** Record a successful token-based login without starting a web session. */
+    public function recordTokenLogin(User $user): void
+    {
+        $this->recordSuccessfulLogin($user);
     }
 
     /**
@@ -83,6 +88,12 @@ class AuthService
         $this->auditLogService->logLogout($user);
 
         Auth::logout();
+    }
+
+    /** Record a token or session logout managed by an API endpoint. */
+    public function recordTokenLogout(User $user): void
+    {
+        $this->auditLogService->logLogout($user);
     }
 
     /**
@@ -101,7 +112,12 @@ class AuthService
             $this->prunePasswordHistory($user);
 
             // Update password — the 'hashed' cast on User will hash it
-            $user->update(['password' => $newPassword]);
+            $user->forceFill([
+                'password' => $newPassword,
+                'remember_token' => Str::random(60),
+            ])->save();
+
+            $user->tokens()->delete();
 
             $this->auditLogService->logPasswordChange($user);
         });
@@ -121,7 +137,12 @@ class AuthService
 
             $this->prunePasswordHistory($user);
 
-            $user->update(['password' => $newPassword]);
+            $user->forceFill([
+                'password' => $newPassword,
+                'remember_token' => Str::random(60),
+            ])->save();
+
+            $user->tokens()->delete();
 
             $this->auditLogService->logPasswordReset($user);
         });
@@ -140,5 +161,35 @@ class AuthService
         PasswordHistory::where('user_id', $user->id)
             ->whereNotIn('id', $keepIds)
             ->delete();
+    }
+
+    /**
+     * Upgrade legacy password hashes after a successful authentication.
+     *
+     * The compare-and-swap condition prevents an in-flight password reset from
+     * being overwritten by a stale login request.
+     */
+    private function rehashPasswordIfNeeded(User $user, string $password): void
+    {
+        $currentHash = $user->getAuthPassword();
+
+        if (! Hash::needsRehash($currentHash)) {
+            return;
+        }
+
+        User::query()
+            ->whereKey($user->getKey())
+            ->where('password', $currentHash)
+            ->update([
+                'password' => Hash::make($password),
+                'updated_at' => now(),
+            ]);
+    }
+
+    private function recordSuccessfulLogin(User $user): void
+    {
+        $user->updateQuietly(['last_login' => now()]);
+
+        $this->auditLogService->logLogin($user);
     }
 }

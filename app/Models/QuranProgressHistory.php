@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Models\Concerns\RestrictsRoleDataAccess;
 use Database\Factories\QuranProgressHistoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 class QuranProgressHistory extends Model
 {
     /** @use HasFactory<QuranProgressHistoryFactory> */
-    use BelongsToCompany, HasFactory;
+    use BelongsToCompany, HasFactory, RestrictsRoleDataAccess;
 
     const UPDATED_AT = null;
 

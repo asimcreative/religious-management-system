@@ -20,13 +20,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     // ── Authenticated Routes ──────────────────────────────────────
 
-    Route::middleware(['auth:sanctum', 'permission.team', 'throttle:60,1'])->group(function () {
+    Route::middleware(['auth:sanctum', 'api.account.active', 'permission.team', 'throttle:60,1'])->group(function () {
 
         // Auth
         Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
         Route::get('profile', [AuthController::class, 'profile'])->name('auth.profile');
         Route::put('profile', [AuthController::class, 'updateProfile'])->name('auth.profile.update');
-        Route::put('change-password', [AuthController::class, 'changePassword'])->name('auth.change-password');
+        Route::put('change-password', [AuthController::class, 'changePassword'])
+            ->middleware('throttle:5,1')
+            ->name('auth.change-password');
         Route::get('me/unread-notifications-count', [AuthController::class, 'unreadNotificationsCount'])->name('auth.notifications.count');
 
         // Dashboard

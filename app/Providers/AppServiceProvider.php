@@ -2,6 +2,24 @@
 
 namespace App\Providers;
 
+use App\Models\AttendanceReason;
+use App\Models\Branch;
+use App\Models\Department;
+use App\Models\Designation;
+use App\Models\Employee;
+use App\Models\Jamaat;
+use App\Models\Language;
+use App\Models\QuranAttendance;
+use App\Models\QuranClass;
+use App\Models\QuranDepartment;
+use App\Models\QuranProgress;
+use App\Models\QuranProgressHistory;
+use App\Models\QuranStatus;
+use App\Models\SalahAttendance;
+use App\Models\Setting;
+use App\Models\Teacher;
+use App\Observers\BusinessAuditObserver;
+use App\Observers\DashboardCacheObserver;
 use App\View\Composers\NotificationComposer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
@@ -32,5 +50,34 @@ class AppServiceProvider extends ServiceProvider
 
         // Share unread notification count with the main layout via View Composer.
         View::composer('layouts.app', NotificationComposer::class);
+
+        Employee::observe(DashboardCacheObserver::class);
+        Teacher::observe(DashboardCacheObserver::class);
+        QuranClass::observe(DashboardCacheObserver::class);
+        Jamaat::observe(DashboardCacheObserver::class);
+        QuranProgress::observe(DashboardCacheObserver::class);
+        QuranAttendance::observe(DashboardCacheObserver::class);
+        SalahAttendance::observe(DashboardCacheObserver::class);
+
+        foreach ([
+            AttendanceReason::class,
+            Branch::class,
+            Department::class,
+            Designation::class,
+            Employee::class,
+            Jamaat::class,
+            Language::class,
+            QuranAttendance::class,
+            QuranClass::class,
+            QuranDepartment::class,
+            QuranProgress::class,
+            QuranProgressHistory::class,
+            QuranStatus::class,
+            SalahAttendance::class,
+            Setting::class,
+            Teacher::class,
+        ] as $model) {
+            $model::observe(BusinessAuditObserver::class);
+        }
     }
 }

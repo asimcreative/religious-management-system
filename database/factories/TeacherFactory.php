@@ -17,7 +17,9 @@ class TeacherFactory extends Factory
     {
         return [
             'company_id' => Company::factory(),
-            'employee_id' => Employee::factory(),
+            'employee_id' => static fn (array $attributes): int => Employee::factory()
+                ->create(['company_id' => $attributes['company_id']])
+                ->id,
             'teacher_code' => strtoupper(fake()->unique()->bothify('TCH-####')),
             'status' => Status::Active,
             'notes' => fake()->optional()->sentence(),

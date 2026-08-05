@@ -2,15 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\Auth\ApiChangePasswordRequest;
 use App\Models\Company;
 use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\PermissionRegistrar;
 
 class AuthController extends BaseApiController
 {
+    public function __construct(
+        private readonly AuthService $authService,
+        private readonly PermissionRegistrar $permissionRegistrar,
+    ) {}
+
     /**
      * POST /api/v1/login
      */
@@ -22,23 +31,31 @@ class AuthController extends BaseApiController
             'device_name' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $result = $this->authService->attemptLogin(
+            $request->string('email')->toString(),
+            $request->string('password')->toString(),
+        );
 
-        if ($user === null || ! Hash::check($request->password, $user->password)) {
+        if (! $result['success']) {
+            if ($result['error'] === 'account_inactive') {
+                return $this->errorResponse('Your account is inactive. Contact your administrator.', 403);
+            }
+
+            if ($result['error'] === 'company_inactive') {
+                return $this->errorResponse('Your company account is inactive.', 403);
+            }
+
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        if (! $user->isActive()) {
-            return $this->errorResponse('Your account is inactive. Contact your administrator.', 403);
-        }
+        /** @var User $user */
+        $user = $result['user'];
 
-        $company = Company::find($user->company_id);
-
-        if ($company === null || ! $company->isActive()) {
-            return $this->errorResponse('Your company account is inactive.', 403);
-        }
+        // The login route runs before the authenticated-route middleware that
+        // normally establishes Spatie's tenant team context.
+        $this->permissionRegistrar->setPermissionsTeamId((int) $user->company_id);
 
         // Revoke all previous tokens for this device
         $deviceName = $request->device_name ?? 'api-token';
@@ -46,7 +63,7 @@ class AuthController extends BaseApiController
 
         $token = $user->createToken($deviceName)->plainTextToken;
 
-        $user->update(['last_login' => now()]);
+        $this->authService->recordTokenLogin($user);
 
         return $this->successResponse([
             'token' => $token,
@@ -67,7 +84,19 @@ class AuthController extends BaseApiController
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        /** @var User $user */
+        $user = $request->user();
+        $token = $user->currentAccessToken();
+
+        if (method_exists($token, 'delete')) {
+            $token->delete();
+        } elseif ($request->hasSession()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        $this->authService->recordTokenLogout($user);
 
         return $this->successResponse(null, 'Logged out successfully');
     }
@@ -122,13 +151,8 @@ class AuthController extends BaseApiController
     /**
      * PUT /api/v1/change-password
      */
-    public function changePassword(Request $request): JsonResponse
+    public function changePassword(ApiChangePasswordRequest $request): JsonResponse
     {
-        $request->validate([
-            'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
-
         $user = $request->user();
 
         if (! Hash::check($request->current_password, $user->password)) {
@@ -138,10 +162,7 @@ class AuthController extends BaseApiController
         }
 
         // Do NOT pre-hash — User model has 'password' => 'hashed' cast which hashes automatically
-        $user->update(['password' => $request->password]);
-
-        // Revoke all tokens to force re-login on other devices
-        $user->tokens()->whereNot('id', $request->user()->currentAccessToken()->id)->delete();
+        $this->authService->changePassword($user, $request->validated('password'));
 
         return $this->successResponse(null, 'Password changed successfully');
     }
@@ -151,6 +172,8 @@ class AuthController extends BaseApiController
      */
     public function unreadNotificationsCount(Request $request): JsonResponse
     {
+        $this->authorize('notification.view');
+
         $count = $request->user()
             ->notifications()
             ->whereNull('read_at')

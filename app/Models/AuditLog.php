@@ -51,6 +51,20 @@ class AuditLog extends Model
     }
 
     /**
+     * Preserve write-once behavior for direct model mutations as well.
+     *
+     * @param  array<string, mixed>  $options
+     */
+    public function save(array $options = []): bool
+    {
+        if ($this->exists) {
+            throw new LogicException('Audit logs are immutable and cannot be updated.');
+        }
+
+        return parent::save($options);
+    }
+
+    /**
      * Audit logs are write-once. Deletion is forbidden.
      */
     public function delete(): bool

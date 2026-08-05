@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Models\Concerns\RestrictsRoleDataAccess;
 use Database\Factories\QuranProgressFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 class QuranProgress extends Model
 {
     /** @use HasFactory<QuranProgressFactory> */
-    use BelongsToCompany, HasFactory;
+    use BelongsToCompany, HasFactory, RestrictsRoleDataAccess;
 
     protected $table = 'quran_progress';
 

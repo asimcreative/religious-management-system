@@ -16,7 +16,9 @@ class QuranProgressFactory extends Factory
     {
         return [
             'company_id' => Company::factory(),
-            'employee_id' => Employee::factory(),
+            'employee_id' => static fn (array $attributes): int => Employee::factory()
+                ->create(['company_id' => $attributes['company_id']])
+                ->id,
             'current_lesson' => 'Lesson '.fake()->numberBetween(1, 30),
             'current_surah' => fake()->randomElement(['Al-Fatiha', 'Al-Baqarah', 'Al-Imran', 'An-Nisa']),
             'current_sipara' => fake()->numberBetween(1, 30),

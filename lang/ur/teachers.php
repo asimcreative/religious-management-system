@@ -41,6 +41,7 @@ return [
     'search_placeholder' => 'کوڈ یا نام سے تلاش کریں...',
 
     // Messages
+    'cannot_delete_has_dependencies' => 'Cannot delete teacher with linked records.',
     'created' => 'استاد کامیابی سے بنایا گیا۔',
     'updated' => 'استاد کامیابی سے اپ ڈیٹ ہوا۔',
     'deleted' => 'استاد کامیابی سے حذف ہوا۔',

@@ -49,7 +49,8 @@ class QuranClassRepository extends BaseRepository implements QuranClassRepositor
         /** @var QuranClass $model */
         $model = $this->model->newQuery()->findOrFail($id);
 
-        return $model->attendances()->exists();
+        return $model->attendances()->exists()
+            || $model->activeMembers()->exists();
     }
 
     public function restore(int $id): bool

@@ -16,7 +16,7 @@ class StoreAttendanceReasonRequest extends FormRequest
     {
         return [
             'reason_name' => ['required', 'string', 'max:255'],
-            'color' => ['nullable', 'string', 'max:30'],
+            'color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'icon' => ['nullable', 'string', 'max:50'],
             'counts_as_absent' => ['boolean'],
             'counts_as_leave' => ['boolean'],

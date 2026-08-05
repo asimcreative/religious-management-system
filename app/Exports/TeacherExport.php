@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\SanitizesSpreadsheetValues;
 use App\Models\Teacher;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -11,6 +12,10 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class TeacherExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping
 {
+    use SanitizesSpreadsheetValues;
+
+    private int $index = 0;
+
     /** @param  array<string, mixed>  $filters */
     public function __construct(
         private readonly array $filters = [],
@@ -40,14 +45,12 @@ class TeacherExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapp
     /** @return array<int, mixed> */
     public function map(mixed $row): array
     {
-        static $index = 0;
-
-        return [
-            ++$index,
+        return $this->sanitizeSpreadsheetValues([
+            ++$this->index,
             $row->teacher_code,
             $row->getEmployeeName(),
             $row->branches->pluck('branch_name')->implode(', '),
             $row->status->label(),
-        ];
+        ]);
     }
 }

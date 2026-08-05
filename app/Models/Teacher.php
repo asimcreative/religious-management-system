@@ -6,6 +6,7 @@ use App\Enums\Status;
 use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasAuditColumns;
 use App\Models\Concerns\HasStatus;
+use App\Models\Concerns\RestrictsRoleDataAccess;
 use Database\Factories\TeacherFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Teacher extends Model
 {
     /** @use HasFactory<TeacherFactory> */
-    use BelongsToCompany, HasAuditColumns, HasFactory, HasStatus, SoftDeletes;
+    use BelongsToCompany, HasAuditColumns, HasFactory, HasStatus, RestrictsRoleDataAccess, SoftDeletes;
 
     protected bool $tracksDeletedBy = true;
 

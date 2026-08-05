@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\AuditLog;
+use App\Models\Company;
 use LogicException;
 use Tests\TestCase;
 
@@ -80,5 +81,18 @@ class AuditLogImmutabilityTest extends TestCase
         }
 
         $this->assertDatabaseHas('audit_logs', ['id' => $log->id]);
+    }
+
+    public function test_force_deleting_a_company_preserves_its_audit_history(): void
+    {
+        $company = Company::factory()->create();
+        $log = AuditLog::factory()->create(['company_id' => $company->id]);
+
+        $company->forceDelete();
+
+        $this->assertDatabaseHas('audit_logs', [
+            'id' => $log->id,
+            'company_id' => null,
+        ]);
     }
 }

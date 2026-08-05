@@ -17,7 +17,9 @@ use App\Models\QuranDepartment;
 use App\Models\QuranStatus;
 use App\Models\Teacher;
 use App\Services\ReportService;
+use App\Services\RoleDataAccessService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -26,10 +28,19 @@ class ReportController extends Controller
 {
     public function __construct(
         private readonly ReportService $service,
+        private readonly RoleDataAccessService $dataAccess,
     ) {}
 
     public function index(): View
     {
+        abort_unless(Gate::any([
+            'report.dashboard',
+            'report.employee',
+            'report.teacher',
+            'report.quran',
+            'report.salah',
+        ]), 403);
+
         return view('reports.index');
     }
 
@@ -40,7 +51,7 @@ class ReportController extends Controller
         $this->authorize('report.employee');
 
         $filters = $request->only(['search', 'branch_id', 'department_id', 'designation_id', 'employment_status']);
-        $employees = $this->service->employeeReport($filters, (int) $request->query('per_page', 25));
+        $employees = $this->service->employeeReport($filters, $this->perPage($request));
 
         return view('reports.employees', [
             'employees' => $employees,
@@ -58,7 +69,7 @@ class ReportController extends Controller
         $this->authorize('report.teacher');
 
         $filters = $request->only(['search', 'branch_id', 'status']);
-        $teachers = $this->service->teacherReport($filters, (int) $request->query('per_page', 25));
+        $teachers = $this->service->teacherReport($filters, $this->perPage($request));
 
         return view('reports.teachers', [
             'teachers' => $teachers,
@@ -74,7 +85,7 @@ class ReportController extends Controller
         $this->authorize('report.quran');
 
         $filters = $request->only(['search', 'class_id', 'teacher_id', 'date_from', 'date_to']);
-        $attendance = $this->service->quranAttendanceReport($filters, (int) $request->query('per_page', 50));
+        $attendance = $this->service->quranAttendanceReport($filters, $this->perPage($request, 50));
         $summary = $this->service->quranAttendanceSummary($filters);
 
         $classes = QuranClass::orderBy('class_name')->pluck('class_name', 'id');
@@ -99,7 +110,7 @@ class ReportController extends Controller
         $this->authorize('report.quran');
 
         $filters = $request->only(['search', 'quran_department_id', 'quran_status_id', 'teacher_id']);
-        $progress = $this->service->quranProgressReport($filters, (int) $request->query('per_page', 25));
+        $progress = $this->service->quranProgressReport($filters, $this->perPage($request));
 
         $quranDepartments = QuranDepartment::active()->orderBy('display_order')->pluck('department_name', 'id');
         $quranStatuses = QuranStatus::active()->orderBy('display_order')->pluck('status_name', 'id');
@@ -124,9 +135,16 @@ class ReportController extends Controller
         $this->authorize('report.salah');
 
         $filters = $request->only(['search', 'jamaat_id', 'prayer_id', 'date_from', 'date_to']);
-        $attendance = $this->service->salahAttendanceReport($filters, (int) $request->query('per_page', 50));
+        $attendance = $this->service->salahAttendanceReport($filters, $this->perPage($request, 50));
         $summary = $this->service->salahAttendanceSummary($filters);
-        $prayerWise = $this->service->salahPrayerWiseSummary($filters);
+        $companyId = $request->user()->isSystemAdministrator()
+            ? null
+            : (int) $request->user()->company_id;
+        $prayerWise = $this->service->salahPrayerWiseSummary(
+            $filters,
+            $companyId,
+            $this->dataAccess->allowedJamaatIds($request->user()),
+        );
 
         $jamaats = Jamaat::orderBy('jamaat_name')->pluck('jamaat_name', 'id');
         $prayers = Prayer::active()->orderBy('prayer_order')->pluck('prayer_name', 'id');
@@ -156,6 +174,7 @@ class ReportController extends Controller
 
     public function exportEmployees(Request $request): BinaryFileResponse
     {
+        $this->authorize('report.employee');
         $this->authorize('report.export_excel');
 
         $filters = $request->only(['search', 'branch_id', 'department_id', 'designation_id', 'employment_status']);
@@ -165,6 +184,7 @@ class ReportController extends Controller
 
     public function exportTeachers(Request $request): BinaryFileResponse
     {
+        $this->authorize('report.teacher');
         $this->authorize('report.export_excel');
 
         $filters = $request->only(['search', 'branch_id', 'status']);
@@ -174,6 +194,7 @@ class ReportController extends Controller
 
     public function exportQuranAttendance(Request $request): BinaryFileResponse
     {
+        $this->authorize('report.quran');
         $this->authorize('report.export_excel');
 
         $filters = $request->only(['search', 'class_id', 'teacher_id', 'date_from', 'date_to']);
@@ -183,6 +204,7 @@ class ReportController extends Controller
 
     public function exportSalahAttendance(Request $request): BinaryFileResponse
     {
+        $this->authorize('report.salah');
         $this->authorize('report.export_excel');
 
         $filters = $request->only(['search', 'jamaat_id', 'prayer_id', 'date_from', 'date_to']);

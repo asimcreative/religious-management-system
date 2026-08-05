@@ -25,11 +25,11 @@ class StoreQuranClassRequest extends FormRequest
             ],
             'teacher_id' => [
                 'required',
-                Rule::exists('teachers', 'id')->where('company_id', $companyId),
+                Rule::exists('teachers', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
             ],
             'branch_id' => [
                 'required',
-                Rule::exists('branches', 'id')->where('company_id', $companyId),
+                Rule::exists('branches', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
             ],
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
