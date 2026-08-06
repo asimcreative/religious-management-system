@@ -145,6 +145,24 @@ function pullRun(string $command): array
     return ['exit_code' => $exitCode, 'output' => implode("\n", $output)];
 }
 
+/**
+ * PHP-FPM runs without HOME set, and Composer aborts with
+ * "The HOME or COMPOSER_HOME environment variable must be set" rather than
+ * falling back. Point it at a writable directory inside storage so the deploy
+ * does not depend on the web user's home directory existing.
+ */
+function pullComposerEnvPrefix(): string
+{
+    $home = PROJECT_ROOT.'/storage/app/.composer';
+
+    if (! is_dir($home)) {
+        @mkdir($home, 0755, true);
+    }
+
+    return 'COMPOSER_HOME='.escapeshellarg($home)
+        .' HOME='.escapeshellarg($home).' ';
+}
+
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 // Accept token from GET param or POST body
@@ -248,7 +266,8 @@ $step(
 // 3. Composer install (no dev)
 $step(
     'composer:install',
-    $composerBin.' install --no-dev --optimize-autoloader --no-interaction --prefer-dist'
+    pullComposerEnvPrefix()
+    .$composerBin.' install --no-dev --optimize-autoloader --no-interaction --prefer-dist'
     .' --working-dir='.escapeshellarg(PROJECT_ROOT)
 );
 
@@ -258,12 +277,18 @@ $step(
     $phpBin.' '.escapeshellarg(ARTISAN_PATH).' migrate --force --no-interaction'
 );
 
-// 5. Clear + warm caches
-$step(
-    'optimize:clear',
-    $phpBin.' '.escapeshellarg(ARTISAN_PATH).' optimize:clear --no-interaction'
-);
+// 5. Clear caches — ALWAYS, even when an earlier step failed.
+// git pull has already replaced the code on disk, so stale cached routes,
+// config and views now describe an application that no longer exists. Skipping
+// this is what turned a failed composer step into a site-wide 500
+// ("Route [locale.update] not defined"). Clearing is always safe: Laravel
+// simply reads config and routes from source until they are cached again.
+$r = pullRun($phpBin.' '.escapeshellarg(ARTISAN_PATH).' optimize:clear --no-interaction');
+$clearOk = $r['exit_code'] === 0;
+pullLog('STEP [optimize:clear]: '.($clearOk ? 'ok' : 'failed').' (always run)');
+$steps['optimize:clear'] = $clearOk ? 'ok' : 'failed';
 
+// Re-warming the caches is only safe when the whole deploy succeeded.
 $step(
     'optimize',
     $phpBin.' '.escapeshellarg(ARTISAN_PATH).' optimize --no-interaction'
