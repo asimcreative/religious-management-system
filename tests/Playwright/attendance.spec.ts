@@ -41,8 +41,18 @@ test.describe('Quran attendance index', () => {
         expect(hasContent).toBeTruthy();
     });
 
-    test('unauthenticated access redirects to login', async ({ page }) => {
+});
+
+// Guest-only checks must NOT live in a describe that logs in via beforeEach,
+// otherwise the session is already authenticated and the assertion is void.
+test.describe('Attendance guest access', () => {
+    test('unauthenticated access to quran attendance redirects to login', async ({ page }) => {
         await page.goto('/quran-attendance');
+        await expect(page).toHaveURL(/login/);
+    });
+
+    test('unauthenticated access to salah attendance redirects to login', async ({ page }) => {
+        await page.goto('/salah-attendance');
         await expect(page).toHaveURL(/login/);
     });
 });
@@ -86,10 +96,6 @@ test.describe('Salah attendance index', () => {
         await expect(page.locator('body')).not.toContainText('500');
     });
 
-    test('unauthenticated access redirects to login', async ({ page }) => {
-        await page.goto('/salah-attendance');
-        await expect(page).toHaveURL(/login/);
-    });
 });
 
 test.describe('Salah attendance create', () => {
@@ -117,11 +123,18 @@ test.describe('Salah attendance create', () => {
         await expect(jamaatSelect).toBeVisible();
     });
 
-    test('create page has prayer selector', async ({ page }) => {
+    /**
+     * Salah attendance is recorded for ALL prayers in a single submission:
+     * the roster is a grid of members x prayers named
+     * `attendance[employee_id][prayer_id]`. There is deliberately no single
+     * `prayer_id` selector — asserting its absence guards the contract, which
+     * the controller, the service and the Feature tests all depend on.
+     */
+    test('create page uses the all-prayers grid, not a single prayer selector', async ({ page }) => {
         await page.goto('/salah-attendance/create');
 
-        const prayerSelect = page.locator('select[name="prayer_id"]').first();
-        await expect(prayerSelect).toBeVisible();
+        await expect(page.locator('select[name="prayer_id"]')).toHaveCount(0);
+        await expect(page.locator('select[name="jamaat_id"]').first()).toBeVisible();
     });
 });
 

@@ -34,3 +34,8 @@ phpstan-baseline.neon
 
 # SQLite (dev only)
 database/database.sqlite
+
+# Playwright artifacts
+/test-results
+/storage/playwright-report
+/playwright/.cache
