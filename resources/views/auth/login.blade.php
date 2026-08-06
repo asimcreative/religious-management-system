@@ -3,65 +3,61 @@
 @section('title', __('auth.login'))
 
 @section('content')
-    <h5 class="card-title text-center mb-4">{{ __('auth.login') }}</h5>
+    <h1 class="rams-auth__title">{{ __('ui.login_heading') }}</h1>
+    <p class="rams-auth__sub">{{ __('ui.login_sub') }}</p>
 
-    <form method="POST" action="{{ route('login') }}">
+    {{-- Authentication failures are surfaced once, at the top, where the eye
+         lands after a failed submit — and announced to screen readers. --}}
+    @if ($errors->any())
+        <div class="alert alert-danger" role="alert" aria-live="assertive">
+            <i class="bi bi-exclamation-octagon-fill alert__icon" aria-hidden="true"></i>
+            <div class="alert__body">{{ $errors->first() }}</div>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('login') }}" novalidate>
         @csrf
 
-        {{-- Email --}}
-        <div class="mb-3">
-            <label for="email" class="form-label">{{ __('auth.email') }}</label>
-            <input type="email"
-                   id="email"
-                   name="email"
-                   class="form-control @error('email') is-invalid @enderror"
-                   value="{{ old('email') }}"
-                   required
-                   autofocus
-                   autocomplete="email">
-            @error('email')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
+        <x-form.input
+            name="email"
+            type="email"
+            :label="__('auth.email')"
+            icon="bi-envelope"
+            placeholder="name@example.com"
+            required
+            autofocus
+            autocomplete="username email"
+            inputmode="email"
+        />
 
-        {{-- Password --}}
-        <div class="mb-3">
-            <label for="password" class="form-label">{{ __('auth.password') }}</label>
-            <input type="password"
-                   id="password"
-                   name="password"
-                   class="form-control @error('password') is-invalid @enderror"
-                   required
-                   autocomplete="current-password">
-            @error('password')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
+        <x-form.password
+            name="password"
+            :label="__('auth.password')"
+            required
+            autocomplete="current-password"
+        />
 
-        {{-- Remember Me --}}
-        <div class="mb-3 form-check">
-            <input type="checkbox"
-                   id="remember"
-                   name="remember"
-                   class="form-check-input"
-                   value="1"
-                   {{ old('remember') ? 'checked' : '' }}>
-            <label for="remember" class="form-check-label">{{ __('auth.remember_me') }}</label>
-        </div>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+            <label class="form-check mb-0 cursor-pointer">
+                <input type="checkbox" id="remember" name="remember" class="form-check-input" value="1"
+                       {{ old('remember') ? 'checked' : '' }}>
+                <span class="form-check-label fs-md">{{ __('auth.remember_me') }}</span>
+            </label>
 
-        {{-- Submit --}}
-        <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-box-arrow-in-right me-1"></i>
-                {{ __('auth.login') }}
-            </button>
-        </div>
-
-        {{-- Forgot Password --}}
-        <div class="text-center">
-            <a href="{{ route('password.request') }}" class="text-decoration-none small">
+            <a href="{{ route('password.request') }}" class="fs-sm fw-medium">
                 {{ __('auth.forgot_password') }}
             </a>
         </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                <span>{{ __('auth.login') }}</span>
+            </button>
+        </div>
     </form>
+
+    <p class="text-center fs-xs text-subtle mt-4 mb-0">
+        <i class="bi bi-shield-lock me-1" aria-hidden="true"></i>{{ __('ui.login_security_note') }}
+    </p>
 @endsection

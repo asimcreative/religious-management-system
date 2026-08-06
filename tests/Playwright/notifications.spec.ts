@@ -37,25 +37,43 @@ test.describe('Notifications index', () => {
         await page.goto('/notifications');
 
         const hasTable = await page.locator('table, .notification-item, [class*="notification"]').first().isVisible();
-        const hasEmpty = await page.locator(':has-text("No notifications"), :has-text("no notifications"), :has-text("koi")').isVisible();
+        // `.first()` is required: a `:has-text()` selector matches every
+        // ancestor containing the text, which trips Playwright strict mode.
+        const hasEmpty = await page
+            .locator(':has-text("No notifications"), :has-text("no notifications"), :has-text("koi")')
+            .first()
+            .isVisible();
 
         // One of the two must be true
         expect(hasTable || hasEmpty).toBeTruthy();
     });
 
+    /**
+     * The control is intentionally rendered only when there is something to
+     * mark — the view gates it behind `@can('notification.read')` and
+     * `@if($unreadCount > 0)`. Asserting unconditional presence would be
+     * asserting a bug, so this checks the real rule instead.
+     */
+    test('"Mark all as read" button is shown only when unread notifications exist', async ({ page }) => {
+        await page.goto('/notifications');
+
+        const btn = page.locator('form[action*="mark-all-read"] button');
+        const unreadBadge = page.locator('.badge.bg-danger').first();
+
+        if (await unreadBadge.isVisible()) {
+            await expect(btn.first()).toBeVisible();
+        } else {
+            await expect(btn).toHaveCount(0);
+        }
+    });
+});
+
+// Guest-only checks must NOT live in a describe that logs in via beforeEach,
+// otherwise the session is already authenticated and the assertion is void.
+test.describe('Notifications guest access', () => {
     test('unauthenticated access redirects to login', async ({ page }) => {
         await page.goto('/notifications');
         await expect(page).toHaveURL(/login/);
-    });
-
-    test('"Mark all as read" button is present', async ({ page }) => {
-        await page.goto('/notifications');
-
-        // Button to mark all notifications as read
-        const btn = page.locator(
-            'button:has-text("Mark all"), a:has-text("Mark all"), button:has-text("Read All"), form[action*="mark-all-read"] button'
-        ).first();
-        await expect(btn).toBeVisible();
     });
 });
 

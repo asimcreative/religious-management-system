@@ -1,129 +1,171 @@
 @extends('layouts.app')
 
-@section('title', $quranProgress ? __('quran_progress.update_progress') : __('quran_progress.update_progress'))
+@section('title', __('quran_progress.update_progress'))
+
+@php($isEdit = (bool) $quranProgress)
+
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('quran-progress.index') }}">{{ __('quran_progress.quran_progress') }}</a></li>
+    @if ($isEdit)
+        <li class="breadcrumb-item"><a href="{{ route('quran-progress.show', $quranProgress) }}">{{ $quranProgress->employee?->employee_name }}</a></li>
+    @endif
+    <li class="breadcrumb-item active" aria-current="page">{{ __('quran_progress.update_progress') }}</li>
+@endsection
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ __('quran_progress.update_progress') }}</h4>
-    <a href="{{ route('quran-progress.index') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> {{ __('quran_progress.back_to_list') }}
-    </a>
-</div>
+<x-page-header :title="__('quran_progress.update_progress')"
+               :subtitle="$isEdit ? ($quranProgress->employee?->employee_name ?? '') : __('quran_progress.create_subtitle')"
+               icon="bi-graph-up-arrow">
+    <x-slot:actions>
+        <a href="{{ $isEdit ? route('quran-progress.show', $quranProgress) : route('quran-progress.index') }}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <span>{{ __('quran_progress.back_to_list') }}</span>
+        </a>
+    </x-slot:actions>
+</x-page-header>
 
-<form method="POST" action="{{ $quranProgress ? route('quran-progress.update', $quranProgress) : route('quran-progress.store') }}">
+<x-form.error-summary />
+
+<form method="POST"
+      action="{{ $isEdit ? route('quran-progress.update', $quranProgress) : route('quran-progress.store') }}"
+      novalidate data-guard>
     @csrf
-    @if($quranProgress)
+    @if ($isEdit)
         @method('PUT')
     @endif
 
-    <div class="card mb-3">
-        <div class="card-header">
-            <h6 class="mb-0">{{ __('quran_progress.progress_info') }}</h6>
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <x-card :title="__('quran_progress.progress_info')" icon="bi-person-badge" class="mb-3">
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        @if ($isEdit)
+                            {{-- The student cannot be reassigned once progress exists; the
+                                 record is shown read-only and posted as a hidden value. --}}
+                            <input type="hidden" name="employee_id" value="{{ $quranProgress->employee_id }}">
+                            <label for="employee_display" class="form-label">{{ __('quran_progress.employee') }}</label>
+                            <div class="input-icon mb-3">
+                                <i class="bi bi-lock" aria-hidden="true"></i>
+                                <input type="text" id="employee_display" class="form-control" readonly
+                                       value="{{ $quranProgress->employee?->employee_name }} ({{ $quranProgress->employee?->employee_code }})">
+                            </div>
+                        @else
+                            <x-form.select name="employee_id"
+                                           :label="__('quran_progress.employee')"
+                                           :selected="$selectedEmployeeId ?? null"
+                                           :placeholder="__('quran_progress.select_employee')"
+                                           required>
+                                @foreach ($employees as $employee)
+                                    <option value="{{ $employee->id }}"
+                                        @selected((int) old('employee_id', $selectedEmployeeId ?? 0) === $employee->id)>
+                                        {{ $employee->employee_name }} ({{ $employee->employee_code }})
+                                    </option>
+                                @endforeach
+                            </x-form.select>
+                        @endif
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <x-form.select name="teacher_id"
+                                       :label="__('quran_progress.teacher')"
+                                       :selected="$quranProgress?->teacher_id"
+                                       :placeholder="__('quran_progress.select')"
+                                       :options="$teachers"
+                                       required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <x-form.select name="quran_department_id"
+                                       :label="__('quran_progress.department')"
+                                       :selected="$quranProgress?->quran_department_id"
+                                       :placeholder="__('quran_progress.select')"
+                                       :options="$quranDepartments"
+                                       required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <x-form.select name="quran_status_id"
+                                       :label="__('quran_progress.quran_status')"
+                                       :selected="$quranProgress?->quran_status_id"
+                                       :placeholder="__('quran_progress.select')"
+                                       :options="$quranStatuses"
+                                       required />
+                    </div>
+                </div>
+            </x-card>
+
+            <x-card :title="__('quran_progress.current_position')" icon="bi-bookmark">
+                <p class="fs-sm text-soft mt-n1 mb-3">{{ __('quran_progress.position_hint') }}</p>
+
+                <div class="row">
+                    <div class="col-6 col-md-3">
+                        <x-form.input name="current_lesson"
+                                      :label="__('quran_progress.lesson')"
+                                      :value="$quranProgress?->current_lesson"
+                                      maxlength="100"
+                                      optional />
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <x-form.input name="current_surah"
+                                      :label="__('quran_progress.surah')"
+                                      :value="$quranProgress?->current_surah"
+                                      maxlength="100"
+                                      optional />
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <x-form.input name="current_sipara"
+                                      type="number"
+                                      :label="__('quran_progress.sipara')"
+                                      :value="$quranProgress?->current_sipara"
+                                      min="1" max="30" step="1"
+                                      inputmode="numeric"
+                                      optional />
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <x-form.input name="current_page"
+                                      type="number"
+                                      :label="__('quran_progress.page')"
+                                      :value="$quranProgress?->current_page"
+                                      min="1" max="604" step="1"
+                                      inputmode="numeric"
+                                      optional />
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <x-form.input name="completion_percentage"
+                                      type="number"
+                                      :label="__('quran_progress.completion').' (%)'"
+                                      :value="$quranProgress?->completion_percentage ?? 0"
+                                      :help="__('quran_progress.completion_help')"
+                                      min="0" max="100" step="0.01"
+                                      inputmode="decimal"
+                                      required />
+                    </div>
+
+                    <div class="col-12 col-md-8">
+                        <x-form.input name="remarks"
+                                      :label="__('quran_progress.remarks')"
+                                      :value="$quranProgress?->remarks"
+                                      maxlength="5000"
+                                      optional />
+                    </div>
+                </div>
+            </x-card>
         </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="employee_id" class="form-label">{{ __('quran_progress.employee') }} <span class="text-danger">*</span></label>
-                    @if($quranProgress)
-                        <input type="hidden" name="employee_id" value="{{ $quranProgress->employee_id }}">
-                        <input type="text" class="form-control" value="{{ $quranProgress->employee?->employee_name }} ({{ $quranProgress->employee?->employee_code }})" readonly>
-                    @else
-                    <select id="employee_id" name="employee_id" class="form-select @error('employee_id') is-invalid @enderror" required>
-                        <option value="">{{ __('quran_progress.select_employee') }}</option>
-                        @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}" {{ old('employee_id', $selectedEmployeeId ?? $quranProgress?->employee_id) == $employee->id ? 'selected' : '' }}>
-                                {{ $employee->employee_name }} ({{ $employee->employee_code }})
-                            </option>
-                        @endforeach
-                    </select>
-                    @endif
-                    @error('employee_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-6">
-                    <label for="teacher_id" class="form-label">{{ __('quran_progress.teacher') }} <span class="text-danger">*</span></label>
-                    <select id="teacher_id" name="teacher_id" class="form-select @error('teacher_id') is-invalid @enderror" required>
-                        <option value="">{{ __('quran_progress.select') }}</option>
-                        @foreach($teachers as $id => $name)
-                            <option value="{{ $id }}" {{ old('teacher_id', $quranProgress?->teacher_id) == $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('teacher_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-6">
-                    <label for="quran_department_id" class="form-label">{{ __('quran_progress.department') }} <span class="text-danger">*</span></label>
-                    <select id="quran_department_id" name="quran_department_id" class="form-select @error('quran_department_id') is-invalid @enderror" required>
-                        <option value="">{{ __('quran_progress.select') }}</option>
-                        @foreach($quranDepartments as $id => $name)
-                            <option value="{{ $id }}" {{ old('quran_department_id', $quranProgress?->quran_department_id) == $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('quran_department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-6">
-                    <label for="quran_status_id" class="form-label">{{ __('quran_progress.quran_status') }} <span class="text-danger">*</span></label>
-                    <select id="quran_status_id" name="quran_status_id" class="form-select @error('quran_status_id') is-invalid @enderror" required>
-                        <option value="">{{ __('quran_progress.select') }}</option>
-                        @foreach($quranStatuses as $id => $name)
-                            <option value="{{ $id }}" {{ old('quran_status_id', $quranProgress?->quran_status_id) == $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('quran_status_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-            </div>
+
+        <div class="col-12 col-xl-4">
+            <x-card :title="__('quran_progress.guidance_title')" icon="bi-info-circle">
+                <ul class="stack-sm list-unstyled mb-0 fs-md text-soft">
+                    <li><i class="bi bi-check2 text-success me-2" aria-hidden="true"></i>{{ __('quran_progress.guidance_1') }}</li>
+                    <li><i class="bi bi-check2 text-success me-2" aria-hidden="true"></i>{{ __('quran_progress.guidance_2') }}</li>
+                    <li><i class="bi bi-check2 text-success me-2" aria-hidden="true"></i>{{ __('quran_progress.guidance_3') }}</li>
+                </ul>
+            </x-card>
         </div>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-header">
-            <h6 class="mb-0">{{ __('quran_progress.current_position') }}</h6>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label for="current_lesson" class="form-label">{{ __('quran_progress.lesson') }}</label>
-                    <input type="text" id="current_lesson" name="current_lesson" class="form-control @error('current_lesson') is-invalid @enderror"
-                           value="{{ old('current_lesson', $quranProgress?->current_lesson) }}" maxlength="100">
-                    @error('current_lesson') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-3">
-                    <label for="current_surah" class="form-label">{{ __('quran_progress.surah') }}</label>
-                    <input type="text" id="current_surah" name="current_surah" class="form-control @error('current_surah') is-invalid @enderror"
-                           value="{{ old('current_surah', $quranProgress?->current_surah) }}" maxlength="100">
-                    @error('current_surah') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-3">
-                    <label for="current_sipara" class="form-label">{{ __('quran_progress.sipara') }}</label>
-                    <input type="number" id="current_sipara" name="current_sipara" class="form-control @error('current_sipara') is-invalid @enderror"
-                           value="{{ old('current_sipara', $quranProgress?->current_sipara) }}" min="1" max="30">
-                    @error('current_sipara') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-3">
-                    <label for="current_page" class="form-label">{{ __('quran_progress.page') }}</label>
-                    <input type="number" id="current_page" name="current_page" class="form-control @error('current_page') is-invalid @enderror"
-                           value="{{ old('current_page', $quranProgress?->current_page) }}" min="1" max="604">
-                    @error('current_page') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="completion_percentage" class="form-label">{{ __('quran_progress.completion') }} (%) <span class="text-danger">*</span></label>
-                    <input type="number" id="completion_percentage" name="completion_percentage" class="form-control @error('completion_percentage') is-invalid @enderror"
-                           value="{{ old('completion_percentage', $quranProgress?->completion_percentage ?? 0) }}" min="0" max="100" step="0.01" required>
-                    @error('completion_percentage') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-8">
-                    <label for="remarks" class="form-label">{{ __('quran_progress.remarks') }}</label>
-                    <input type="text" id="remarks" name="remarks" class="form-control @error('remarks') is-invalid @enderror"
-                           value="{{ old('remarks', $quranProgress?->remarks) }}" maxlength="5000">
-                    @error('remarks') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-check-lg"></i> {{ __('quran_progress.save') }}
-        </button>
-        <a href="{{ route('quran-progress.index') }}" class="btn btn-outline-secondary">{{ __('quran_progress.cancel') }}</a>
-    </div>
+    <x-form.actions :submit="__('quran_progress.save')"
+                    :cancel-url="$isEdit ? route('quran-progress.show', $quranProgress) : route('quran-progress.index')" />
 </form>
 @endsection

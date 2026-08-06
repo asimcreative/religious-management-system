@@ -1,0 +1,205 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RAMS — Print stylesheet
+//
+// Reports and detail pages must print as clean, executive-ready documents:
+// no app chrome, no colour-flooded backgrounds, readable serif-free type,
+// repeated table headers across page breaks.
+// ─────────────────────────────────────────────────────────────────────────────
+
+@media print {
+    @page {
+        size: A4;
+        margin: 14mm 12mm 16mm;
+    }
+
+    :root,
+    [data-bs-theme="dark"] {
+        // Force the light token set — dark backgrounds waste toner and
+        // print illegibly on most office printers.
+        --rams-app-bg: #FFFFFF;
+        --rams-surface: #FFFFFF;
+        --rams-surface-2: #FFFFFF;
+        --rams-surface-3: #FFFFFF;
+        --rams-border: #C7CEDA;
+        --rams-border-strong: #A9B3C4;
+        --rams-divider: #DDE2EA;
+        --rams-text: #101828;
+        --rams-text-strong: #000000;
+        --rams-text-muted: #4A5568;
+        --rams-text-subtle: #6B7280;
+    }
+
+    html, body {
+        background: #fff !important;
+        color: #101828 !important;
+        font-size: 10.5pt;
+        line-height: 1.4;
+    }
+
+    // ── Strip application chrome ─────────────────────────────────────────────
+    .rams-sidebar,
+    .rams-topbar,
+    .rams-backdrop,
+    .rams-toaster,
+    .rams-footer,
+    .btn-fab,
+    .page-header__actions,
+    .filter-bar,
+    .filter-chips,
+    .table-toolbar,
+    .table-footer,
+    .form-actions,
+    .pagination,
+    .modal,
+    .modal-backdrop,
+    .skip-link,
+    .no-print {
+        display: none !important;
+    }
+
+    .rams-main   { margin: 0 !important; min-height: 0 !important; }
+    .rams-content{ max-width: none !important; padding: 0 !important; }
+
+    // ── Print-only report letterhead ─────────────────────────────────────────
+    .print-header {
+        display: block !important;
+        margin-bottom: 10mm;
+        padding-bottom: 4mm;
+        border-bottom: 1.5pt solid #101828;
+
+        &__brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8mm;
+        }
+
+        &__title { font-size: 15pt; font-weight: 700; margin: 0 0 1mm; letter-spacing: -0.01em; }
+        &__sub   { font-size: 9pt; color: #4A5568; margin: 0; }
+        &__org   { font-size: 11pt; font-weight: 700; text-align: right; }
+        &__meta  { font-size: 8.5pt; color: #4A5568; text-align: right; margin-top: 1mm; }
+        &__filters {
+            margin-top: 4mm;
+            font-size: 8.5pt;
+            color: #4A5568;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1mm 6mm;
+        }
+    }
+
+    // ── Cards flatten into document sections ─────────────────────────────────
+    .card {
+        border: 1pt solid #C7CEDA !important;
+        border-radius: 3pt !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 5mm;
+    }
+
+    .card-header {
+        background: #F2F4F7 !important;
+        padding: 2.5mm 3mm !important;
+        border-bottom: 0.75pt solid #C7CEDA !important;
+    }
+
+    .card-body { padding: 3mm !important; }
+
+    .stat-card {
+        border: 1pt solid #C7CEDA !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        padding: 3mm !important;
+
+        &::before { height: 2pt !important; }
+        &__value { font-size: 14pt !important; }
+        &__icon  { display: none !important; }
+    }
+
+    // ── Tables ───────────────────────────────────────────────────────────────
+    .table-wrap,
+    .table-wrap--sticky {
+        overflow: visible !important;
+        max-height: none !important;
+    }
+
+    table { width: 100% !important; border-collapse: collapse !important; }
+
+    thead { display: table-header-group; }  // repeat header on every page
+    tfoot { display: table-footer-group; }
+    tr    { break-inside: avoid; page-break-inside: avoid; }
+
+    .table > thead th {
+        position: static !important;
+        background: #F2F4F7 !important;
+        color: #101828 !important;
+        border-bottom: 0.75pt solid #98A2B3 !important;
+        font-size: 8pt !important;
+        padding: 1.8mm 2mm !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .table > tbody > td,
+    .table > tbody > tr > td {
+        border-bottom: 0.5pt solid #DDE2EA !important;
+        padding: 1.6mm 2mm !important;
+        font-size: 9pt !important;
+    }
+
+    .table > tbody > tr:hover > * { background: transparent !important; }
+
+    .col-actions, .table-actions { display: none !important; }
+
+    // ── Badges and meters keep meaning without colour fills ──────────────────
+    .badge,
+    .badge-soft,
+    .chip {
+        border: 0.5pt solid #98A2B3 !important;
+        background: transparent !important;
+        color: #101828 !important;
+        padding: 0.3mm 1.2mm !important;
+        font-size: 8pt !important;
+    }
+
+    .badge-soft::before { display: none !important; }
+
+    .progress {
+        border: 0.5pt solid #98A2B3 !important;
+        background: #fff !important;
+        height: 2.5mm !important;
+    }
+
+    .progress-bar {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .meter { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    // ── Typography & flow ────────────────────────────────────────────────────
+    h1, h2, h3, h4, h5, h6 { break-after: avoid; page-break-after: avoid; color: #000 !important; }
+
+    .page-header {
+        margin-bottom: 4mm;
+        &__title { font-size: 13pt; }
+    }
+
+    .section-heading { break-after: avoid; margin: 5mm 0 2mm; }
+
+    a { color: #101828 !important; text-decoration: none !important; }
+
+    // Reveal destinations for external links only — internal app links are noise
+    a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: 7.5pt;
+        color: #667085;
+    }
+
+    .empty-state { padding: 6mm 0 !important; }
+    .empty-state__art { display: none !important; }
+
+    .break-before { break-before: page; page-break-before: always; }
+    .avoid-break  { break-inside: avoid; page-break-inside: avoid; }
+}

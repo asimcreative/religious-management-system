@@ -20,7 +20,10 @@ test.describe('Login page', () => {
 
         await expect(page.locator('input[name="email"]')).toBeVisible();
         await expect(page.locator('input[name="password"]')).toBeVisible();
-        await expect(page.locator('button[type="submit"]')).toBeVisible();
+
+        // Scoped to the credential form: the page also carries the language
+        // switcher, which posts its own form and so has its own submit button.
+        await expect(page.locator('form[action$="/login"] button[type="submit"]')).toBeVisible();
     });
 
     test('page title is present', async ({ page }) => {
@@ -86,8 +89,10 @@ test.describe('Successful login', () => {
         await page.click('button[type="submit"]');
         await page.waitForURL(/dashboard/);
 
-        // Page should not be empty / have main content area
-        await expect(page.locator('main, #main, .main-content, body')).toBeVisible();
+        // Page should not be empty / have main content area.
+        // `.first()` is required: this selector matches both <body> and <main>,
+        // which trips Playwright strict mode.
+        await expect(page.locator('main, #main, .main-content, body').first()).toBeVisible();
     });
 });
 
@@ -175,7 +180,10 @@ test.describe('Change password form', () => {
         await page.fill('input[name="current_password"]', 'wrong-current-password');
         await page.fill('input[name="password"]', 'NewP@ssw0rd!99');
         await page.fill('input[name="password_confirmation"]', 'NewP@ssw0rd!99');
-        await page.click('button[type="submit"]');
+        // Scope to the page form: the app shell's topbar contains its own
+        // submit button (logout), which appears first in the DOM and is hidden
+        // inside a dropdown.
+        await page.locator('form button[type="submit"]:visible').first().click();
 
         await expect(page).toHaveURL(/change-password/);
         await expect(page.locator('.alert, [class*="error"], [class*="invalid"]').first()).toBeVisible();
@@ -189,7 +197,10 @@ test.describe('Forgot password', () => {
         await page.goto('/forgot-password');
 
         await expect(page.locator('input[name="email"]')).toBeVisible();
-        await expect(page.locator('button[type="submit"]')).toBeVisible();
+
+        // Scoped to the reset-request form — the language switcher on this
+        // page submits a form of its own.
+        await expect(page.locator('form[action$="/forgot-password"] button[type="submit"]')).toBeVisible();
     });
 
     test('submitting unknown email does not show 500', async ({ page }) => {

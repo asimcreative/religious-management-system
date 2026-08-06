@@ -14,6 +14,8 @@ use App\Models\Teacher;
 use App\Models\User;
 use Carbon\Carbon;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -28,6 +30,9 @@ class DashboardService
     private const TTL_TODAY = 120;     // 2 minutes — today's live attendance
 
     private const TTL_SUMMARY = 600;   // 10 minutes — module summaries
+
+    /** Days of history shown by the dashboard attendance trend. */
+    public const TREND_DAYS = 14;
 
     /**
      * Resolve the current company_id for cache key scoping.
@@ -59,7 +64,7 @@ class DashboardService
             return;
         }
 
-        foreach (['overview', 'today_quran', 'today_salah', 'quran_summary', 'salah_summary'] as $seg) {
+        foreach (['overview', 'today_quran', 'today_salah', 'quran_summary', 'salah_summary', 'trend'] as $seg) {
             Cache::forget("company:{$id}:dashboard:{$seg}");
         }
     }
@@ -209,6 +214,109 @@ class DashboardService
         });
     }
 
+    /**
+     * Daily attendance rate for the last TREND_DAYS days, per module.
+     *
+     * Today's percentage alone cannot answer "are we improving?". This returns
+     * one row per calendar day — including days with no records, so a gap in
+     * recording is visible rather than silently skipped.
+     *
+     * @return array{
+     *     days: list<array{date: string, quran: array{total: int, present: int, rate: float|null}, salah: array{total: int, present: int, rate: float|null}}>,
+     *     has_quran: bool,
+     *     has_salah: bool
+     * }
+     */
+    public function attendanceTrend(): array
+    {
+        return $this->remember('trend', self::TTL_TODAY, function () {
+            $user = Auth::user();
+            $canQuran = $this->can($user, 'quran.attendance.view');
+            $canSalah = $this->can($user, 'salah.attendance.view');
+
+            $timezone = TimezoneHelper::getCompanyTimezone($this->companyId());
+            $end = Carbon::now($timezone)->startOfDay();
+            $start = $end->copy()->subDays(self::TREND_DAYS - 1);
+
+            $empty = ['total' => 0, 'present' => 0, 'rate' => null];
+            $days = [];
+
+            for ($cursor = $start->copy(); $cursor->lte($end); $cursor->addDay()) {
+                $days[$cursor->toDateString()] = [
+                    'date' => $cursor->toDateString(),
+                    'quran' => $empty,
+                    'salah' => $empty,
+                ];
+            }
+
+            if ($canQuran) {
+                foreach ($this->dailyAttendance(QuranAttendance::query(), $start, $end) as $date => $row) {
+                    if (isset($days[$date])) {
+                        $days[$date]['quran'] = $row;
+                    }
+                }
+            }
+
+            if ($canSalah) {
+                foreach ($this->dailyAttendance(SalahAttendance::query(), $start, $end) as $date => $row) {
+                    if (isset($days[$date])) {
+                        $days[$date]['salah'] = $row;
+                    }
+                }
+            }
+
+            return [
+                'days' => array_values($days),
+                'has_quran' => $canQuran,
+                'has_salah' => $canSalah,
+            ];
+        });
+    }
+
+    /**
+     * Per-day totals for an attendance table, keyed by date.
+     *
+     * A single grouped query per module rather than one query per day.
+     *
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return array<string, array{total: int, present: int, rate: float|null}>
+     */
+    private function dailyAttendance(Builder $query, Carbon $start, Carbon $end): array
+    {
+        // Group on DATE(...) rather than the raw column: a date-cast attribute
+        // is persisted as a full datetime string on SQLite, so a plain string
+        // comparison would drop the final day and split one day into two
+        // groups. DATE() behaves identically on MySQL and SQLite.
+        $rows = $query
+            ->whereDate('attendance_date', '>=', $start->toDateString())
+            ->whereDate('attendance_date', '<=', $end->toDateString())
+            ->selectRaw('DATE(attendance_date) as day, COUNT(*) as total, SUM(CASE WHEN attendance_reason_id IS NULL THEN 1 ELSE 0 END) as present')
+            ->groupByRaw('DATE(attendance_date)')
+            ->orderByRaw('DATE(attendance_date)')
+            ->get();
+
+        $result = [];
+
+        foreach ($rows as $row) {
+            $total = (int) $row->getAttribute('total');
+            $present = (int) $row->getAttribute('present');
+
+            // `day` arrives as a string on MySQL and may be cast on SQLite.
+            $day = $row->getAttribute('day');
+            $date = $day instanceof Carbon ? $day->toDateString() : Carbon::parse((string) $day)->toDateString();
+
+            $result[$date] = [
+                'total' => $total,
+                'present' => $present,
+                'rate' => $total > 0 ? round(($present / $total) * 100, 1) : null,
+            ];
+        }
+
+        return $result;
+    }
+
     private function can(?User $user, string $permission): bool
     {
         return $user instanceof User && $user->can($permission);
@@ -221,6 +329,7 @@ class DashboardService
             'today_quran' => ['quran.attendance.view'],
             'today_salah', 'salah_summary' => ['salah.attendance.view'],
             'quran_summary' => ['quran.progress.view', 'quran.attendance.view'],
+            'trend' => ['quran.attendance.view', 'salah.attendance.view'],
             default => [],
         };
 

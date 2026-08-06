@@ -3,60 +3,54 @@
 @section('title', __('auth.reset_password'))
 
 @section('content')
-    <h5 class="card-title text-center mb-4">{{ __('auth.reset_password') }}</h5>
+    <h1 class="rams-auth__title">{{ __('auth.reset_password') }}</h1>
+    <p class="rams-auth__sub">{{ __('ui.reset_password_sub') }}</p>
+
+    <x-form.error-summary />
 
     <form method="POST" action="{{ route('password.update') }}">
         @csrf
-
         <input type="hidden" name="token" value="{{ $token }}">
 
-        {{-- Email --}}
-        <div class="mb-3">
-            <label for="email" class="form-label">{{ __('auth.email') }}</label>
-            <input type="email"
-                   id="email"
-                   name="email"
-                   class="form-control @error('email') is-invalid @enderror"
-                   value="{{ old('email', $email) }}"
-                   required
-                   autocomplete="email">
-            @error('email')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
+        <x-form.input
+            name="email"
+            type="email"
+            :label="__('auth.email')"
+            :value="$email"
+            icon="bi-envelope"
+            required
+            autocomplete="username email"
+            inputmode="email"
+        />
 
-        {{-- New Password --}}
-        <div class="mb-3">
-            <label for="password" class="form-label">{{ __('auth.new_password') }}</label>
-            <input type="password"
-                   id="password"
-                   name="password"
-                   class="form-control @error('password') is-invalid @enderror"
-                   required
-                   autocomplete="new-password">
-            @error('password')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-            <div class="form-text">{{ __('auth.password_requirements') }}</div>
-        </div>
+        <x-form.password
+            name="password"
+            :label="__('auth.new_password')"
+            :help="__('auth.password_requirements')"
+            autocomplete="new-password"
+            meter
+            required
+            autofocus
+        />
 
-        {{-- Confirm Password --}}
-        <div class="mb-3">
-            <label for="password_confirmation" class="form-label">{{ __('auth.confirm_password') }}</label>
-            <input type="password"
-                   id="password_confirmation"
-                   name="password_confirmation"
-                   class="form-control"
-                   required
-                   autocomplete="new-password">
-        </div>
+        <x-form.password
+            name="password_confirmation"
+            :label="__('auth.confirm_password')"
+            autocomplete="new-password"
+            required
+        />
 
-        {{-- Submit --}}
         <div class="d-grid">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-key me-1"></i>
-                {{ __('auth.reset_password') }}
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-shield-check" aria-hidden="true"></i>
+                <span>{{ __('auth.reset_password') }}</span>
             </button>
         </div>
     </form>
+
+    <p class="text-center mt-4 mb-0">
+        <a href="{{ route('login') }}" class="fs-sm text-soft">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ __('auth.back_to_login') }}
+        </a>
+    </p>
 @endsection

@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EmployeeController;
 use App\Http\Controllers\Web\JamaatController;
 use App\Http\Controllers\Web\JamaatMemberController;
+use App\Http\Controllers\Web\LocaleController;
 use App\Http\Controllers\Web\Masters\AttendanceReasonController;
 use App\Http\Controllers\Web\Masters\BranchController;
 use App\Http\Controllers\Web\Masters\DepartmentController;
@@ -39,6 +40,12 @@ Route::middleware('guest')->group(function () {
     Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 });
+
+// ── Display language ─────────────────────────────────────────────
+// Outside both the guest and auth groups: the language switcher is offered on
+// the sign-in screens as well as inside the application.
+
+Route::post('locale', LocaleController::class)->name('locale.update');
 
 // ── Authenticated Routes ─────────────────────────────────────────
 

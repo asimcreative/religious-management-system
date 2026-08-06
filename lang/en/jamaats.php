@@ -4,6 +4,21 @@ return [
     // Module
     'jamaats' => 'Jamaats',
     'salah_module' => 'Salah Module',
+    'subtitle' => 'Prayer groups, their leaders and members.',
+    'create_subtitle' => 'Create a prayer group and appoint its leadership.',
+
+    // Empty / helper copy
+    'empty_title' => 'No jamaats yet',
+    'empty_text' => 'Create a jamaat to group members and start recording Salah attendance.',
+    'jamaat_number_help' => 'Must be unique within your organisation.',
+    'leadership_hint' => 'A leader is required; a vice leader is optional but recommended.',
+    'about_title' => 'How jamaats work',
+    'about_point_1' => 'Each jamaat belongs to one branch.',
+    'about_point_2' => 'Members are added separately once the jamaat is saved.',
+    'about_point_3' => 'Salah attendance is recorded per jamaat, per prayer, per day.',
+    'no_active_members_text' => 'Add members so daily Salah attendance can be recorded for this jamaat.',
+    'no_employees_available_text' => 'Every eligible employee already belongs to a jamaat.',
+    'add_member_help' => 'Only active employees not already in a jamaat are listed.',
     'add_new' => 'Add Jamaat',
     'create_jamaat' => 'Create Jamaat',
     'edit_jamaat' => 'Edit Jamaat',

@@ -1,49 +1,21 @@
 @extends('layouts.app')
 
-@section('title', __('masters.edit') . ' ' . __('masters.branch'))
+@section('title', __('masters.edit').' — '.$branch->branch_name)
+
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('masters.branches.index') }}">{{ __('masters.branches') }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ $branch->branch_name }}</li>
+@endsection
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ __('masters.edit') }} {{ __('masters.branch') }}</h4>
-    <a href="{{ route('masters.branches.index') }}" class="btn btn-outline-secondary btn-sm">{{ __('masters.back') }}</a>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <form method="POST" action="{{ route('masters.branches.update', $branch) }}">
-            @csrf @method('PUT')
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">{{ __('masters.branch_name') }} <span class="text-danger">*</span></label>
-                    <input type="text" name="branch_name" class="form-control @error('branch_name') is-invalid @enderror"
-                           value="{{ old('branch_name', $branch->branch_name) }}" required>
-                    @error('branch_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">{{ __('masters.phone') }}</label>
-                    <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
-                           value="{{ old('phone', $branch->phone) }}">
-                    @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-12">
-                    <label class="form-label">{{ __('masters.address') }}</label>
-                    <textarea name="address" class="form-control @error('address') is-invalid @enderror" rows="2">{{ old('address', $branch->address) }}</textarea>
-                    @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">{{ __('masters.status') }} <span class="text-danger">*</span></label>
-                    <select name="status" class="form-select @error('status') is-invalid @enderror" required>
-                        <option value="1" {{ old('status', $branch->status->value) == 1 ? 'selected' : '' }}>{{ __('masters.active') }}</option>
-                        <option value="0" {{ old('status', $branch->status->value) == 0 ? 'selected' : '' }}>{{ __('masters.inactive') }}</option>
-                    </select>
-                    @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-            </div>
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">{{ __('masters.save') }}</button>
-                <a href="{{ route('masters.branches.index') }}" class="btn btn-outline-secondary">{{ __('masters.cancel') }}</a>
-            </div>
-        </form>
-    </div>
-</div>
+@include('masters.partials.form-page', [
+    'title' => __('masters.edit').' — '.$branch->branch_name,
+    'singular' => __('masters.branch'),
+    'plural' => __('masters.branches'),
+    'icon' => 'bi-building',
+    'routeBase' => 'masters.branches',
+    'fieldsView' => 'masters.branches.partials.fields',
+    'record' => $branch,
+    'aside' => [__('masters.branch_use_1'), __('masters.branch_use_2'), __('masters.branch_use_3')],
+])
 @endsection

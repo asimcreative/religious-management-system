@@ -5,6 +5,23 @@ return [
     'quran_classes' => 'Quran Classes',
     'create_class' => 'Create Quran Class',
     'edit_class' => 'Edit Quran Class',
+    'subtitle' => 'Classes, their teachers and enrolled members.',
+    'create_subtitle' => 'Set up a class, assign its teacher and define its capacity.',
+
+    // Empty / helper copy
+    'empty_title' => 'No Quran classes yet',
+    'empty_text' => 'Create a class to enrol members and start recording attendance.',
+    'class_code_help' => 'Must be unique within your organisation.',
+    'schedule_hint' => 'Times are optional but help teachers and members plan the week.',
+    'max_strength_help' => 'Enrolment is blocked once this limit is reached.',
+    'about_title' => 'How classes work',
+    'about_point_1' => 'A class belongs to one teacher and one branch.',
+    'about_point_2' => 'Members are enrolled separately once the class is saved.',
+    'about_point_3' => 'Attendance can only be recorded for active classes with members.',
+    'no_members_text' => 'Enrol members to start recording attendance for this class.',
+    'no_available_employees' => 'No employees available',
+    'no_available_employees_text' => 'Every eligible employee is already enrolled in this class.',
+    'add_member_help' => 'Only active employees not already in this class are listed.',
 
     // Fields
     'class_code' => 'Class Code',

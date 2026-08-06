@@ -2,144 +2,165 @@
 
 @section('title', __('quran_progress.progress_detail'))
 
+@php
+    $pct = (float) $quranProgress->completion_percentage;
+    $studentName = $quranProgress->employee?->employee_name ?? '—';
+@endphp
+
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('quran-progress.index') }}">{{ __('quran_progress.quran_progress') }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ $studentName }}</li>
+@endsection
+
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">
-        {{ $quranProgress->employee?->employee_name ?? '-' }}
-        <small class="text-muted">- {{ __('quran_progress.quran_progress') }}</small>
-    </h4>
-    <div class="d-flex gap-2">
+<x-page-header :title="$studentName"
+               :subtitle="__('quran_progress.quran_progress')"
+               icon="bi-graph-up-arrow">
+    <x-slot:actions>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+            <i class="bi bi-printer" aria-hidden="true"></i>
+            <span class="d-none d-sm-inline">{{ __('ui.print') }}</span>
+        </button>
+
         @can('update', $quranProgress)
             <a href="{{ route('quran-progress.edit', $quranProgress) }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-pencil"></i> {{ __('quran_progress.edit') }}
+                <i class="bi bi-pencil" aria-hidden="true"></i>
+                <span>{{ __('quran_progress.edit') }}</span>
             </a>
         @endcan
+
         <a href="{{ route('quran-progress.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left"></i> {{ __('quran_progress.back_to_list') }}
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <span class="d-none d-md-inline">{{ __('quran_progress.back_to_list') }}</span>
         </a>
-    </div>
-</div>
+    </x-slot:actions>
+</x-page-header>
+
+<x-print-header :title="$studentName" :subtitle="__('quran_progress.progress_detail')" />
 
 <div class="row g-3">
-    {{-- Current Progress --}}
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <h6 class="mb-0">{{ __('quran_progress.current_position') }}</h6>
-            </div>
-            <div class="card-body">
-                <table class="table table-sm table-borderless mb-0">
-                    <tr>
-                        <td class="text-muted" style="width: 40%">{{ __('quran_progress.employee') }}</td>
-                        <td>
-                            @if($quranProgress->employee)
-                                <a href="{{ route('employees.show', $quranProgress->employee) }}">
-                                    {{ $quranProgress->employee->employee_name }}
-                                </a>
-                            @else
-                                -
-                            @endif
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.department') }}</td>
-                        <td>{{ $quranProgress->quranDepartment?->department_name ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.quran_status') }}</td>
-                        <td>
-                            @if($quranProgress->quranStatus)
-                                <span class="badge" style="background-color: {{ $quranProgress->quranStatus->color ?? '#6c757d' }}">
-                                    {{ $quranProgress->quranStatus->status_name }}
-                                </span>
-                            @else
-                                -
-                            @endif
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.lesson') }}</td>
-                        <td>{{ $quranProgress->current_lesson ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.surah') }}</td>
-                        <td>{{ $quranProgress->current_surah ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.sipara') }}</td>
-                        <td>{{ $quranProgress->current_sipara ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.page') }}</td>
-                        <td>{{ $quranProgress->current_page ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.completion') }}</td>
-                        <td>
-                            <div class="progress" style="height: 20px; min-width: 120px">
-                                <div class="progress-bar {{ (float)$quranProgress->completion_percentage >= 100 ? 'bg-success' : 'bg-primary' }}"
-                                     style="width: {{ $quranProgress->completion_percentage }}%">
-                                    {{ number_format($quranProgress->completion_percentage, 1) }}%
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.teacher') }}</td>
-                        <td>{{ $quranProgress->teacher?->employee?->employee_name ?? '-' }}</td>
-                    </tr>
-                    @if($quranProgress->remarks)
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.remarks') }}</td>
-                        <td>{{ $quranProgress->remarks }}</td>
-                    </tr>
-                    @endif
-                    <tr>
-                        <td class="text-muted">{{ __('quran_progress.last_updated') }}</td>
-                        <td>{{ $quranProgress->updater?->name ?? '-' }} <small class="text-muted">{{ $quranProgress->updated_at?->format('d M Y H:i') }}</small></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
 
-    {{-- Progress History --}}
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <h6 class="mb-0">{{ __('quran_progress.history') }} ({{ $quranProgress->history->count() }})</h6>
+    {{-- ── Completion meter ─────────────────────────────────────────────── --}}
+    <div class="col-12 col-lg-4">
+        <x-card class="h-100" body-class="text-center">
+            <div class="meter mb-3"
+                 style="--value: {{ min(100, $pct) }}; --tone: {{ $pct >= 100 ? 'var(--rams-success-text)' : 'var(--rams-primary)' }};"
+                 role="img"
+                 aria-label="{{ __('quran_progress.completion') }}: {{ number_format($pct, 1) }}%">
+                <span class="meter__label">{{ number_format($pct, 0) }}%</span>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>{{ __('quran_progress.date') }}</th>
-                                <th>{{ __('quran_progress.department') }}</th>
-                                <th>{{ __('quran_progress.lesson') }}</th>
-                                <th>{{ __('quran_progress.completion') }}</th>
-                                <th>{{ __('quran_progress.updated_by') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($quranProgress->history as $entry)
-                                <tr>
-                                    <td>{{ $entry->created_at?->format('d M Y') }}</td>
-                                    <td>{{ $entry->quranDepartment?->department_name ?? '-' }}</td>
-                                    <td>{{ $entry->lesson ?? '-' }}</td>
-                                    <td>{{ number_format($entry->percentage, 0) }}%</td>
-                                    <td>{{ $entry->creator?->name ?? '-' }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted">{{ __('quran_progress.no_history') }}</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+
+            <p class="fw-semibold mb-1">{{ __('quran_progress.completion') }}</p>
+
+            @if ($quranProgress->quranStatus)
+                <span class="badge-soft"
+                      style="background-color: {{ $quranProgress->quranStatus->color ?? '#64748B' }}1F;
+                             color: {{ $quranProgress->quranStatus->color ?? '#64748B' }};">
+                    {{ $quranProgress->quranStatus->status_name }}
+                </span>
+            @endif
+
+            <div class="metric-strip mt-3">
+                <div class="metric-strip__item">
+                    <div class="metric-strip__value">{{ $quranProgress->current_sipara ?? '—' }}</div>
+                    <div class="metric-strip__label">{{ __('quran_progress.sipara') }}</div>
+                </div>
+                <div class="metric-strip__item">
+                    <div class="metric-strip__value">{{ $quranProgress->current_page ?? '—' }}</div>
+                    <div class="metric-strip__label">{{ __('quran_progress.page') }}</div>
                 </div>
             </div>
-        </div>
+        </x-card>
+    </div>
+
+    {{-- ── Details ──────────────────────────────────────────────────────── --}}
+    <div class="col-12 col-lg-8">
+        <x-card :title="__('quran_progress.current_position')" icon="bi-bookmark" class="h-100">
+            <x-detail-list>
+                <x-detail-row :label="__('quran_progress.employee')">
+                    @if ($quranProgress->employee)
+                        @can('view', $quranProgress->employee)
+                            <a href="{{ route('employees.show', $quranProgress->employee) }}">{{ $quranProgress->employee->employee_name }}</a>
+                        @else
+                            {{ $quranProgress->employee->employee_name }}
+                        @endcan
+                        <span class="code-cell ms-1">({{ $quranProgress->employee->employee_code }})</span>
+                    @endif
+                </x-detail-row>
+                <x-detail-row :label="__('quran_progress.department')" :value="$quranProgress->quranDepartment?->department_name" />
+                <x-detail-row :label="__('quran_progress.lesson')" :value="$quranProgress->current_lesson" />
+                <x-detail-row :label="__('quran_progress.surah')" :value="$quranProgress->current_surah" />
+                <x-detail-row :label="__('quran_progress.completion')">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="progress flex-grow-1" style="max-width: 14rem;">
+                            <span class="progress-bar {{ $pct >= 100 ? 'bg-success' : 'bg-primary' }}" style="width: {{ min(100, $pct) }}%"></span>
+                        </span>
+                        <span class="tabular fw-semibold">{{ number_format($pct, 1) }}%</span>
+                    </div>
+                </x-detail-row>
+                <x-detail-row :label="__('quran_progress.teacher')" :value="$quranProgress->teacher?->employee?->employee_name" />
+                <x-detail-row :label="__('quran_progress.remarks')" :value="$quranProgress->remarks" />
+                <x-detail-row :label="__('quran_progress.last_updated')">
+                    {{ $quranProgress->updater?->name ?? '—' }}
+                    <span class="d-block fs-xs text-subtle">{{ $quranProgress->updated_at?->format('d M Y, H:i') }}</span>
+                </x-detail-row>
+            </x-detail-list>
+        </x-card>
+    </div>
+
+    {{-- ── History ──────────────────────────────────────────────────────── --}}
+    <div class="col-12">
+        <x-card :title="__('quran_progress.history')" icon="bi-clock-history" flush>
+            <x-slot:actions>
+                <span class="badge-soft badge-soft-neutral">{{ $quranProgress->history->count() }}</span>
+            </x-slot:actions>
+
+            @if ($quranProgress->history->isNotEmpty())
+                <x-table :label="__('quran_progress.history')">
+                    <thead>
+                        <tr>
+                            <th scope="col">{{ __('quran_progress.date') }}</th>
+                            <th scope="col">{{ __('quran_progress.department') }}</th>
+                            <th scope="col">{{ __('quran_progress.lesson') }}</th>
+                            <th scope="col" style="min-width: 9rem;">{{ __('quran_progress.completion') }}</th>
+                            <th scope="col">{{ __('quran_progress.updated_by') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($quranProgress->history as $entry)
+                            @php($entryPct = (float) $entry->percentage)
+                            <tr>
+                                <td data-label="{{ __('quran_progress.date') }}" class="col-fit">
+                                    <span class="tabular">{{ $entry->created_at?->format('d M Y') }}</span>
+                                </td>
+                                <td data-label="{{ __('quran_progress.department') }}">
+                                    {{ $entry->quranDepartment?->department_name ?? '—' }}
+                                </td>
+                                <td data-label="{{ __('quran_progress.lesson') }}">
+                                    {{ $entry->lesson ?? '—' }}
+                                </td>
+                                <td data-label="{{ __('quran_progress.completion') }}">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="progress flex-grow-1" style="min-width: 60px; max-width: 8rem;">
+                                            <span class="progress-bar {{ $entryPct >= 100 ? 'bg-success' : 'bg-primary' }}"
+                                                  style="width: {{ min(100, $entryPct) }}%"></span>
+                                        </span>
+                                        <span class="tabular fs-sm">{{ number_format($entryPct, 0) }}%</span>
+                                    </div>
+                                </td>
+                                <td data-label="{{ __('quran_progress.updated_by') }}">
+                                    {{ $entry->creator?->name ?? '—' }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </x-table>
+            @else
+                <x-empty-state icon="bi-clock-history"
+                               :title="__('quran_progress.no_history')"
+                               :text="__('quran_progress.no_history_text')" />
+            @endif
+        </x-card>
     </div>
 </div>
 @endsection

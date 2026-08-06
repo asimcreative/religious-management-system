@@ -24,6 +24,14 @@ return [
     'no_attendance_today' => 'آج کوئی حاضری درج نہیں ہوئی۔',
 
     // Module Summary
+    // Attendance Trend
+    'trend_title' => 'حاضری کا رجحان',
+    'trend_subtitle' => 'دونوں ماڈیولز میں روزانہ حاضری کی شرح۔',
+    'trend_range' => 'گزشتہ :days دن',
+    'trend_no_record' => 'درج نہیں',
+    'trend_empty_title' => 'اس مدت میں کوئی حاضری درج نہیں',
+    'trend_empty_text' => 'حاضری درج ہونے کے بعد روزانہ شرح یہاں نظر آئے گی۔',
+
     'module_summary' => 'ماڈیول خلاصہ',
     'avg_quran_completion' => 'اوسط قرآن تکمیل',
     'quran_progress_records' => 'قرآن پیش رفت ریکارڈز',

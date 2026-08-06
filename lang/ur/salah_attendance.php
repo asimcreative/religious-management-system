@@ -4,6 +4,26 @@ return [
     // Module
     'salah_attendance' => 'نماز حاضری',
     'mark_attendance' => 'حاضری لگائیں',
+    'subtitle' => 'تمام جماعتوں کی روزانہ نماز حاضری۔',
+    'mark_subtitle' => 'جماعت اور تاریخ منتخب کریں، پھر دن کی تمام نمازیں درج کریں۔',
+
+    // Empty / helper copy
+    'empty_title' => 'ابھی کوئی نماز حاضری درج نہیں',
+    'empty_text' => 'جماعتوں کی درج کی گئی حاضری یہاں نظر آئے گی۔',
+    'choose_jamaat_title' => 'جماعت اور تاریخ منتخب کریں',
+    'choose_jamaat_text' => 'جماعت اور تاریخ منتخب کریں؛ ارکان کی فہرست خود بخود لوڈ ہو جائے گی۔',
+    'no_members_title' => 'اس جماعت میں کوئی رکن نہیں',
+    'member_count' => ':count رکن|:count ارکان',
+    'not_recorded' => 'درج نہیں',
+    'optional_remarks' => 'اختیاری تبصرہ',
+    'bulk_intro' => 'پوری نماز کے لیے ایک ساتھ حیثیت مقرر کریں:',
+    'bulk_prayer_label' => 'کون سی نماز',
+    'bulk_status_label' => 'کون سی حیثیت',
+    'all_prayers' => 'تمام نمازیں',
+    'apply' => 'لاگو کریں',
+    'save_hint' => 'جن کے لیے کوئی وجہ منتخب نہیں، وہ حاضر شمار ہوں گے۔',
+    'date_not_allowed_title' => 'تاریخ اجازت شدہ مدت سے باہر ہے',
+    'attendance_locked_title' => 'حاضری مقفل ہے',
     'attendance_history' => 'حاضری کی تاریخ',
 
     // Fields

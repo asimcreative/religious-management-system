@@ -45,9 +45,14 @@ test.describe('Employee index', () => {
     test('employee list shows table or empty state', async ({ page }) => {
         await page.goto('/employees');
 
-        // Either a data table or a "no records" message should be visible
-        const hasTable = await page.locator('table').isVisible();
-        const hasEmpty = await page.locator('[class*="empty"], [class*="no-data"], td:has-text("No ")').isVisible();
+        // Either a data table or a "no records" message should be visible.
+        // `.first()` is required: these selectors legitimately match several
+        // nested elements, and an unscoped locator trips Playwright strict mode.
+        const hasTable = await page.locator('table').first().isVisible();
+        const hasEmpty = await page
+            .locator('[class*="empty"], [class*="no-data"], td:has-text("No ")')
+            .first()
+            .isVisible();
         expect(hasTable || hasEmpty).toBeTruthy();
     });
 
@@ -57,8 +62,12 @@ test.describe('Employee index', () => {
         await expect(page.locator('input[name="search"], input[placeholder*="Search"], input[placeholder*="search"]').first()).toBeVisible();
     });
 
+});
+
+// Guest-only checks must NOT live in a describe that logs in via beforeEach,
+// otherwise the session is already authenticated and the assertion is void.
+test.describe('Employee guest access', () => {
     test('unauthenticated access to employees redirects to login', async ({ page }) => {
-        // Don't login — direct access
         await page.goto('/employees');
         await expect(page).toHaveURL(/login/);
     });
@@ -89,7 +98,10 @@ test.describe('Employee create form', () => {
     test('submitting empty form shows validation errors', async ({ page }) => {
         await page.goto('/employees/create');
 
-        await page.click('button[type="submit"]');
+        // Scope to the page form: the app shell's topbar contains its own
+        // submit button (logout), which appears first in the DOM and is hidden
+        // inside a dropdown.
+        await page.locator('form button[type="submit"]:visible').first().click();
 
         // Should stay on create page and show errors
         await expect(page).toHaveURL(/employees\/create|employees/);

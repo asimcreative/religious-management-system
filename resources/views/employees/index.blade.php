@@ -2,153 +2,276 @@
 
 @section('title', __('employees.employees'))
 
+@section('breadcrumbs')
+    <li class="breadcrumb-item active" aria-current="page">{{ __('employees.employees') }}</li>
+@endsection
+
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ __('employees.employees') }}</h4>
-    @can('create', App\Models\Employee::class)
-        <a href="{{ route('employees.create') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> {{ __('employees.add_new') }}
-        </a>
-    @endcan
-</div>
+@php
+    // Chips let the user see and undo exactly what is narrowing the list.
+    $chip = static fn (string $key, string $label) => [
+        $label => request()->fullUrlWithQuery([$key => null, 'page' => null]),
+    ];
 
-<div class="card">
-    <div class="card-body">
-        {{-- Search & Filters --}}
-        <form method="GET" class="mb-3">
-            <div class="row g-2 mb-2">
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control form-control-sm"
-                           placeholder="{{ __('employees.search_placeholder') }}" value="{{ request('search') }}">
-                </div>
-                <div class="col-md-2">
-                    <select name="branch_id" class="form-select form-select-sm">
-                        <option value="">{{ __('employees.all_branches') }}</option>
-                        @foreach($branches as $id => $name)
-                            <option value="{{ $id }}" {{ request('branch_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="department_id" class="form-select form-select-sm">
-                        <option value="">{{ __('employees.all_departments') }}</option>
-                        @foreach($departments as $id => $name)
-                            <option value="{{ $id }}" {{ request('department_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="designation_id" class="form-select form-select-sm">
-                        <option value="">{{ __('employees.all_designations') }}</option>
-                        @foreach($designations as $id => $name)
-                            <option value="{{ $id }}" {{ request('designation_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="employment_status" class="form-select form-select-sm">
-                        <option value="">{{ __('employees.all_statuses') }}</option>
-                        @foreach(App\Enums\Status::cases() as $status)
-                            <option value="{{ $status->value }}" {{ request('employment_status') === (string) $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            <div class="row g-2">
-                <div class="col-md-2">
-                    <select name="quran_department_id" class="form-select form-select-sm">
-                        <option value="">{{ __('employees.all_quran_depts') }}</option>
-                        @foreach($quranDepartments as $id => $name)
-                            <option value="{{ $id }}" {{ request('quran_department_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="quran_status_id" class="form-select form-select-sm">
-                        <option value="">{{ __('employees.all_quran_statuses') }}</option>
-                        @foreach($quranStatuses as $id => $name)
-                            <option value="{{ $id }}" {{ request('quran_status_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-search"></i> {{ __('employees.filter') }}
-                    </button>
-                    <a href="{{ route('employees.index') }}" class="btn btn-outline-light btn-sm text-dark">
-                        <i class="bi bi-x-lg"></i> {{ __('employees.reset') }}
-                    </a>
-                </div>
-            </div>
-        </form>
+    $activeFilters = [];
 
-        {{-- Table --}}
-        <div class="table-responsive">
-            <table class="table table-sm table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>{{ __('employees.employee_code') }}</th>
-                        <th>{{ __('employees.employee_name') }}</th>
-                        <th>{{ __('employees.department') }}</th>
-                        <th>{{ __('employees.designation') }}</th>
-                        <th>{{ __('employees.branch') }}</th>
-                        <th>{{ __('employees.mobile') }}</th>
-                        <th>{{ __('employees.status') }}</th>
-                        <th>{{ __('employees.actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($employees as $employee)
-                        <tr>
-                            <td>{{ $employees->firstItem() + $loop->index }}</td>
-                            <td>{{ $employee->employee_code }}</td>
-                            <td>
-                                <a href="{{ route('employees.show', $employee) }}">
-                                    {{ $employee->employee_name }}
-                                </a>
-                            </td>
-                            <td>{{ $employee->department?->department_name ?? '-' }}</td>
-                            <td>{{ $employee->designation?->designation_name ?? '-' }}</td>
-                            <td>{{ $employee->branch?->branch_name ?? '-' }}</td>
-                            <td>{{ $employee->mobile ?? '-' }}</td>
-                            <td>
-                                <span class="badge {{ $employee->employment_status->badgeClass() }}">
-                                    {{ $employee->employment_status->label() }}
-                                </span>
-                            </td>
-                            <td>
-                                @can('view', $employee)
-                                    <a href="{{ route('employees.show', $employee) }}" class="btn btn-outline-info btn-sm" title="{{ __('employees.view') }}">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                @endcan
-                                @can('update', $employee)
-                                    <a href="{{ route('employees.edit', $employee) }}" class="btn btn-outline-primary btn-sm" title="{{ __('employees.edit') }}">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                @endcan
-                                @can('delete', $employee)
-                                    <form method="POST" action="{{ route('employees.destroy', $employee) }}" class="d-inline"
-                                          onsubmit="return confirm('{{ __('employees.confirm_delete') }}')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="{{ __('employees.delete') }}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                @endcan
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="9" class="text-center text-muted">{{ __('employees.no_records') }}</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    if (filled(request('search'))) {
+        $activeFilters += $chip('search', __('ui.search').': '.request('search'));
+    }
+    if (filled(request('branch_id')) && isset($branches[request('branch_id')])) {
+        $activeFilters += $chip('branch_id', __('employees.branch').': '.$branches[request('branch_id')]);
+    }
+    if (filled(request('department_id')) && isset($departments[request('department_id')])) {
+        $activeFilters += $chip('department_id', __('employees.department').': '.$departments[request('department_id')]);
+    }
+    if (filled(request('designation_id')) && isset($designations[request('designation_id')])) {
+        $activeFilters += $chip('designation_id', __('employees.designation').': '.$designations[request('designation_id')]);
+    }
+    if (filled(request('employment_status'))) {
+        $case = App\Enums\Status::tryFrom((int) request('employment_status'));
+        if ($case) {
+            $activeFilters += $chip('employment_status', __('employees.status').': '.$case->label());
+        }
+    }
+    if (filled(request('quran_department_id')) && isset($quranDepartments[request('quran_department_id')])) {
+        $activeFilters += $chip('quran_department_id', __('employees.quran_department').': '.$quranDepartments[request('quran_department_id')]);
+    }
+    if (filled(request('quran_status_id')) && isset($quranStatuses[request('quran_status_id')])) {
+        $activeFilters += $chip('quran_status_id', __('employees.quran_status').': '.$quranStatuses[request('quran_status_id')]);
+    }
+
+    $hasAdvanced = filled(request('quran_department_id')) || filled(request('quran_status_id'));
+@endphp
+
+<x-page-header :title="__('employees.employees')"
+               :subtitle="__('employees.subtitle')"
+               icon="bi-people"
+               :badge="number_format($employees->total())">
+    <x-slot:actions>
+        @can('create', App\Models\Employee::class)
+            <a href="{{ route('employees.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                <span>{{ __('employees.add_new') }}</span>
+            </a>
+        @endcan
+    </x-slot:actions>
+</x-page-header>
+
+<x-card flush>
+    {{-- ── Filters ──────────────────────────────────────────────────────── --}}
+    <x-filters :active="$activeFilters" :reset-url="route('employees.index')">
+        <div class="flex-grow-1" style="min-width: 15rem;">
+            <label for="search" class="form-label">{{ __('ui.search') }}</label>
+            <div class="input-icon">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" name="search" id="search" class="form-control form-control-sm"
+                       placeholder="{{ __('employees.search_placeholder') }}" value="{{ request('search') }}">
+            </div>
         </div>
 
-        {{ $employees->withQueryString()->links() }}
-    </div>
-</div>
+        <div style="min-width: 10rem;">
+            <label for="filter_branch" class="form-label">{{ __('employees.branch') }}</label>
+            <select name="branch_id" id="filter_branch" class="form-select form-select-sm">
+                <option value="">{{ __('employees.all_branches') }}</option>
+                @foreach ($branches as $id => $name)
+                    <option value="{{ $id }}" @selected(request('branch_id') == $id)>{{ $name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div style="min-width: 10rem;">
+            <label for="filter_department" class="form-label">{{ __('employees.department') }}</label>
+            <select name="department_id" id="filter_department" class="form-select form-select-sm">
+                <option value="">{{ __('employees.all_departments') }}</option>
+                @foreach ($departments as $id => $name)
+                    <option value="{{ $id }}" @selected(request('department_id') == $id)>{{ $name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div style="min-width: 10rem;">
+            <label for="filter_designation" class="form-label">{{ __('employees.designation') }}</label>
+            <select name="designation_id" id="filter_designation" class="form-select form-select-sm">
+                <option value="">{{ __('employees.all_designations') }}</option>
+                @foreach ($designations as $id => $name)
+                    <option value="{{ $id }}" @selected(request('designation_id') == $id)>{{ $name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div style="min-width: 9rem;">
+            <label for="filter_status" class="form-label">{{ __('employees.status') }}</label>
+            <select name="employment_status" id="filter_status" class="form-select form-select-sm">
+                <option value="">{{ __('employees.all_statuses') }}</option>
+                @foreach (App\Enums\Status::cases() as $status)
+                    <option value="{{ $status->value }}" @selected(request('employment_status') === (string) $status->value)>{{ $status->label() }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Secondary filters stay out of the way until needed --}}
+        <div class="w-100">
+            <div class="collapse {{ $hasAdvanced ? 'show' : '' }}" id="advancedFilters">
+                <div class="d-flex flex-wrap gap-2 pt-2 border-top border-subtle">
+                    <div style="min-width: 12rem;">
+                        <label for="filter_quran_department" class="form-label">{{ __('employees.quran_department') }}</label>
+                        <select name="quran_department_id" id="filter_quran_department" class="form-select form-select-sm">
+                            <option value="">{{ __('employees.all_quran_depts') }}</option>
+                            @foreach ($quranDepartments as $id => $name)
+                                <option value="{{ $id }}" @selected(request('quran_department_id') == $id)>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div style="min-width: 12rem;">
+                        <label for="filter_quran_status" class="form-label">{{ __('employees.quran_status') }}</label>
+                        <select name="quran_status_id" id="filter_quran_status" class="form-select form-select-sm">
+                            <option value="">{{ __('employees.all_quran_statuses') }}</option>
+                            @foreach ($quranStatuses as $id => $name)
+                                <option value="{{ $id }}" @selected(request('quran_status_id') == $id)>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-sm btn-ghost mt-1 px-1"
+                    data-bs-toggle="collapse" data-bs-target="#advancedFilters"
+                    aria-expanded="{{ $hasAdvanced ? 'true' : 'false' }}" aria-controls="advancedFilters">
+                <i class="bi bi-sliders2" aria-hidden="true"></i>
+                <span>{{ __('employees.more_filters') }}</span>
+            </button>
+        </div>
+    </x-filters>
+
+    {{-- ── Table ────────────────────────────────────────────────────────── --}}
+    <x-table sticky :label="__('employees.employees')">
+        <thead>
+            <tr>
+                <th scope="col" class="col-num">#</th>
+                <th scope="col">{{ __('employees.employee_name') }}</th>
+                <th scope="col">{{ __('employees.department') }}</th>
+                <th scope="col">{{ __('employees.designation') }}</th>
+                <th scope="col">{{ __('employees.branch') }}</th>
+                <th scope="col">{{ __('employees.mobile') }}</th>
+                <th scope="col">{{ __('employees.status') }}</th>
+                <th scope="col" class="col-actions">
+                    <span class="visually-hidden">{{ __('employees.actions') }}</span>
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse ($employees as $employee)
+                <tr>
+                    <td class="col-num" data-label="#">{{ $employees->firstItem() + $loop->index }}</td>
+
+                    <td data-label="{{ __('employees.employee_name') }}">
+                        <div class="cell-primary">
+                            <x-avatar :name="$employee->employee_name" />
+                            <span class="cell-primary__text">
+                                @can('view', $employee)
+                                    <a href="{{ route('employees.show', $employee) }}" class="cell-primary__title">
+                                        {{ $employee->employee_name }}
+                                    </a>
+                                @else
+                                    <span class="cell-primary__title">{{ $employee->employee_name }}</span>
+                                @endcan
+                                <span class="cell-primary__sub code-cell">{{ $employee->employee_code }}</span>
+                            </span>
+                        </div>
+                    </td>
+
+                    <td data-label="{{ __('employees.department') }}">
+                        {{ $employee->department?->department_name ?? '—' }}
+                    </td>
+
+                    <td data-label="{{ __('employees.designation') }}">
+                        {{ $employee->designation?->designation_name ?? '—' }}
+                    </td>
+
+                    <td data-label="{{ __('employees.branch') }}">
+                        {{ $employee->branch?->branch_name ?? '—' }}
+                    </td>
+
+                    <td data-label="{{ __('employees.mobile') }}">
+                        @if ($employee->mobile)
+                            <a href="tel:{{ $employee->mobile }}" class="mono">{{ $employee->mobile }}</a>
+                        @else
+                            <span class="dash">—</span>
+                        @endif
+                    </td>
+
+                    <td data-label="{{ __('employees.status') }}">
+                        <x-status-badge :status="$employee->employment_status" />
+                    </td>
+
+                    <td class="col-actions" data-label="{{ __('employees.actions') }}">
+                        <div class="table-actions">
+                            @can('view', $employee)
+                                <a href="{{ route('employees.show', $employee) }}"
+                                   class="btn btn-sm btn-ghost btn-icon"
+                                   data-bs-toggle="tooltip" title="{{ __('employees.view') }}"
+                                   aria-label="{{ __('employees.view') }} — {{ $employee->employee_name }}">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
+                                </a>
+                            @endcan
+
+                            @can('update', $employee)
+                                <a href="{{ route('employees.edit', $employee) }}"
+                                   class="btn btn-sm btn-ghost btn-icon"
+                                   data-bs-toggle="tooltip" title="{{ __('employees.edit') }}"
+                                   aria-label="{{ __('employees.edit') }} — {{ $employee->employee_name }}">
+                                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                                </a>
+                            @endcan
+
+                            @can('delete', $employee)
+                                <x-delete-button
+                                    :action="route('employees.destroy', $employee)"
+                                    :record="$employee->employee_name"
+                                    :title="__('employees.delete')" />
+                            @endcan
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="8">
+                        @if ($activeFilters)
+                            <x-empty-state icon="bi-search"
+                                           :title="__('ui.no_results_title')"
+                                           :text="__('ui.no_results_text')">
+                                <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                                    <span>{{ __('ui.clear_filters') }}</span>
+                                </a>
+                            </x-empty-state>
+                        @else
+                            <x-empty-state icon="bi-people"
+                                           :title="__('employees.empty_title')"
+                                           :text="__('employees.empty_text')">
+                                @can('create', App\Models\Employee::class)
+                                    <a href="{{ route('employees.create') }}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                        <span>{{ __('employees.add_new') }}</span>
+                                    </a>
+                                @endcan
+                            </x-empty-state>
+                        @endif
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </x-table>
+
+    <x-table-footer :paginator="$employees" />
+</x-card>
+
+@can('create', App\Models\Employee::class)
+    <a href="{{ route('employees.create') }}" class="btn btn-primary btn-fab"
+       aria-label="{{ __('employees.add_new') }}">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </a>
+@endcan
 @endsection

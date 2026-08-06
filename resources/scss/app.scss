@@ -1,13 +1,66 @@
-// Bootstrap 5 - Import all of Bootstrap's CSS
-@import "~bootstrap/scss/bootstrap";
+// ─────────────────────────────────────────────────────────────────────────────
+// RAMS — Application stylesheet entry point
+//
+// Bootstrap is imported module by module rather than wholesale: the app uses a
+// custom sidebar, toaster and spinner, so navbar / offcanvas / toasts /
+// spinners / carousel / accordion / list-group / popover / button-group /
+// placeholders are never rendered. Dropping them removes dead CSS from every
+// page load without giving up the framework.
+//
+// Order matters:
+//   1. bootstrap functions   — needed by the variable overrides
+//   2. variables             — RAMS design tokens (must precede Bootstrap's)
+//   3. bootstrap core        — variables, maps, mixins, utilities API, root
+//   4. bootstrap components  — only the ones actually used
+//   5. icons                 — Bootstrap Icons font
+//   6. tokens / base / layout / components / utilities / print — RAMS layer
+// ─────────────────────────────────────────────────────────────────────────────
 
-// Bootstrap Icons
+// ── 1. Bootstrap functions ───────────────────────────────────────────────────
+@import "~bootstrap/scss/functions";
+
+// ── 2. RAMS design tokens (Bootstrap variable overrides) ─────────────────────
+@import "variables";
+
+// ── 3. Bootstrap core ────────────────────────────────────────────────────────
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/variables-dark";
+@import "~bootstrap/scss/maps";
+@import "~bootstrap/scss/mixins";
+@import "~bootstrap/scss/utilities";
+@import "~bootstrap/scss/root";
+
+// ── 4. Bootstrap components in use ───────────────────────────────────────────
+@import "~bootstrap/scss/reboot";
+@import "~bootstrap/scss/type";
+@import "~bootstrap/scss/images";
+@import "~bootstrap/scss/containers";
+@import "~bootstrap/scss/grid";
+@import "~bootstrap/scss/tables";
+@import "~bootstrap/scss/forms";
+@import "~bootstrap/scss/buttons";
+@import "~bootstrap/scss/transitions";   // also provides .collapse
+@import "~bootstrap/scss/dropdown";
+@import "~bootstrap/scss/nav";
+@import "~bootstrap/scss/card";
+@import "~bootstrap/scss/breadcrumb";
+@import "~bootstrap/scss/pagination";
+@import "~bootstrap/scss/badge";
+@import "~bootstrap/scss/alert";
+@import "~bootstrap/scss/progress";
+@import "~bootstrap/scss/close";
+@import "~bootstrap/scss/modal";
+@import "~bootstrap/scss/tooltip";
+@import "~bootstrap/scss/helpers";
+@import "~bootstrap/scss/utilities/api";
+
+// ── 5. Icons ─────────────────────────────────────────────────────────────────
 @import "~bootstrap-icons/font/bootstrap-icons.css";
 
-// Custom Variables (override Bootstrap defaults before importing)
-// @import "variables";
-
-// Custom Styles
-// @import "components";
-// @import "layouts";
-// @import "utilities";
+// ── 6. RAMS design system ────────────────────────────────────────────────────
+@import "tokens";
+@import "base";
+@import "layout";
+@import "components";
+@import "utilities";
+@import "print";

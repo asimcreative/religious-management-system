@@ -2,97 +2,171 @@
 
 @section('title', __('salah_attendance.attendance_history'))
 
-@section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ __('salah_attendance.attendance_history') }}</h4>
-    @can('create', App\Models\SalahAttendance::class)
-        <a href="{{ route('salah-attendance.create') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> {{ __('salah_attendance.mark_attendance') }}
-        </a>
-    @endcan
-</div>
+@section('breadcrumbs')
+    <li class="breadcrumb-item active" aria-current="page">{{ __('salah_attendance.salah_attendance') }}</li>
+@endsection
 
-<div class="card">
-    <div class="card-body">
-        <form method="GET" class="row g-2 mb-3">
-            <div class="col-md-3">
-                <input type="text" name="search" class="form-control form-control-sm"
+@section('content')
+@php
+    $chip = static fn (string $key, string $label) => [
+        $label => request()->fullUrlWithQuery([$key => null, 'page' => null]),
+    ];
+
+    $activeFilters = [];
+
+    if (filled(request('search'))) {
+        $activeFilters += $chip('search', __('ui.search').': '.request('search'));
+    }
+    if (filled(request('jamaat_id')) && isset($jamaats[request('jamaat_id')])) {
+        $activeFilters += $chip('jamaat_id', __('salah_attendance.jamaat').': '.$jamaats[request('jamaat_id')]);
+    }
+    if (filled(request('date_from'))) {
+        $activeFilters += $chip('date_from', __('reports.date_from').': '.request('date_from'));
+    }
+    if (filled(request('date_to'))) {
+        $activeFilters += $chip('date_to', __('reports.date_to').': '.request('date_to'));
+    }
+@endphp
+
+<x-page-header :title="__('salah_attendance.attendance_history')"
+               :subtitle="__('salah_attendance.subtitle')"
+               icon="bi-moon-stars"
+               :badge="number_format($attendance->total())">
+    <x-slot:actions>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+            <i class="bi bi-printer" aria-hidden="true"></i>
+            <span class="d-none d-sm-inline">{{ __('ui.print') }}</span>
+        </button>
+
+        @can('create', App\Models\SalahAttendance::class)
+            <a href="{{ route('salah-attendance.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-calendar-plus" aria-hidden="true"></i>
+                <span>{{ __('salah_attendance.mark_attendance') }}</span>
+            </a>
+        @endcan
+    </x-slot:actions>
+</x-page-header>
+
+<x-print-header :title="__('salah_attendance.attendance_history')"
+                :filters="[
+                    __('salah_attendance.jamaat') => request('jamaat_id') ? ($jamaats[request('jamaat_id')] ?? null) : null,
+                    __('reports.date_from') => request('date_from'),
+                    __('reports.date_to') => request('date_to'),
+                ]" />
+
+<x-card flush>
+    <x-filters :active="$activeFilters" :reset-url="route('salah-attendance.index')">
+        <div class="flex-grow-1" style="min-width: 14rem;">
+            <label for="search" class="form-label">{{ __('ui.search') }}</label>
+            <div class="input-icon">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" name="search" id="search" class="form-control form-control-sm"
                        placeholder="{{ __('salah_attendance.search_placeholder') }}" value="{{ request('search') }}">
             </div>
-            <div class="col-md-2">
-                <select name="jamaat_id" class="form-select form-select-sm">
-                    <option value="">{{ __('salah_attendance.all_jamaats') }}</option>
-                    @foreach($jamaats as $id => $name)
-                        <option value="{{ $id }}" {{ request('jamaat_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <input type="date" name="date_from" class="form-control form-control-sm"
-                       value="{{ request('date_from') }}">
-            </div>
-            <div class="col-md-2">
-                <input type="date" name="date_to" class="form-control form-control-sm"
-                       value="{{ request('date_to') }}">
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-search"></i> {{ __('salah_attendance.filter') }}
-                </button>
-                <a href="{{ route('salah-attendance.index') }}" class="btn btn-outline-light btn-sm text-dark">
-                    <i class="bi bi-x-lg"></i> {{ __('salah_attendance.reset') }}
-                </a>
-            </div>
-        </form>
-
-        <div class="table-responsive">
-            <table class="table table-sm table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width:40px">#</th>
-                        <th>{{ __('salah_attendance.date') }}</th>
-                        <th>{{ __('salah_attendance.jamaat') }}</th>
-                        <th>{{ __('salah_attendance.employee_name') }}</th>
-                        @foreach($prayers as $prayer)
-                            <th class="text-center">{{ $prayer->prayer_name }}</th>
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($attendance as $i => $row)
-                        <tr>
-                            <td>{{ $attendance->firstItem() + $i }}</td>
-                            <td class="text-nowrap">{{ $row['date']->format('d M Y') }}</td>
-                            <td>{{ $row['jamaat']?->jamaat_name ?? '-' }}</td>
-                            <td>{{ $row['employee']?->employee_name ?? '-' }}</td>
-                            @foreach($prayers as $prayer)
-                                @php $rec = $row['prayers']->get($prayer->id); @endphp
-                                <td class="text-center">
-                                    @if($rec === null)
-                                        <span class="text-muted">-</span>
-                                    @elseif($rec->attendance_reason_id === null)
-                                        <span class="badge bg-success">{{ __('salah_attendance.present') }}</span>
-                                    @else
-                                        <span class="badge"
-                                              style="background-color:{{ $rec->attendanceReason?->color ?? '#6c757d' }}">
-                                            {{ $rec->attendanceReason?->reason_name ?? '-' }}
-                                        </span>
-                                    @endif
-                                </td>
-                            @endforeach
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="{{ 4 + $prayers->count() }}" class="text-center text-muted py-4">
-                                {{ __('salah_attendance.no_records') }}
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
 
-        {{ $attendance->withQueryString()->links() }}
-    </div>
-</div>
+        <div style="min-width: 12rem;">
+            <label for="filter_jamaat" class="form-label">{{ __('salah_attendance.jamaat') }}</label>
+            <select name="jamaat_id" id="filter_jamaat" class="form-select form-select-sm">
+                <option value="">{{ __('salah_attendance.all_jamaats') }}</option>
+                @foreach ($jamaats as $id => $name)
+                    <option value="{{ $id }}" @selected(request('jamaat_id') == $id)>{{ $name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div style="min-width: 9.5rem;">
+            <label for="date_from" class="form-label">{{ __('reports.date_from') }}</label>
+            <input type="date" name="date_from" id="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}">
+        </div>
+
+        <div style="min-width: 9.5rem;">
+            <label for="date_to" class="form-label">{{ __('reports.date_to') }}</label>
+            <input type="date" name="date_to" id="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}">
+        </div>
+    </x-filters>
+
+    <x-table sticky :stack="false" class="table-pinned" :label="__('salah_attendance.attendance_history')">
+        <thead>
+            <tr>
+                <th scope="col" class="col-num">#</th>
+                <th scope="col">{{ __('salah_attendance.employee_name') }}</th>
+                <th scope="col">{{ __('salah_attendance.date') }}</th>
+                <th scope="col">{{ __('salah_attendance.jamaat') }}</th>
+                @foreach ($prayers as $prayer)
+                    <th scope="col" class="text-center">{{ $prayer->prayer_name }}</th>
+                @endforeach
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse ($attendance as $i => $row)
+                <tr>
+                    <td class="col-num">{{ $attendance->firstItem() + $i }}</td>
+
+                    <td>
+                        <div class="cell-primary">
+                            <x-avatar :name="$row['employee']?->employee_name ?? ''" />
+                            <span class="cell-primary__text">
+                                <span class="cell-primary__title">{{ $row['employee']?->employee_name ?? '—' }}</span>
+                                <span class="cell-primary__sub code-cell">{{ $row['employee']?->employee_code }}</span>
+                            </span>
+                        </div>
+                    </td>
+
+                    <td class="col-fit">
+                        <span class="tabular">{{ $row['date']->format('d M Y') }}</span>
+                        <span class="d-block fs-xs text-subtle">{{ $row['date']->format('l') }}</span>
+                    </td>
+
+                    <td>{{ $row['jamaat']?->jamaat_name ?? '—' }}</td>
+
+                    @foreach ($prayers as $prayer)
+                        @php($rec = $row['prayers']->get($prayer->id))
+                        <td class="text-center">
+                            @if ($rec === null)
+                                <span class="dash" title="{{ __('salah_attendance.not_recorded') }}">—</span>
+                            @elseif ($rec->attendance_reason_id === null)
+                                <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+                                <span class="visually-hidden">{{ __('salah_attendance.present') }}</span>
+                            @else
+                                <span class="badge-soft badge-soft--plain"
+                                      style="background-color: {{ $rec->attendanceReason?->color ?? '#64748B' }}1F;
+                                             color: {{ $rec->attendanceReason?->color ?? '#64748B' }};">
+                                    {{ $rec->attendanceReason?->reason_name ?? '—' }}
+                                </span>
+                            @endif
+                        </td>
+                    @endforeach
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="{{ 4 + $prayers->count() }}">
+                        @if ($activeFilters)
+                            <x-empty-state icon="bi-search" :title="__('ui.no_results_title')" :text="__('ui.no_results_text')">
+                                <a href="{{ route('salah-attendance.index') }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                                    <span>{{ __('ui.clear_filters') }}</span>
+                                </a>
+                            </x-empty-state>
+                        @else
+                            <x-empty-state icon="bi-moon-stars"
+                                           :title="__('salah_attendance.empty_title')"
+                                           :text="__('salah_attendance.empty_text')">
+                                @can('create', App\Models\SalahAttendance::class)
+                                    <a href="{{ route('salah-attendance.create') }}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-calendar-plus" aria-hidden="true"></i>
+                                        <span>{{ __('salah_attendance.mark_attendance') }}</span>
+                                    </a>
+                                @endcan
+                            </x-empty-state>
+                        @endif
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </x-table>
+
+    <x-table-footer :paginator="$attendance" />
+</x-card>
 @endsection

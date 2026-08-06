@@ -2,98 +2,121 @@
 
 @section('title', __('reports.dashboard_summary'))
 
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">{{ __('reports.reports') }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ __('reports.dashboard_summary') }}</li>
+@endsection
+
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ __('reports.dashboard_summary') }}</h4>
-    <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> {{ __('reports.back_to_reports') }}
-    </a>
+@php
+    $share = static fn (int $active, int $total): int => $total > 0 ? (int) round($active / $total * 100) : 0;
+
+    $entities = [
+        ['label' => __('reports.total_employees'), 'total' => $summary['total_employees'], 'active' => $summary['active_employees'],
+         'activeLabel' => __('reports.active_employees'), 'icon' => 'bi-people', 'tone' => 'primary'],
+        ['label' => __('reports.total_teachers'), 'total' => $summary['total_teachers'], 'active' => $summary['active_teachers'],
+         'activeLabel' => __('reports.active_teachers'), 'icon' => 'bi-mortarboard', 'tone' => 'info'],
+        ['label' => __('reports.total_quran_classes'), 'total' => $summary['total_quran_classes'], 'active' => $summary['active_quran_classes'],
+         'activeLabel' => __('reports.active_quran_classes'), 'icon' => 'bi-book', 'tone' => 'warning'],
+        ['label' => __('reports.total_jamaats'), 'total' => $summary['total_jamaats'], 'active' => $summary['active_jamaats'],
+         'activeLabel' => __('reports.active_jamaats'), 'icon' => 'bi-people-fill', 'tone' => 'accent'],
+    ];
+
+    $volumes = [
+        ['label' => __('reports.total_quran_attendance'), 'value' => $summary['total_quran_attendance'], 'icon' => 'bi-clipboard-check', 'tone' => 'success'],
+        ['label' => __('reports.total_salah_attendance'), 'value' => $summary['total_salah_attendance'], 'icon' => 'bi-calendar-check', 'tone' => 'primary'],
+        ['label' => __('reports.total_quran_progress'), 'value' => $summary['total_quran_progress'], 'icon' => 'bi-graph-up-arrow', 'tone' => 'warning'],
+    ];
+@endphp
+
+<x-page-header :title="__('reports.dashboard_summary')"
+               :subtitle="__('reports.dashboard_summary_desc')"
+               icon="bi-pie-chart">
+    <x-slot:actions>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+            <i class="bi bi-printer" aria-hidden="true"></i>
+            <span>{{ __('ui.print') }}</span>
+        </button>
+
+        <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <span class="d-none d-md-inline">{{ __('reports.back_to_reports') }}</span>
+        </a>
+    </x-slot:actions>
+</x-page-header>
+
+<x-print-header :title="__('reports.dashboard_summary')" :subtitle="__('reports.dashboard_summary_desc')" />
+
+<h2 class="section-heading"><i class="bi bi-diagram-3" aria-hidden="true"></i>{{ __('reports.records_heading') }}</h2>
+
+<div class="auto-grid auto-grid--sm mb-4">
+    @foreach ($entities as $entity)
+        @php($pct = $share((int) $entity['active'], (int) $entity['total']))
+        <x-stat-card :label="$entity['label']"
+                     :value="number_format($entity['total'])"
+                     :icon="$entity['icon']"
+                     :tone="$entity['tone']">
+            <x-slot:meta>
+                <span class="badge-soft badge-soft-success">
+                    {{ number_format($entity['active']) }} {{ $entity['activeLabel'] }}
+                </span>
+                <span class="text-subtle">·</span>
+                <span class="tabular">{{ $pct }}%</span>
+            </x-slot:meta>
+        </x-stat-card>
+    @endforeach
 </div>
 
-<div class="row g-3">
-    {{-- Employees --}}
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-people fs-2 text-primary"></i>
-                <h3 class="mt-2 mb-0">{{ $summary['total_employees'] }}</h3>
-                <small class="text-muted">{{ __('reports.total_employees') }}</small>
-                <br>
-                <span class="badge bg-success">{{ $summary['active_employees'] }} {{ __('reports.active_employees') }}</span>
-            </div>
-        </div>
-    </div>
+<h2 class="section-heading"><i class="bi bi-database" aria-hidden="true"></i>{{ __('reports.volume_heading') }}</h2>
 
-    {{-- Teachers --}}
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-mortarboard fs-2 text-info"></i>
-                <h3 class="mt-2 mb-0">{{ $summary['total_teachers'] }}</h3>
-                <small class="text-muted">{{ __('reports.total_teachers') }}</small>
-                <br>
-                <span class="badge bg-success">{{ $summary['active_teachers'] }} {{ __('reports.active_teachers') }}</span>
-            </div>
-        </div>
-    </div>
-
-    {{-- Quran Classes --}}
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-book fs-2 text-warning"></i>
-                <h3 class="mt-2 mb-0">{{ $summary['total_quran_classes'] }}</h3>
-                <small class="text-muted">{{ __('reports.total_quran_classes') }}</small>
-                <br>
-                <span class="badge bg-success">{{ $summary['active_quran_classes'] }} {{ __('reports.active_quran_classes') }}</span>
-            </div>
-        </div>
-    </div>
-
-    {{-- Jamaats --}}
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-moon fs-2 text-secondary"></i>
-                <h3 class="mt-2 mb-0">{{ $summary['total_jamaats'] }}</h3>
-                <small class="text-muted">{{ __('reports.total_jamaats') }}</small>
-                <br>
-                <span class="badge bg-success">{{ $summary['active_jamaats'] }} {{ __('reports.active_jamaats') }}</span>
-            </div>
-        </div>
-    </div>
-
-    {{-- Quran Attendance --}}
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-clipboard-check fs-2 text-success"></i>
-                <h3 class="mt-2 mb-0">{{ number_format($summary['total_quran_attendance']) }}</h3>
-                <small class="text-muted">{{ __('reports.total_quran_attendance') }}</small>
-            </div>
-        </div>
-    </div>
-
-    {{-- Salah Attendance --}}
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-calendar-check fs-2 text-primary"></i>
-                <h3 class="mt-2 mb-0">{{ number_format($summary['total_salah_attendance']) }}</h3>
-                <small class="text-muted">{{ __('reports.total_salah_attendance') }}</small>
-            </div>
-        </div>
-    </div>
-
-    {{-- Quran Progress --}}
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-graph-up fs-2 text-danger"></i>
-                <h3 class="mt-2 mb-0">{{ number_format($summary['total_quran_progress']) }}</h3>
-                <small class="text-muted">{{ __('reports.total_quran_progress') }}</small>
-            </div>
-        </div>
-    </div>
+<div class="auto-grid auto-grid--sm mb-4">
+    @foreach ($volumes as $volume)
+        <x-stat-card :label="$volume['label']"
+                     :value="number_format($volume['value'])"
+                     :icon="$volume['icon']"
+                     :tone="$volume['tone']" />
+    @endforeach
 </div>
+
+{{-- Tabular restatement: the same figures in a form that prints and exports
+     cleanly, and that screen-reader users can navigate as a table. --}}
+<x-card :title="__('reports.summary')" icon="bi-table" flush>
+    <x-table :label="__('reports.dashboard_summary')">
+        <thead>
+            <tr>
+                <th scope="col">{{ __('reports.summary') }}</th>
+                <th scope="col" class="col-fit">{{ __('reports.total') }}</th>
+                <th scope="col" class="col-fit">{{ __('masters.active') }}</th>
+                <th scope="col" style="min-width: 9rem;">{{ __('reports.attendance_rate') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($entities as $entity)
+                @php($pct = $share((int) $entity['active'], (int) $entity['total']))
+                <tr>
+                    <td data-label="{{ __('reports.summary') }}" class="fw-semibold text-strong">{{ $entity['label'] }}</td>
+                    <td data-label="{{ __('reports.total') }}" class="col-fit tabular">{{ number_format($entity['total']) }}</td>
+                    <td data-label="{{ __('masters.active') }}" class="col-fit tabular">{{ number_format($entity['active']) }}</td>
+                    <td data-label="{{ __('reports.attendance_rate') }}">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="progress flex-grow-1" style="max-width: 10rem;">
+                                <span class="progress-bar bg-success" style="width: {{ $pct }}%"></span>
+                            </span>
+                            <span class="tabular fs-sm">{{ $pct }}%</span>
+                        </div>
+                    </td>
+                </tr>
+            @endforeach
+
+            @foreach ($volumes as $volume)
+                <tr>
+                    <td data-label="{{ __('reports.summary') }}" class="fw-semibold text-strong">{{ $volume['label'] }}</td>
+                    <td data-label="{{ __('reports.total') }}" class="col-fit tabular">{{ number_format($volume['value']) }}</td>
+                    <td data-label="{{ __('masters.active') }}"><span class="dash">—</span></td>
+                    <td data-label="{{ __('reports.attendance_rate') }}"><span class="dash">—</span></td>
+                </tr>
+            @endforeach
+        </tbody>
+    </x-table>
+</x-card>
 @endsection

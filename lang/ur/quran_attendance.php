@@ -4,6 +4,21 @@ return [
     // Page titles
     'quran_attendance' => 'قرآن حاضری',
     'mark_attendance' => 'حاضری لگائیں',
+    'subtitle' => 'ہر قرآن کلاس کی روزانہ حاضری۔',
+    'mark_subtitle' => 'کلاس اور تاریخ منتخب کریں، پھر حاضری درج کریں۔',
+
+    // Empty / helper copy
+    'empty_title' => 'ابھی کوئی حاضری درج نہیں',
+    'empty_text' => 'قرآن کلاسز کی درج کی گئی حاضری یہاں نظر آئے گی۔',
+    'choose_class_title' => 'کلاس اور تاریخ منتخب کریں',
+    'choose_class_text' => 'کلاس اور تاریخ منتخب کر کے ارکان کی فہرست لوڈ کریں۔',
+    'no_members_in_class_title' => 'اس کلاس میں کوئی رکن نہیں',
+    'member_count' => ':count رکن|:count ارکان',
+    'apply_to_all' => 'سب پر لاگو کریں',
+    'bulk_set_label' => 'سب کے لیے حیثیت',
+    'save_hint' => 'جن کے لیے کوئی وجہ منتخب نہیں، وہ حاضر شمار ہوں گے۔',
+    'date_not_allowed_title' => 'تاریخ اجازت شدہ مدت سے باہر ہے',
+    'attendance_locked_title' => 'حاضری مقفل ہے',
 
     // Fields
     'date' => 'تاریخ',

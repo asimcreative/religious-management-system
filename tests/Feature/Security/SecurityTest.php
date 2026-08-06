@@ -245,8 +245,11 @@ class SecurityTest extends TestCase
             $response = $this->actingAs($user)
                 ->get(route('employees.show', $employee));
 
-            // Blade escapes < and > so the script tag should NOT appear in rendered output
-            $response->assertDontSee('<script>', false);
+            // Assert the payload specifically, not the mere presence of a
+            // <script> tag: the layout legitimately contains inline scripts, so
+            // a blanket assertion reports XSS whenever the UI adds any script.
+            $response->assertDontSee($xssPayload, false);
+            $response->assertSee(e($xssPayload), false);
         }
     }
 

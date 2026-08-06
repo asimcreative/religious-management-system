@@ -1,38 +1,22 @@
 @extends('layouts.app')
 
-@section('title', __('masters.add_new') . ' ' . __('masters.department'))
+@section('title', __('masters.add_new').' — '.__('masters.department'))
+
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('masters.departments.index') }}">{{ __('masters.departments') }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ __('masters.add_new') }}</li>
+@endsection
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ __('masters.add_new') }} {{ __('masters.department') }}</h4>
-    <a href="{{ route('masters.departments.index') }}" class="btn btn-outline-secondary btn-sm">{{ __('masters.back') }}</a>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <form method="POST" action="{{ route('masters.departments.store') }}">
-            @csrf
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">{{ __('masters.department_name') }} <span class="text-danger">*</span></label>
-                    <input type="text" name="department_name" class="form-control @error('department_name') is-invalid @enderror"
-                           value="{{ old('department_name') }}" required>
-                    @error('department_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">{{ __('masters.status') }} <span class="text-danger">*</span></label>
-                    <select name="status" class="form-select @error('status') is-invalid @enderror" required>
-                        <option value="1" {{ old('status', 1) == 1 ? 'selected' : '' }}>{{ __('masters.active') }}</option>
-                        <option value="0" {{ old('status') === '0' ? 'selected' : '' }}>{{ __('masters.inactive') }}</option>
-                    </select>
-                    @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-            </div>
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">{{ __('masters.save') }}</button>
-                <a href="{{ route('masters.departments.index') }}" class="btn btn-outline-secondary">{{ __('masters.cancel') }}</a>
-            </div>
-        </form>
-    </div>
-</div>
+@include('masters.partials.form-page', [
+    'title' => __('masters.add_new').' — '.__('masters.department'),
+    'singular' => __('masters.department'),
+    'plural' => __('masters.departments'),
+    'intro' => __('masters.departments_intro'),
+    'icon' => 'bi-diagram-3',
+    'routeBase' => 'masters.departments',
+    'fieldsView' => 'masters.departments.partials.fields',
+    'record' => null,
+    'aside' => [__('masters.department_use_1'), __('masters.department_use_2')],
+])
 @endsection

@@ -2,7 +2,11 @@
 
 return [
     'notifications' => 'Notifications',
-    'no_notifications' => 'No notifications.',
+    'subtitle' => 'Alerts, reminders and security notices for your account.',
+    'no_notifications' => 'No notifications yet',
+    'empty_text' => 'Reminders and security notices will appear here when there is something to tell you.',
+    'unread' => 'unread',
+    'unread_count' => ':count unread',
     'mark_read' => 'Mark as Read',
     'mark_all_read' => 'Mark All as Read',
     'all_marked_read' => 'All notifications marked as read.',

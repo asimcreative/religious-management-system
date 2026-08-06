@@ -1,0 +1,290 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RAMS Design System — Bootstrap Variable Overrides
+//
+// Loaded BEFORE Bootstrap so every component inherits the RAMS design language.
+// Palette, radii and type scale follow docs/33_UI_UX_DESIGN_SYSTEM_AND_COMPONENT_LIBRARY.md
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Brand Palette ────────────────────────────────────────────────────────────
+$rams-teal-50:   #F0FDFA;
+$rams-teal-100:  #CCFBF1;
+$rams-teal-200:  #99F6E4;
+$rams-teal-300:  #5EEAD4;
+$rams-teal-400:  #2DD4BF;
+$rams-teal-500:  #14B8A6;
+$rams-teal-600:  #0D9488;
+$rams-teal-700:  #0F766E;
+$rams-teal-800:  #115E59;
+$rams-teal-900:  #134E4A;
+
+$rams-slate-50:  #F8FAFC;
+$rams-slate-100: #F1F5F9;
+$rams-slate-200: #E2E8F0;
+$rams-slate-300: #CBD5E1;
+$rams-slate-400: #94A3B8;
+$rams-slate-500: #64748B;
+$rams-slate-600: #475569;
+$rams-slate-700: #334155;
+$rams-slate-800: #1E293B;
+$rams-slate-900: #0F172A;
+$rams-slate-950: #080F1D;
+
+// ── Semantic Colors ──────────────────────────────────────────────────────────
+$primary:   $rams-teal-700;   // #0F766E
+$secondary: $rams-slate-600;
+$success:   #16A34A;
+$info:      #2563EB;
+$warning:   #D97706;
+$danger:    #DC2626;
+$light:     $rams-slate-50;
+$dark:      $rams-slate-800;
+
+// Extra theme colors available as .bg-accent / .text-accent / .btn-accent
+$accent: $rams-teal-500;
+
+$theme-colors: (
+    "primary":   $primary,
+    "secondary": $secondary,
+    "success":   $success,
+    "info":      $info,
+    "warning":   $warning,
+    "danger":    $danger,
+    "light":     $light,
+    "dark":      $dark,
+    "accent":    $accent,
+);
+
+// ── Body & Surfaces ──────────────────────────────────────────────────────────
+$body-bg:              #F6F8FA;
+$body-color:           $rams-slate-800;
+$body-secondary-color: $rams-slate-500;
+$border-color:         $rams-slate-200;
+
+// ── Typography ───────────────────────────────────────────────────────────────
+// System-first stack: zero network requests, native rendering on every OS.
+// "Inter" and "Noto Nastaliq Urdu" are used when present on the device.
+$font-family-sans-serif:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI Variable Text",
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
+
+$font-size-root:   16px;
+$font-size-base:   0.9375rem; // 15px — denser, more enterprise than 16px body
+$font-size-sm:     0.8125rem; // 13px
+$font-size-lg:     1.0625rem; // 17px
+
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 600;
+$font-weight-bold:     700;
+
+$line-height-base: 1.55;
+$line-height-sm:   1.4;
+
+$headings-font-weight:  600;
+$headings-line-height:  1.3;
+$headings-color:        $rams-slate-900;
+
+$h1-font-size: 1.75rem;   // 28px — Page Title
+$h2-font-size: 1.5rem;    // 24px
+$h3-font-size: 1.25rem;   // 20px — Card Title
+$h4-font-size: 1.125rem;  // 18px — Section Title
+$h5-font-size: 1rem;      // 16px
+$h6-font-size: 0.875rem;  // 14px
+
+$small-font-size: 0.8125rem;
+
+// ── Radii ────────────────────────────────────────────────────────────────────
+$border-radius:    0.625rem; // 10px — inputs, buttons
+$border-radius-sm: 0.5rem;   // 8px
+$border-radius-lg: 0.75rem;  // 12px — cards
+$border-radius-xl: 1rem;     // 16px
+$border-radius-pill: 50rem;
+
+// ── Shadows ──────────────────────────────────────────────────────────────────
+$box-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+$box-shadow:    0 1px 3px 0 rgba(15, 23, 42, 0.07), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+$box-shadow-lg: 0 12px 32px -8px rgba(15, 23, 42, 0.16), 0 4px 12px -4px rgba(15, 23, 42, 0.08);
+
+// ── Focus Ring (accessibility) ───────────────────────────────────────────────
+$focus-ring-width:   3px;
+$focus-ring-opacity: 0.28;
+$focus-ring-color:   rgba($primary, $focus-ring-opacity);
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+$btn-font-weight:       $font-weight-medium;
+$btn-padding-y:         0.5rem;
+$btn-padding-x:         0.9375rem;
+$btn-padding-y-sm:      0.3125rem;
+$btn-padding-x-sm:      0.6875rem;
+$btn-padding-y-lg:      0.6875rem;
+$btn-padding-x-lg:      1.25rem;
+$btn-font-size-sm:      0.8125rem;
+$btn-font-size-lg:      1rem;
+$btn-border-radius:     $border-radius;
+$btn-border-radius-sm:  $border-radius-sm;
+$btn-border-radius-lg:  $border-radius;
+$btn-focus-width:       $focus-ring-width;
+$btn-disabled-opacity:  0.55;
+$btn-transition:        color .15s ease-in-out, background-color .15s ease-in-out,
+                        border-color .15s ease-in-out, box-shadow .15s ease-in-out,
+                        transform .08s ease-in-out;
+
+// ── Forms ────────────────────────────────────────────────────────────────────
+$input-padding-y:            0.5rem;
+$input-padding-x:            0.75rem;
+$input-padding-y-sm:         0.375rem;
+$input-padding-x-sm:         0.625rem;
+$input-font-size:            $font-size-base;
+$input-border-color:         $rams-slate-300;
+$input-border-radius:        $border-radius;
+$input-border-radius-sm:     $border-radius-sm;
+$input-focus-border-color:   $rams-teal-500;
+$input-focus-box-shadow:     0 0 0 $focus-ring-width $focus-ring-color;
+$input-placeholder-color:    $rams-slate-400;
+$input-disabled-bg:          $rams-slate-100;
+$input-group-addon-bg:       $rams-slate-50;
+
+$form-label-font-weight:     $font-weight-medium;
+$form-label-font-size:       0.8125rem;
+$form-label-margin-bottom:   0.375rem;
+$form-label-color:           $rams-slate-700;
+
+$form-text-color:            $rams-slate-500;
+$form-text-font-size:        0.8125rem;
+
+$form-check-input-width:            1.125em;
+$form-check-input-border:           1.5px solid $rams-slate-400;
+$form-check-input-checked-bg-color: $primary;
+$form-check-input-focus-box-shadow: 0 0 0 $focus-ring-width $focus-ring-color;
+
+$form-switch-width: 2.25em;
+
+$form-feedback-font-size:       0.8125rem;
+$form-feedback-invalid-color:   $danger;
+$form-feedback-valid-color:     $success;
+
+// ── Cards ────────────────────────────────────────────────────────────────────
+$card-border-radius:       $border-radius-lg;
+$card-inner-border-radius: calc(#{$border-radius-lg} - 1px);
+$card-border-color:        $rams-slate-200;
+$card-cap-bg:              transparent;
+$card-cap-padding-y:       0.875rem;
+$card-cap-padding-x:       1.25rem;
+$card-spacer-y:            1.25rem;
+$card-spacer-x:            1.25rem;
+$card-box-shadow:          $box-shadow-sm;
+
+// ── Tables ───────────────────────────────────────────────────────────────────
+$table-cell-padding-y:     0.75rem;
+$table-cell-padding-x:     0.875rem;
+$table-cell-padding-y-sm:  0.5rem;
+$table-cell-padding-x-sm:  0.625rem;
+$table-th-font-weight:     $font-weight-semibold;
+$table-border-color:       $rams-slate-200;
+$table-hover-bg:           rgba($rams-teal-500, 0.045);
+$table-striped-bg:         rgba($rams-slate-500, 0.028);
+
+// ── Badges ───────────────────────────────────────────────────────────────────
+$badge-font-size:      0.75rem;
+$badge-font-weight:    $font-weight-semibold;
+$badge-padding-y:      0.3em;
+$badge-padding-x:      0.6em;
+$badge-border-radius:  $border-radius-sm;
+
+// ── Alerts ───────────────────────────────────────────────────────────────────
+$alert-border-radius: $border-radius;
+$alert-padding-y:     0.75rem;
+$alert-padding-x:     1rem;
+$alert-border-width:  1px;
+
+// ── Dropdowns ────────────────────────────────────────────────────────────────
+$dropdown-border-radius:      $border-radius;
+$dropdown-border-color:       $rams-slate-200;
+$dropdown-box-shadow:         $box-shadow-lg;
+$dropdown-padding-y:          0.375rem;
+$dropdown-item-padding-y:     0.5rem;
+$dropdown-item-padding-x:     0.875rem;
+$dropdown-font-size:          $font-size-sm;
+$dropdown-link-hover-bg:      $rams-slate-100;
+$dropdown-link-active-bg:     $rams-teal-50;
+$dropdown-link-active-color:  $rams-teal-800;
+
+// ── Modals ───────────────────────────────────────────────────────────────────
+$modal-content-border-radius: $border-radius-lg;
+$modal-content-border-color:  transparent;
+$modal-content-box-shadow-xs: $box-shadow-lg;
+$modal-content-box-shadow-sm-up: $box-shadow-lg;
+$modal-header-padding-y:      1rem;
+$modal-header-padding-x:      1.25rem;
+$modal-inner-padding:         1.25rem;
+$modal-backdrop-opacity:      0.45;
+
+// ── Pagination ───────────────────────────────────────────────────────────────
+$pagination-border-radius:     $border-radius-sm;
+$pagination-padding-y:         0.4375rem;
+$pagination-padding-x:         0.75rem;
+$pagination-font-size:         $font-size-sm;
+$pagination-color:             $rams-slate-600;
+$pagination-bg:                transparent;
+$pagination-border-color:      $rams-slate-200;
+$pagination-hover-bg:          $rams-slate-100;
+$pagination-hover-color:       $rams-slate-900;
+$pagination-active-bg:         $primary;
+$pagination-active-border-color: $primary;
+$pagination-disabled-color:    $rams-slate-400;
+$pagination-disabled-bg:       transparent;
+$pagination-disabled-border-color: $rams-slate-200;
+
+// ── Tooltips / Popovers ──────────────────────────────────────────────────────
+$tooltip-bg:            $rams-slate-900;
+$tooltip-border-radius: $border-radius-sm;
+$tooltip-font-size:     0.75rem;
+$tooltip-opacity:       1;
+
+// ── Progress ─────────────────────────────────────────────────────────────────
+$progress-height:       0.5rem;
+$progress-bg:           $rams-slate-200;
+$progress-border-radius: $border-radius-pill;
+
+// ── Toasts ───────────────────────────────────────────────────────────────────
+$toast-border-radius: $border-radius;
+$toast-box-shadow:    $box-shadow-lg;
+$toast-max-width:     380px;
+
+// ── Nav / Tabs ───────────────────────────────────────────────────────────────
+$nav-link-font-size:    $font-size-base;
+$nav-link-font-weight:  $font-weight-medium;
+$nav-tabs-border-color: $rams-slate-200;
+$nav-tabs-link-active-color: $primary;
+
+// ── Breadcrumbs ──────────────────────────────────────────────────────────────
+$breadcrumb-font-size:        0.8125rem;
+$breadcrumb-divider-color:    $rams-slate-400;
+$breadcrumb-active-color:     $rams-slate-600;
+$breadcrumb-margin-bottom:    0;
+$breadcrumb-item-padding-x:   0.4rem;
+
+// ── Grid ─────────────────────────────────────────────────────────────────────
+$grid-gutter-width: 1.25rem;
+
+// ── Transitions ──────────────────────────────────────────────────────────────
+$transition-base:      all .18s ease-in-out;
+$transition-collapse:  height .25s ease;
+
+// ── Enable / disable Bootstrap features ──────────────────────────────────────
+$enable-shadows:          false;
+$enable-gradients:        false;
+$enable-negative-margins: true;
+$enable-smooth-scroll:    true;
+$enable-dark-mode:        true;
+$color-mode-type:         data;

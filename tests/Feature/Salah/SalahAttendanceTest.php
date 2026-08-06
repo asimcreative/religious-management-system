@@ -87,8 +87,7 @@ class SalahAttendanceTest extends TestCase
             ->post(route('salah-attendance.store'), [
                 'date' => $date,
                 'jamaat_id' => $jamaat->id,
-                'prayer_id' => $prayer->id,
-                'attendance' => [$employee->id => null],
+                'attendance' => [$employee->id => [$prayer->id => null]],
             ])
             ->assertRedirect();
 
@@ -113,10 +112,11 @@ class SalahAttendanceTest extends TestCase
             ->post(route('salah-attendance.store'), [
                 'date' => $this->attendanceDate(),
                 'jamaat_id' => $jamaat->id,
-                'prayer_id' => $prayer->id,
-                'attendance' => [$employee->id => null],
+                'attendance' => [$employee->id => [$prayer->id => null]],
             ])
             ->assertForbidden();
+
+        $this->assertDatabaseCount('salah_attendance', 0);
     }
 
     public function test_store_fails_without_required_fields(): void
@@ -124,7 +124,7 @@ class SalahAttendanceTest extends TestCase
         $user = $this->admin();
         $this->actingAs($user)
             ->post(route('salah-attendance.store'), [])
-            ->assertSessionHasErrors(['date', 'jamaat_id', 'prayer_id', 'attendance']);
+            ->assertSessionHasErrors(['date', 'jamaat_id', 'attendance']);
     }
 
     public function test_store_rejects_jamaat_from_other_company(): void
@@ -132,13 +132,11 @@ class SalahAttendanceTest extends TestCase
         $user = $this->admin();
         $companyB = Company::factory()->create();
         $jamaatB = Jamaat::factory()->create(['company_id' => $companyB->id]);
-        $prayer = Prayer::factory()->create();
 
         $this->actingAs($user)
             ->post(route('salah-attendance.store'), [
                 'date' => $this->attendanceDate(),
                 'jamaat_id' => $jamaatB->id,
-                'prayer_id' => $prayer->id,
                 'attendance' => [],
             ])
             ->assertSessionHasErrors('jamaat_id');

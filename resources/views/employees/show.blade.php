@@ -2,157 +2,150 @@
 
 @section('title', $employee->employee_name)
 
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('employees.index') }}">{{ __('employees.employees') }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ $employee->employee_name }}</li>
+@endsection
+
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ $employee->employee_name }} <small class="text-muted">({{ $employee->employee_code }})</small></h4>
-    <div class="d-flex gap-2">
+<x-page-header :title="$employee->employee_name"
+               :subtitle="$employee->employee_code">
+    <x-slot:actions>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+            <i class="bi bi-printer" aria-hidden="true"></i>
+            <span class="d-none d-sm-inline">{{ __('ui.print') }}</span>
+        </button>
+
         @can('update', $employee)
             <a href="{{ route('employees.edit', $employee) }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-pencil"></i> {{ __('employees.edit') }}
+                <i class="bi bi-pencil" aria-hidden="true"></i>
+                <span>{{ __('employees.edit') }}</span>
             </a>
         @endcan
+
         <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left"></i> {{ __('employees.back_to_list') }}
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <span class="d-none d-md-inline">{{ __('employees.back_to_list') }}</span>
         </a>
-    </div>
-</div>
+    </x-slot:actions>
+</x-page-header>
+
+<x-print-header :title="$employee->employee_name" :subtitle="__('employees.employee_code').': '.$employee->employee_code" />
 
 <div class="row g-3">
-    {{-- Personal Information --}}
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <h6 class="mb-0">{{ __('employees.personal_info') }}</h6>
-            </div>
-            <div class="card-body">
-                <div class="row mb-2">
-                    @if($employee->photo)
-                        <div class="col-12 mb-3">
-                            <img src="{{ route('employees.photo', $employee) }}" alt="{{ $employee->employee_name }}"
-                                 class="rounded" style="max-width: 120px; max-height: 120px; object-fit: cover;">
-                        </div>
+
+    {{-- ── Identity summary ─────────────────────────────────────────────── --}}
+    {{-- Not h-100: the identity card sizes to its own content instead of being
+         stretched to match the taller data column beside it. --}}
+    <div class="col-12 col-lg-4">
+        <x-card body-class="text-center">
+            @if ($employee->photo)
+                <img src="{{ route('employees.photo', $employee) }}"
+                     alt="{{ $employee->employee_name }}"
+                     class="radius-lg mb-3"
+                     style="width:110px;height:110px;object-fit:cover;"
+                     loading="lazy" decoding="async">
+            @else
+                <x-avatar :name="$employee->employee_name" size="xl" class="mb-3 mx-auto" />
+            @endif
+
+            <h2 class="h5 mb-1">{{ $employee->employee_name }}</h2>
+            <p class="code-cell mb-2">{{ $employee->employee_code }}</p>
+            <x-status-badge :status="$employee->employment_status" class="mb-3" />
+
+            <div class="d-flex flex-column gap-2 mt-3 pt-3 border-top border-subtle text-start fs-md">
+                <div class="row-center">
+                    <i class="bi bi-telephone text-soft" aria-hidden="true"></i>
+                    @if ($employee->mobile)
+                        <a href="tel:{{ $employee->mobile }}" class="mono">{{ $employee->mobile }}</a>
+                    @else
+                        <span class="dash">{{ __('ui.not_provided') }}</span>
                     @endif
                 </div>
-                <table class="table table-sm table-borderless mb-0">
-                    <tr>
-                        <td class="text-muted" style="width: 40%">{{ __('employees.employee_code') }}</td>
-                        <td>{{ $employee->employee_code }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.employee_name') }}</td>
-                        <td>{{ $employee->employee_name }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.cnic') }}</td>
-                        <td>{{ $employee->cnic ? substr($employee->cnic, 0, 5) . '-XXXXXXX-X' : '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.mobile') }}</td>
-                        <td>{{ $employee->mobile ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.email') }}</td>
-                        <td>{{ $employee->email ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.dob') }}</td>
-                        <td>{{ $employee->dob?->format('d M Y') ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.gender') }}</td>
-                        <td>{{ $employee->gender ? ucfirst($employee->gender) : '-' }}</td>
-                    </tr>
-                </table>
+                <div class="row-center">
+                    <i class="bi bi-envelope text-soft" aria-hidden="true"></i>
+                    @if ($employee->email)
+                        <a href="mailto:{{ $employee->email }}" class="truncate">{{ $employee->email }}</a>
+                    @else
+                        <span class="dash">{{ __('ui.not_provided') }}</span>
+                    @endif
+                </div>
+                <div class="row-center">
+                    <i class="bi bi-building text-soft" aria-hidden="true"></i>
+                    <span class="truncate">{{ $employee->branch?->branch_name ?? __('ui.not_provided') }}</span>
+                </div>
             </div>
-        </div>
+        </x-card>
     </div>
 
-    {{-- Organization --}}
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <h6 class="mb-0">{{ __('employees.organization_info') }}</h6>
+    {{-- ── Details ──────────────────────────────────────────────────────── --}}
+    <div class="col-12 col-lg-8">
+        <div class="row g-3">
+            <div class="col-12 col-xl-6">
+                <x-card :title="__('employees.personal_info')" icon="bi-person-badge" class="h-100">
+                    <x-detail-list>
+                        <x-detail-row :label="__('employees.employee_code')">
+                            <span class="code-cell">{{ $employee->employee_code }}</span>
+                        </x-detail-row>
+                        <x-detail-row :label="__('employees.employee_name')" :value="$employee->employee_name" />
+                        <x-detail-row :label="__('employees.cnic')">
+                            {{-- Masked: full CNIC is personal data and is never rendered in a page view. --}}
+                            @if ($employee->cnic)
+                                <span class="mono">{{ substr($employee->cnic, 0, 5) }}-XXXXXXX-X</span>
+                            @endif
+                        </x-detail-row>
+                        <x-detail-row :label="__('employees.mobile')" :value="$employee->mobile" />
+                        <x-detail-row :label="__('employees.email')" :value="$employee->email" />
+                        <x-detail-row :label="__('employees.dob')" :value="$employee->dob?->format('d M Y')" />
+                        <x-detail-row :label="__('employees.gender')" :value="$employee->gender ? __('employees.'.$employee->gender) : null" />
+                    </x-detail-list>
+                </x-card>
             </div>
-            <div class="card-body">
-                <table class="table table-sm table-borderless mb-0">
-                    <tr>
-                        <td class="text-muted" style="width: 40%">{{ __('employees.branch') }}</td>
-                        <td>{{ $employee->branch?->branch_name ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.department') }}</td>
-                        <td>{{ $employee->department?->department_name ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.designation') }}</td>
-                        <td>{{ $employee->designation?->designation_name ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.status') }}</td>
-                        <td>
-                            <span class="badge {{ $employee->employment_status->badgeClass() }}">
-                                {{ $employee->employment_status->label() }}
-                            </span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
 
-    {{-- Religious Information --}}
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">{{ __('employees.religious_info') }}</h6>
+            <div class="col-12 col-xl-6">
+                <x-card :title="__('employees.organization_info')" icon="bi-diagram-3" class="h-100">
+                    <x-detail-list>
+                        <x-detail-row :label="__('employees.branch')" :value="$employee->branch?->branch_name" />
+                        <x-detail-row :label="__('employees.department')" :value="$employee->department?->department_name" />
+                        <x-detail-row :label="__('employees.designation')" :value="$employee->designation?->designation_name" />
+                        <x-detail-row :label="__('employees.status')">
+                            <x-status-badge :status="$employee->employment_status" />
+                        </x-detail-row>
+                    </x-detail-list>
+                </x-card>
             </div>
-            <div class="card-body">
-                <table class="table table-sm table-borderless mb-0">
-                    <tr>
-                        <td class="text-muted" style="width: 40%">{{ __('employees.quran_department') }}</td>
-                        <td>{{ $employee->quranDepartment?->department_name ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.quran_status') }}</td>
-                        <td>{{ $employee->quranStatusRelation?->status_name ?? '-' }}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
 
-    {{-- Notes --}}
-    @if($employee->notes)
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">{{ __('employees.notes') }}</h6>
+            <div class="col-12 col-xl-6">
+                <x-card :title="__('employees.religious_info')" icon="bi-book" class="h-100">
+                    <x-detail-list>
+                        <x-detail-row :label="__('employees.quran_department')" :value="$employee->quranDepartment?->department_name" />
+                        <x-detail-row :label="__('employees.quran_status')" :value="$employee->quranStatusRelation?->status_name" />
+                    </x-detail-list>
+                </x-card>
             </div>
-            <div class="card-body">
-                <p class="mb-0">{{ $employee->notes }}</p>
-            </div>
-        </div>
-    </div>
-    @endif
 
-    {{-- Audit Information --}}
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">{{ __('employees.audit_info') }}</h6>
+            <div class="col-12 col-xl-6">
+                <x-card :title="__('employees.audit_info')" icon="bi-clock-history" class="h-100">
+                    <x-detail-list>
+                        <x-detail-row :label="__('employees.created_by')">
+                            {{ $employee->creator?->name ?? '—' }}
+                            <span class="d-block fs-xs text-subtle">{{ $employee->created_at?->format('d M Y, H:i') }}</span>
+                        </x-detail-row>
+                        <x-detail-row :label="__('employees.updated_by')">
+                            {{ $employee->updater?->name ?? '—' }}
+                            <span class="d-block fs-xs text-subtle">{{ $employee->updated_at?->format('d M Y, H:i') }}</span>
+                        </x-detail-row>
+                    </x-detail-list>
+                </x-card>
             </div>
-            <div class="card-body">
-                <table class="table table-sm table-borderless mb-0">
-                    <tr>
-                        <td class="text-muted" style="width: 40%">{{ __('employees.created_by') }}</td>
-                        <td>{{ $employee->creator?->name ?? '-' }} <small class="text-muted">{{ $employee->created_at?->format('d M Y H:i') }}</small></td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">{{ __('employees.updated_by') }}</td>
-                        <td>{{ $employee->updater?->name ?? '-' }} <small class="text-muted">{{ $employee->updated_at?->format('d M Y H:i') }}</small></td>
-                    </tr>
-                </table>
-            </div>
+
+            @if ($employee->notes)
+                <div class="col-12">
+                    <x-card :title="__('employees.notes')" icon="bi-sticky">
+                        <p class="mb-0 fs-md" style="white-space: pre-line;">{{ $employee->notes }}</p>
+                    </x-card>
+                </div>
+            @endif
         </div>
     </div>
 </div>

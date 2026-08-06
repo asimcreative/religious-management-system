@@ -3,42 +3,45 @@
 @section('title', __('auth.forgot_password'))
 
 @section('content')
-    <h5 class="card-title text-center mb-3">{{ __('auth.forgot_password') }}</h5>
-    <p class="text-muted text-center small mb-4">{{ __('auth.forgot_password_instructions') }}</p>
+    <a href="{{ route('login') }}" class="fs-sm text-soft d-inline-flex align-items-center gap-1 mb-3">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>{{ __('auth.back_to_login') }}
+    </a>
 
-    <form method="POST" action="{{ route('password.email') }}">
+    <h1 class="rams-auth__title">{{ __('auth.forgot_password') }}</h1>
+    <p class="rams-auth__sub">{{ __('auth.forgot_password_instructions') }}</p>
+
+    @if ($errors->any())
+        <div class="alert alert-danger" role="alert" aria-live="assertive">
+            <i class="bi bi-exclamation-octagon-fill alert__icon" aria-hidden="true"></i>
+            <div class="alert__body">{{ $errors->first() }}</div>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('password.email') }}" novalidate>
         @csrf
 
-        {{-- Email --}}
-        <div class="mb-3">
-            <label for="email" class="form-label">{{ __('auth.email') }}</label>
-            <input type="email"
-                   id="email"
-                   name="email"
-                   class="form-control @error('email') is-invalid @enderror"
-                   value="{{ old('email') }}"
-                   required
-                   autofocus
-                   autocomplete="email">
-            @error('email')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
+        <x-form.input
+            name="email"
+            type="email"
+            :label="__('auth.email')"
+            icon="bi-envelope"
+            placeholder="name@example.com"
+            required
+            autofocus
+            autocomplete="username email"
+            inputmode="email"
+        />
 
-        {{-- Submit --}}
         <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-envelope me-1"></i>
-                {{ __('auth.send_reset_link') }}
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-send" aria-hidden="true"></i>
+                <span>{{ __('auth.send_reset_link') }}</span>
             </button>
         </div>
-
-        {{-- Back to Login --}}
-        <div class="text-center">
-            <a href="{{ route('login') }}" class="text-decoration-none small">
-                <i class="bi bi-arrow-left me-1"></i>
-                {{ __('auth.back_to_login') }}
-            </a>
-        </div>
     </form>
+
+    <div class="alert alert-info mb-0">
+        <i class="bi bi-info-circle-fill alert__icon" aria-hidden="true"></i>
+        <div class="alert__body">{{ __('ui.reset_link_note') }}</div>
+    </div>
 @endsection
