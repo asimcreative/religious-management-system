@@ -132,6 +132,18 @@ class SalahAttendanceController extends Controller
             'remarks.*' => ['nullable', 'string', 'max:500'],
         ]);
 
+        // Authorize before any further processing: replacing an existing day's
+        // attendance is an update, otherwise it is a create.
+        $existingAttendance = $this->service
+            ->getForJamaatDate((int) $validated['jamaat_id'], $validated['date'])
+            ->flatten();
+
+        if ($existingAttendance->isNotEmpty()) {
+            $this->authorize('update', $existingAttendance->first());
+        } else {
+            $this->authorize('create', SalahAttendance::class);
+        }
+
         if (! $this->service->isDateAllowed($validated['date'], $companyId)) {
             return redirect()
                 ->back()

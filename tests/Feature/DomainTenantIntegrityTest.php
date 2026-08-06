@@ -218,11 +218,10 @@ class DomainTenantIntegrityTest extends TestCase
         $this->actingAs($user)
             ->post(route('salah-attendance.store'), [
                 'jamaat_id' => $jamaat->id,
-                'prayer_id' => $prayer->id,
                 'date' => now()->toDateString(),
                 'attendance' => [
-                    $member->id => null,
-                    $otherEmployee->id => null,
+                    $member->id => [$prayer->id => null],
+                    $otherEmployee->id => [$prayer->id => null],
                 ],
             ])
             ->assertSessionHasErrors('attendance');
@@ -282,9 +281,8 @@ class DomainTenantIntegrityTest extends TestCase
         $this->actingAs($user)
             ->post(route('salah-attendance.store'), [
                 'jamaat_id' => $jamaat->id,
-                'prayer_id' => $prayer->id,
                 'date' => now()->toDateString(),
-                'attendance' => [$member->id => null],
+                'attendance' => [$member->id => [$prayer->id => null]],
             ])
             ->assertForbidden();
 

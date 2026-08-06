@@ -137,9 +137,8 @@ class CompanyTimezoneDateTest extends TestCase
             ])->assertRedirect();
             $this->post(route('salah-attendance.store'), [
                 'jamaat_id' => $jamaat->id,
-                'prayer_id' => $prayer->id,
                 'date' => '2026-08-05',
-                'attendance' => [$jamaatMember->id => null],
+                'attendance' => [$jamaatMember->id => [$prayer->id => null]],
             ])->assertRedirect();
 
             $this->assertSame(
