@@ -111,7 +111,7 @@
 
                     <span class="attendance-summary__actions">
                         <label for="bulkPrayer" class="visually-hidden">{{ __('salah_attendance.bulk_prayer_label') }}</label>
-                        <select id="bulkPrayer" class="form-select form-select-sm" style="width: auto;">
+                        <select id="bulkPrayer" class="form-select form-select-sm w-auto-field">
                             <option value="[data-prayer]">{{ __('salah_attendance.all_prayers') }}</option>
                             @foreach ($prayers as $prayer)
                                 <option value="[data-prayer='{{ $prayer->id }}']">{{ $prayer->prayer_name }}</option>
@@ -119,7 +119,7 @@
                         </select>
 
                         <label for="bulkReason" class="visually-hidden">{{ __('salah_attendance.bulk_status_label') }}</label>
-                        <select id="bulkReason" class="form-select form-select-sm" style="width: auto;">
+                        <select id="bulkReason" class="form-select form-select-sm w-auto-field">
                             <option value="">{{ __('salah_attendance.present') }}</option>
                             @foreach ($reasons as $reason)
                                 <option value="{{ $reason->id }}">{{ $reason->reason_name }}</option>

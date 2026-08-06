@@ -121,7 +121,7 @@
 
                     <span class="attendance-summary__actions">
                         <label for="bulkReason" class="visually-hidden">{{ __('quran_attendance.bulk_set_label') }}</label>
-                        <select id="bulkReason" class="form-select form-select-sm" style="width: auto;">
+                        <select id="bulkReason" class="form-select form-select-sm w-auto-field">
                             <option value="">{{ __('quran_attendance.present') }}</option>
                             @foreach ($reasons as $reason)
                                 <option value="{{ $reason->id }}">{{ $reason->reason_name }}</option>

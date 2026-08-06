@@ -86,6 +86,8 @@ class PermissionSeeder extends Seeder
             'teacher.assign_class',
             'teacher.report',
             'teacher.dashboard',
+            'teacher.import',
+            'teacher.export',
 
             // ── Quran Class ──────────────────────────────────────
             'quran.class.view',
@@ -93,6 +95,8 @@ class PermissionSeeder extends Seeder
             'quran.class.update',
             'quran.class.delete',
             'quran.class.restore',
+            'quran.class.import',
+            'quran.class.export',
 
             // ── Quran Attendance ──────────────────────────────────
             'quran.attendance.view',
@@ -101,6 +105,8 @@ class PermissionSeeder extends Seeder
             'quran.attendance.delete',
             'quran.attendance.lock',
             'quran.attendance.report',
+            'quran.attendance.import',
+            'quran.attendance.export',
 
             // ── Quran Progress ────────────────────────────────────
             'quran.progress.view',
@@ -108,6 +114,8 @@ class PermissionSeeder extends Seeder
             'quran.progress.update',
             'quran.progress.history',
             'quran.progress.report',
+            'quran.progress.import',
+            'quran.progress.export',
 
             // ── Jamaat ────────────────────────────────────────────
             'jamaat.view',
@@ -116,6 +124,8 @@ class PermissionSeeder extends Seeder
             'jamaat.delete',
             'jamaat.restore',
             'jamaat.report',
+            'jamaat.import',
+            'jamaat.export',
 
             // ── Salah Attendance ──────────────────────────────────
             'salah.attendance.view',
@@ -124,6 +134,8 @@ class PermissionSeeder extends Seeder
             'salah.attendance.delete',
             'salah.attendance.lock',
             'salah.attendance.report',
+            'salah.attendance.import',
+            'salah.attendance.export',
 
             // ── Reports ──────────────────────────────────────────
             'report.dashboard',
@@ -139,13 +151,31 @@ class PermissionSeeder extends Seeder
             'report.print',
 
             // ── Master Data ──────────────────────────────────────
+            // Master modules keep their single ".manage" right for CRUD, but
+            // bulk transfer is separable: a role may be trusted to edit a
+            // branch one at a time without being trusted to replace the whole
+            // branch list from a spreadsheet.
             'branch.manage',
+            'branch.import',
+            'branch.export',
             'department.manage',
+            'department.import',
+            'department.export',
             'designation.manage',
+            'designation.import',
+            'designation.export',
             'attendance_reason.manage',
+            'attendance_reason.import',
+            'attendance_reason.export',
             'quran_department.manage',
+            'quran_department.import',
+            'quran_department.export',
             'quran_status.manage',
+            'quran_status.import',
+            'quran_status.export',
             'language.manage',
+            'language.import',
+            'language.export',
 
             // ── Settings ─────────────────────────────────────────
             'settings.view',
@@ -159,6 +189,7 @@ class PermissionSeeder extends Seeder
             'notification.read',
             'notification.delete',
             'notification.send',
+            'notification.export',
 
             // ── Activity/Audit Logs ──────────────────────────────
             'activity.view',

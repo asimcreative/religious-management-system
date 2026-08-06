@@ -14,6 +14,7 @@
     'intro' => __('masters.departments_intro'),
     'icon' => 'bi-diagram-3',
     'routeBase' => 'masters.departments',
+    'transferResource' => 'departments',
     'model' => App\Models\Department::class,
     'records' => $departments,
     'nameFor' => fn ($record) => $record->department_name,

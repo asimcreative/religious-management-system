@@ -3,6 +3,7 @@
 return [
     // Page titles
     'employees' => 'Employees',
+    'employee' => 'Employee',
     'create_employee' => 'Create Employee',
     'edit_employee' => 'Edit Employee',
     'subtitle' => 'Every person on your organisation register.',

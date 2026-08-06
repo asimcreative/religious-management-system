@@ -35,6 +35,8 @@
                 </form>
             @endif
         @endcan
+
+        <x-data-toolbar resource="notifications" :filters="request()->query()" />
     </x-slot:actions>
 </x-page-header>
 

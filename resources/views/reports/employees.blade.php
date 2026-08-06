@@ -57,7 +57,7 @@
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('reports.employees')">
-        <div class="flex-grow-1" style="min-width: 13rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -66,7 +66,7 @@
             </div>
         </div>
 
-        <div style="min-width: 10rem;">
+        <div class="field field--md">
             <label for="branch_id" class="form-label">{{ __('reports.branch') }}</label>
             <select name="branch_id" id="branch_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_branches') }}</option>
@@ -76,7 +76,7 @@
             </select>
         </div>
 
-        <div style="min-width: 10rem;">
+        <div class="field field--md">
             <label for="department_id" class="form-label">{{ __('reports.department') }}</label>
             <select name="department_id" id="department_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_departments') }}</option>
@@ -86,7 +86,7 @@
             </select>
         </div>
 
-        <div style="min-width: 10rem;">
+        <div class="field field--md">
             <label for="designation_id" class="form-label">{{ __('reports.designation') }}</label>
             <select name="designation_id" id="designation_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_designations') }}</option>
@@ -96,7 +96,7 @@
             </select>
         </div>
 
-        <div style="min-width: 9rem;">
+        <div class="field field--sm">
             <label for="employment_status" class="form-label">{{ __('reports.status') }}</label>
             <select name="employment_status" id="employment_status" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_statuses') }}</option>

@@ -14,6 +14,7 @@
     'intro' => __('masters.languages_intro'),
     'icon' => 'bi-translate',
     'routeBase' => 'masters.languages',
+    'transferResource' => 'languages',
     'model' => App\Models\Language::class,
     'records' => $languages,
     'nameFor' => fn ($record) => $record->language_name,

@@ -94,8 +94,7 @@
                         <td data-label="{{ __('reports.absent') }}" class="col-fit tabular text-danger">{{ number_format($pw->absent) }}</td>
                         <td data-label="{{ __('reports.attendance_rate') }}">
                             <div class="d-flex align-items-center gap-2">
-                                <span class="progress flex-grow-1" style="max-width: 12rem;"
-                                      role="img" aria-label="{{ $pct }}%">
+                                <span class="progress flex-grow-1 w-cap-md" role="img" aria-label="{{ $pct }}%">
                                     <span class="progress-bar bg-{{ $tone }}" style="width: {{ $pct }}%"></span>
                                 </span>
                                 <span class="tabular fw-semibold fs-sm">{{ $pct }}%</span>
@@ -110,7 +109,7 @@
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('reports.salah-attendance')">
-        <div class="flex-grow-1" style="min-width: 12rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -119,7 +118,7 @@
             </div>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="jamaat_id" class="form-label">{{ __('reports.jamaat') }}</label>
             <select name="jamaat_id" id="jamaat_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_jamaats') }}</option>
@@ -129,7 +128,7 @@
             </select>
         </div>
 
-        <div style="min-width: 10rem;">
+        <div class="field field--md">
             <label for="prayer_id" class="form-label">{{ __('reports.prayer') }}</label>
             <select name="prayer_id" id="prayer_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_prayers') }}</option>
@@ -139,12 +138,12 @@
             </select>
         </div>
 
-        <div style="min-width: 9.5rem;">
+        <div class="field field--sm">
             <label for="date_from" class="form-label">{{ __('reports.date_from') }}</label>
             <input type="date" name="date_from" id="date_from" class="form-control form-control-sm" value="{{ $filters['date_from'] ?? '' }}">
         </div>
 
-        <div style="min-width: 9.5rem;">
+        <div class="field field--sm">
             <label for="date_to" class="form-label">{{ __('reports.date_to') }}</label>
             <input type="date" name="date_to" id="date_to" class="form-control form-control-sm" value="{{ $filters['date_to'] ?? '' }}">
         </div>

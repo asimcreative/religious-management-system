@@ -59,6 +59,8 @@
         [
             'label' => __('ui.nav_configuration'),
             'items' => [
+                ['permission' => 'user.view', 'route' => 'users.index', 'active' => 'users.*', 'icon' => 'bi-person-badge', 'label' => __('users.users')],
+                ['permission' => 'role.view', 'route' => 'roles.index', 'active' => 'roles.*', 'icon' => 'bi-shield-lock', 'label' => __('roles.roles')],
                 ['permission' => 'branch.manage', 'route' => 'masters.branches.index', 'active' => 'masters.branches.*', 'icon' => 'bi-building', 'label' => __('masters.branches')],
                 ['permission' => 'department.manage', 'route' => 'masters.departments.index', 'active' => 'masters.departments.*', 'icon' => 'bi-diagram-3', 'label' => __('masters.departments')],
                 ['permission' => 'designation.manage', 'route' => 'masters.designations.index', 'active' => 'masters.designations.*', 'icon' => 'bi-award', 'label' => __('masters.designations')],
@@ -66,13 +68,23 @@
                 ['permission' => 'quran_department.manage', 'route' => 'masters.quran-departments.index', 'active' => 'masters.quran-departments.*', 'icon' => 'bi-bookmarks', 'label' => __('masters.quran_departments')],
                 ['permission' => 'quran_status.manage', 'route' => 'masters.quran-statuses.index', 'active' => 'masters.quran-statuses.*', 'icon' => 'bi-patch-check', 'label' => __('masters.quran_statuses')],
                 ['permission' => 'language.manage', 'route' => 'masters.languages.index', 'active' => 'masters.languages.*', 'icon' => 'bi-translate', 'label' => __('masters.languages')],
+                ['permission' => 'settings.view', 'route' => 'settings.index', 'active' => 'settings.*', 'icon' => 'bi-sliders', 'label' => __('settings.settings')],
+                ['permission' => 'company.view', 'route' => 'companies.index', 'active' => 'companies.*', 'icon' => 'bi-buildings', 'label' => __('companies.companies'), 'platform' => true],
             ],
         ],
     ];
 
     $user = auth()->user();
 
-    $maySee = static function (mixed $permission) use ($user): bool {
+    $maySee = static function (array $item) use ($user): bool {
+        // Platform-only entries administer every tenant, so holding the
+        // permission is not enough — the caller must be the system account.
+        if (($item['platform'] ?? false) && ! $user?->isSystemAdministrator()) {
+            return false;
+        }
+
+        $permission = $item['permission'];
+
         if ($permission === null) {
             return true;
         }
@@ -104,7 +116,7 @@
 
     <nav class="rams-sidebar__nav">
         @foreach ($navSections as $section)
-            @php($visible = array_values(array_filter($section['items'], fn ($item) => $maySee($item['permission']))))
+            @php($visible = array_values(array_filter($section['items'], fn ($item) => $maySee($item))))
             @continue(empty($visible))
 
             <div data-nav-group="{{ $section['label'] }}">

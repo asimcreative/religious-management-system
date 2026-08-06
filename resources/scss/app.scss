@@ -62,5 +62,11 @@
 @import "base";
 @import "layout";
 @import "components";
+@import "data-transfer";
 @import "utilities";
+
+// Responsive layer sits after the components it refines and before print, so
+// its narrow-screen rules win without needing !important.
+@import "responsive";
+
 @import "print";

@@ -89,7 +89,7 @@
             <i class="bi bi-chevron-down fs-xs text-soft d-none d-md-inline" aria-hidden="true"></i>
         </button>
 
-        <ul class="dropdown-menu dropdown-menu-end" style="min-width: 15rem;">
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu--wide">
             <li class="px-2 pt-1 pb-2 border-bottom border-subtle mb-1">
                 <div class="fw-semibold fs-md truncate">{{ $user?->name }}</div>
                 <div class="fs-xs text-soft truncate">{{ $user?->email }}</div>

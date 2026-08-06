@@ -63,6 +63,8 @@ return [
     'search' => 'Search',
     'refresh' => 'Refresh',
     'select' => 'Select…',
+    'select_all' => 'Select all rows',
+    'select_row' => 'Select :record',
     'all' => 'All',
     'active' => 'Active',
     'inactive' => 'Inactive',

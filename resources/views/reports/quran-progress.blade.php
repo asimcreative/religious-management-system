@@ -47,7 +47,7 @@
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('reports.quran-progress')">
-        <div class="flex-grow-1" style="min-width: 12rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -56,7 +56,7 @@
             </div>
         </div>
 
-        <div style="min-width: 12rem;">
+        <div class="field field--lg">
             <label for="quran_department_id" class="form-label">{{ __('reports.quran_department') }}</label>
             <select name="quran_department_id" id="quran_department_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_departments_quran') }}</option>
@@ -66,7 +66,7 @@
             </select>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="quran_status_id" class="form-label">{{ __('reports.quran_status') }}</label>
             <select name="quran_status_id" id="quran_status_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_statuses_quran') }}</option>
@@ -76,7 +76,7 @@
             </select>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="teacher_id" class="form-label">{{ __('reports.teacher') }}</label>
             <select name="teacher_id" id="teacher_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_teachers') }}</option>
@@ -130,11 +130,10 @@
                     <td data-label="{{ __('reports.current_lesson') }}">{{ $p->current_lesson ?? '—' }}</td>
                     <td data-label="{{ __('reports.completion') }}">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="progress flex-grow-1" style="min-width: 60px;"
-                                  role="img" aria-label="{{ number_format($pct, 0) }}%">
+                            <span class="progress flex-grow-1 meter-track" role="img" aria-label="{{ number_format($pct, 0) }}%">
                                 <span class="progress-bar bg-{{ $tone }}" style="width: {{ min(100, $pct) }}%"></span>
                             </span>
-                            <span class="tabular fw-semibold fs-sm" style="min-width: 2.75rem; text-align: end;">
+                            <span class="tabular fw-semibold fs-sm metric-value">
                                 {{ number_format($pct, 0) }}%
                             </span>
                         </div>

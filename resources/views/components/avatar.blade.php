@@ -18,7 +18,7 @@
 <span {{ $attributes->merge(['class' => 'rams-avatar'.($size ? ' rams-avatar--'.$size : '')]) }} aria-hidden="true">
     @if ($src)
         <img src="{{ $src }}" alt="" loading="lazy" decoding="async"
-             style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+             class="media-cover">
     @else
         {{ $initials !== '' ? $initials : '—' }}
     @endif

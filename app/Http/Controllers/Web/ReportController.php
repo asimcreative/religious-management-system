@@ -2,10 +2,6 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Exports\EmployeeExport;
-use App\Exports\QuranAttendanceExport;
-use App\Exports\SalahAttendanceExport;
-use App\Exports\TeacherExport;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Department;
@@ -16,12 +12,17 @@ use App\Models\QuranClass;
 use App\Models\QuranDepartment;
 use App\Models\QuranStatus;
 use App\Models\Teacher;
+use App\Services\DataTransfer\ExportService;
 use App\Services\ReportService;
 use App\Services\RoleDataAccessService;
+use App\Support\DataTransfer\ExportFormat;
+use App\Support\DataTransfer\ExportOptions;
+use App\Support\DataTransfer\ExportScope;
+use App\Support\DataTransfer\ResourceRegistry;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ReportController extends Controller
@@ -29,6 +30,8 @@ class ReportController extends Controller
     public function __construct(
         private readonly ReportService $service,
         private readonly RoleDataAccessService $dataAccess,
+        private readonly ExportService $exports,
+        private readonly ResourceRegistry $registry,
     ) {}
 
     public function index(): View
@@ -170,45 +173,69 @@ class ReportController extends Controller
         return view('reports.dashboard', compact('summary'));
     }
 
-    // ── Excel Exports ─────────────────────────────────────────────
+    // ── Exports ───────────────────────────────────────────────────
+    //
+    // These delegate to the shared transfer engine rather than carrying their
+    // own export classes. The report keeps its own permissions, and in return
+    // gains CSV and PDF alongside Excel, and an entry in the export log.
 
-    public function exportEmployees(Request $request): BinaryFileResponse
+    public function exportEmployees(Request $request): BinaryFileResponse|Response
     {
         $this->authorize('report.employee');
-        $this->authorize('report.export_excel');
 
-        $filters = $request->only(['search', 'branch_id', 'department_id', 'designation_id', 'employment_status']);
-
-        return Excel::download(new EmployeeExport($filters), 'employees-report.xlsx');
+        return $this->exportReport($request, 'employees');
     }
 
-    public function exportTeachers(Request $request): BinaryFileResponse
+    public function exportTeachers(Request $request): BinaryFileResponse|Response
     {
         $this->authorize('report.teacher');
-        $this->authorize('report.export_excel');
 
-        $filters = $request->only(['search', 'branch_id', 'status']);
-
-        return Excel::download(new TeacherExport($filters), 'teachers-report.xlsx');
+        return $this->exportReport($request, 'teachers');
     }
 
-    public function exportQuranAttendance(Request $request): BinaryFileResponse
+    public function exportQuranAttendance(Request $request): BinaryFileResponse|Response
     {
         $this->authorize('report.quran');
-        $this->authorize('report.export_excel');
 
-        $filters = $request->only(['search', 'class_id', 'teacher_id', 'date_from', 'date_to']);
-
-        return Excel::download(new QuranAttendanceExport($filters), 'quran-attendance-report.xlsx');
+        return $this->exportReport($request, 'quran-attendance');
     }
 
-    public function exportSalahAttendance(Request $request): BinaryFileResponse
+    public function exportSalahAttendance(Request $request): BinaryFileResponse|Response
     {
         $this->authorize('report.salah');
-        $this->authorize('report.export_excel');
 
-        $filters = $request->only(['search', 'jamaat_id', 'prayer_id', 'date_from', 'date_to']);
+        return $this->exportReport($request, 'salah-attendance');
+    }
 
-        return Excel::download(new SalahAttendanceExport($filters), 'salah-attendance-report.xlsx');
+    /**
+     * Run a report's filters through the transfer engine.
+     *
+     * Format defaults to Excel and is checked against the formats the engine
+     * actually produces, so an unknown value falls back rather than failing.
+     * Each format keeps its own report permission.
+     */
+    private function exportReport(Request $request, string $resourceKey): BinaryFileResponse|Response
+    {
+        $format = ExportFormat::tryFrom((string) $request->query('format', '')) ?? ExportFormat::Xlsx;
+
+        $this->authorize(match ($format) {
+            ExportFormat::Csv => 'report.export_csv',
+            ExportFormat::Pdf => 'report.export_pdf',
+            ExportFormat::Xlsx => 'report.export_excel',
+        });
+
+        $definition = $this->registry->get($resourceKey);
+
+        return $this->exports->download(
+            $definition,
+            ExportOptions::fromInput(
+                array_merge($request->query(), [
+                    'format' => $format->value,
+                    'scope' => ExportScope::Filtered->value,
+                ]),
+                $definition->filterKeys(),
+            ),
+            $request->user(),
+        );
     }
 }

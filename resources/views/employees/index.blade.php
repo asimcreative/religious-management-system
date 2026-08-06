@@ -48,19 +48,22 @@
                icon="bi-people"
                :badge="number_format($employees->total())">
     <x-slot:actions>
-        @can('create', App\Models\Employee::class)
-            <a href="{{ route('employees.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                <span>{{ __('employees.add_new') }}</span>
-            </a>
-        @endcan
+        {{-- Add / Import / Export / Sample / Print — identical on every module.
+             The toolbar keeps only the filters this module declares, so an
+             export reproduces the list the user is looking at. --}}
+        <x-data-toolbar resource="employees"
+                        :create-route="route('employees.create')"
+                        :create-model="App\Models\Employee::class"
+                        :create-label="__('employees.add_new')"
+                        :filters="request()->query()"
+                        selectable />
     </x-slot:actions>
 </x-page-header>
 
 <x-card flush>
     {{-- ── Filters ──────────────────────────────────────────────────────── --}}
     <x-filters :active="$activeFilters" :reset-url="route('employees.index')">
-        <div class="flex-grow-1" style="min-width: 15rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -69,7 +72,7 @@
             </div>
         </div>
 
-        <div style="min-width: 10rem;">
+        <div class="field field--md">
             <label for="filter_branch" class="form-label">{{ __('employees.branch') }}</label>
             <select name="branch_id" id="filter_branch" class="form-select form-select-sm">
                 <option value="">{{ __('employees.all_branches') }}</option>
@@ -79,7 +82,7 @@
             </select>
         </div>
 
-        <div style="min-width: 10rem;">
+        <div class="field field--md">
             <label for="filter_department" class="form-label">{{ __('employees.department') }}</label>
             <select name="department_id" id="filter_department" class="form-select form-select-sm">
                 <option value="">{{ __('employees.all_departments') }}</option>
@@ -89,7 +92,7 @@
             </select>
         </div>
 
-        <div style="min-width: 10rem;">
+        <div class="field field--md">
             <label for="filter_designation" class="form-label">{{ __('employees.designation') }}</label>
             <select name="designation_id" id="filter_designation" class="form-select form-select-sm">
                 <option value="">{{ __('employees.all_designations') }}</option>
@@ -99,7 +102,7 @@
             </select>
         </div>
 
-        <div style="min-width: 9rem;">
+        <div class="field field--sm">
             <label for="filter_status" class="form-label">{{ __('employees.status') }}</label>
             <select name="employment_status" id="filter_status" class="form-select form-select-sm">
                 <option value="">{{ __('employees.all_statuses') }}</option>
@@ -113,7 +116,7 @@
         <div class="w-100">
             <div class="collapse {{ $hasAdvanced ? 'show' : '' }}" id="advancedFilters">
                 <div class="d-flex flex-wrap gap-2 pt-2 border-top border-subtle">
-                    <div style="min-width: 12rem;">
+                    <div class="field field--lg">
                         <label for="filter_quran_department" class="form-label">{{ __('employees.quran_department') }}</label>
                         <select name="quran_department_id" id="filter_quran_department" class="form-select form-select-sm">
                             <option value="">{{ __('employees.all_quran_depts') }}</option>
@@ -123,7 +126,7 @@
                         </select>
                     </div>
 
-                    <div style="min-width: 12rem;">
+                    <div class="field field--lg">
                         <label for="filter_quran_status" class="form-label">{{ __('employees.quran_status') }}</label>
                         <select name="quran_status_id" id="filter_quran_status" class="form-select form-select-sm">
                             <option value="">{{ __('employees.all_quran_statuses') }}</option>
@@ -148,6 +151,9 @@
     <x-table sticky :label="__('employees.employees')">
         <thead>
             <tr>
+                <th scope="col" class="col-select">
+                    <x-bulk-select resource="employees" all />
+                </th>
                 <th scope="col" class="col-num">#</th>
                 <th scope="col">{{ __('employees.employee_name') }}</th>
                 <th scope="col">{{ __('employees.department') }}</th>
@@ -164,6 +170,9 @@
         <tbody>
             @forelse ($employees as $employee)
                 <tr>
+                    <td class="col-select" data-label="">
+                        <x-bulk-select resource="employees" :id="$employee->id" :label="$employee->employee_name" />
+                    </td>
                     <td class="col-num" data-label="#">{{ $employees->firstItem() + $loop->index }}</td>
 
                     <td data-label="{{ __('employees.employee_name') }}">
@@ -237,7 +246,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8">
+                    <td colspan="9">
                         @if ($activeFilters)
                             <x-empty-state icon="bi-search"
                                            :title="__('ui.no_results_title')"

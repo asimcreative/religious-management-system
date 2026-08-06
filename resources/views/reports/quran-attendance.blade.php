@@ -70,7 +70,7 @@
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('reports.quran-attendance')">
-        <div class="flex-grow-1" style="min-width: 12rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -79,7 +79,7 @@
             </div>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="class_id" class="form-label">{{ __('reports.class') }}</label>
             <select name="class_id" id="class_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_classes') }}</option>
@@ -89,7 +89,7 @@
             </select>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="teacher_id" class="form-label">{{ __('reports.teacher') }}</label>
             <select name="teacher_id" id="teacher_id" class="form-select form-select-sm">
                 <option value="">{{ __('reports.all_teachers') }}</option>
@@ -99,12 +99,12 @@
             </select>
         </div>
 
-        <div style="min-width: 9.5rem;">
+        <div class="field field--sm">
             <label for="date_from" class="form-label">{{ __('reports.date_from') }}</label>
             <input type="date" name="date_from" id="date_from" class="form-control form-control-sm" value="{{ $filters['date_from'] ?? '' }}">
         </div>
 
-        <div style="min-width: 9.5rem;">
+        <div class="field field--sm">
             <label for="date_to" class="form-label">{{ __('reports.date_to') }}</label>
             <input type="date" name="date_to" id="date_to" class="form-control form-control-sm" value="{{ $filters['date_to'] ?? '' }}">
         </div>

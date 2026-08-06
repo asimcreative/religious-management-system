@@ -33,18 +33,19 @@
                icon="bi-clipboard-check"
                :badge="number_format($attendance->total())">
     <x-slot:actions>
-        @can('create', App\Models\QuranAttendance::class)
-            <a href="{{ route('quran-attendance.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-clipboard-plus" aria-hidden="true"></i>
-                <span>{{ __('quran_attendance.mark_attendance') }}</span>
-            </a>
-        @endcan
+        {{-- Add / Import / Export / Sample / Print — the same toolbar on every
+             module, gated by this module's own permissions. --}}
+        <x-data-toolbar resource="quran-attendance"
+                        :create-route="route('quran-attendance.create')"
+                        :create-model="App\Models\QuranAttendance::class"
+                        :create-label="__('quran_attendance.mark_attendance')"
+                        :filters="request()->query()" />
     </x-slot:actions>
 </x-page-header>
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('quran-attendance.index')">
-        <div style="min-width: 12rem;" class="flex-grow-1">
+        <div class="field field--grow">
             <label for="filter_class" class="form-label">{{ __('quran_attendance.class') }}</label>
             <select name="class_id" id="filter_class" class="form-select form-select-sm">
                 <option value="">{{ __('quran_attendance.all_classes') }}</option>
@@ -54,7 +55,7 @@
             </select>
         </div>
 
-        <div style="min-width: 12rem;" class="flex-grow-1">
+        <div class="field field--grow">
             <label for="filter_teacher" class="form-label">{{ __('quran_attendance.teacher') }}</label>
             <select name="teacher_id" id="filter_teacher" class="form-select form-select-sm">
                 <option value="">{{ __('quran_attendance.all_teachers') }}</option>
@@ -64,12 +65,12 @@
             </select>
         </div>
 
-        <div style="min-width: 9.5rem;">
+        <div class="field field--sm">
             <label for="date_from" class="form-label">{{ __('quran_attendance.date_from') }}</label>
             <input type="date" name="date_from" id="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}">
         </div>
 
-        <div style="min-width: 9.5rem;">
+        <div class="field field--sm">
             <label for="date_to" class="form-label">{{ __('quran_attendance.date_to') }}</label>
             <input type="date" name="date_to" id="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}">
         </div>

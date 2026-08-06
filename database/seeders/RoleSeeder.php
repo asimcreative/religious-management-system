@@ -55,6 +55,16 @@ class RoleSeeder extends Seeder
     }
 
     /**
+     * Role definitions.
+     *
+     * Bulk transfer follows least privilege and does not simply track CRUD
+     * rights. Export is granted wherever a role may already read the records —
+     * it moves no new information, only its container. Import is granted only
+     * to the administrative roles that curate a module (Company Admin, HR
+     * Manager, Religious Affairs Manager): a Quran Teacher records attendance
+     * one class at a time by design, and handing them a spreadsheet that
+     * rewrites a term of it is a different privilege entirely.
+     *
      * @return array<string, string|list<string>>
      */
     private function getRolePermissions(): array
@@ -72,24 +82,35 @@ class RoleSeeder extends Seeder
                 // Teachers
                 'teacher.view', 'teacher.create', 'teacher.update', 'teacher.delete', 'teacher.restore',
                 'teacher.assign_branch', 'teacher.assign_class', 'teacher.report', 'teacher.dashboard',
+                'teacher.import', 'teacher.export',
                 // Quran
                 'quran.class.view', 'quran.class.create', 'quran.class.update', 'quran.class.delete', 'quran.class.restore',
+                'quran.class.import', 'quran.class.export',
                 'quran.attendance.view', 'quran.attendance.create', 'quran.attendance.update', 'quran.attendance.delete',
                 'quran.attendance.lock', 'quran.attendance.report',
+                'quran.attendance.import', 'quran.attendance.export',
                 'quran.progress.view', 'quran.progress.create', 'quran.progress.update', 'quran.progress.history', 'quran.progress.report',
+                'quran.progress.import', 'quran.progress.export',
                 // Jamaat & Salah
                 'jamaat.view', 'jamaat.create', 'jamaat.update', 'jamaat.delete', 'jamaat.restore', 'jamaat.report',
+                'jamaat.import', 'jamaat.export',
                 'salah.attendance.view', 'salah.attendance.create', 'salah.attendance.update', 'salah.attendance.delete',
                 'salah.attendance.lock', 'salah.attendance.report',
+                'salah.attendance.import', 'salah.attendance.export',
                 // Reports
                 'report.dashboard', 'report.employee', 'report.teacher', 'report.quran', 'report.salah',
                 'report.export_excel', 'report.export_pdf', 'report.export_csv', 'report.print',
                 // Masters
-                'branch.manage', 'department.manage', 'designation.manage', 'attendance_reason.manage',
-                'quran_department.manage', 'quran_status.manage', 'language.manage',
+                'branch.manage', 'branch.import', 'branch.export',
+                'department.manage', 'department.import', 'department.export',
+                'designation.manage', 'designation.import', 'designation.export',
+                'attendance_reason.manage', 'attendance_reason.import', 'attendance_reason.export',
+                'quran_department.manage', 'quran_department.import', 'quran_department.export',
+                'quran_status.manage', 'quran_status.import', 'quran_status.export',
+                'language.manage', 'language.import', 'language.export',
                 // Settings & Logs
                 'settings.view', 'settings.update',
-                'notification.view', 'notification.read', 'notification.delete', 'notification.send',
+                'notification.view', 'notification.read', 'notification.delete', 'notification.send', 'notification.export',
                 'activity.view', 'activity.export', 'audit.view', 'audit.export',
             ],
 
@@ -98,7 +119,9 @@ class RoleSeeder extends Seeder
                 'employee.import', 'employee.export', 'employee.print', 'employee.report', 'employee.dashboard',
                 'report.dashboard', 'report.employee',
                 'report.export_excel', 'report.export_pdf', 'report.export_csv', 'report.print',
-                'branch.manage', 'department.manage', 'designation.manage',
+                'branch.manage', 'branch.import', 'branch.export',
+                'department.manage', 'department.import', 'department.export',
+                'designation.manage', 'designation.import', 'designation.export',
                 'notification.view', 'notification.read',
             ],
 
@@ -107,50 +130,63 @@ class RoleSeeder extends Seeder
                 // Teachers
                 'teacher.view', 'teacher.create', 'teacher.update', 'teacher.delete', 'teacher.restore',
                 'teacher.assign_branch', 'teacher.assign_class', 'teacher.report', 'teacher.dashboard',
+                'teacher.import', 'teacher.export',
                 // Quran
                 'quran.class.view', 'quran.class.create', 'quran.class.update', 'quran.class.delete', 'quran.class.restore',
+                'quran.class.import', 'quran.class.export',
                 'quran.attendance.view', 'quran.attendance.create', 'quran.attendance.update', 'quran.attendance.delete',
                 'quran.attendance.lock', 'quran.attendance.report',
+                'quran.attendance.import', 'quran.attendance.export',
                 'quran.progress.view', 'quran.progress.create', 'quran.progress.update', 'quran.progress.history', 'quran.progress.report',
+                'quran.progress.import', 'quran.progress.export',
                 // Jamaat & Salah
                 'jamaat.view', 'jamaat.create', 'jamaat.update', 'jamaat.delete', 'jamaat.restore', 'jamaat.report',
+                'jamaat.import', 'jamaat.export',
                 'salah.attendance.view', 'salah.attendance.create', 'salah.attendance.update', 'salah.attendance.delete',
                 'salah.attendance.lock', 'salah.attendance.report',
+                'salah.attendance.import', 'salah.attendance.export',
                 // Reports
                 'report.dashboard', 'report.teacher', 'report.quran', 'report.salah',
                 'report.export_excel', 'report.export_pdf', 'report.export_csv', 'report.print',
                 // Masters
-                'attendance_reason.manage', 'quran_department.manage', 'quran_status.manage',
+                'attendance_reason.manage', 'attendance_reason.import', 'attendance_reason.export',
+                'quran_department.manage', 'quran_department.import', 'quran_department.export',
+                'quran_status.manage', 'quran_status.import', 'quran_status.export',
                 'notification.view', 'notification.read', 'notification.send',
             ],
 
+            // Export only: a teacher's own classes are theirs to take away,
+            // but a spreadsheet that rewrites a term of attendance is not.
             'Quran Teacher' => [
-                'quran.class.view',
-                'quran.attendance.view', 'quran.attendance.create', 'quran.attendance.update',
+                'quran.class.view', 'quran.class.export',
+                'quran.attendance.view', 'quran.attendance.create', 'quran.attendance.update', 'quran.attendance.export',
                 'quran.progress.view', 'quran.progress.create', 'quran.progress.update', 'quran.progress.history',
+                'quran.progress.export',
                 'report.quran',
                 'report.dashboard',
                 'notification.view', 'notification.read',
             ],
 
             'Jamaat Leader' => [
-                'jamaat.view',
-                'salah.attendance.view', 'salah.attendance.create', 'salah.attendance.update',
+                'jamaat.view', 'jamaat.export',
+                'salah.attendance.view', 'salah.attendance.create', 'salah.attendance.update', 'salah.attendance.export',
                 'report.salah',
                 'report.dashboard',
                 'notification.view', 'notification.read',
             ],
 
+            // Their exports are already narrowed to their own branch or
+            // department by RoleDataAccessService.
             'Branch Manager' => [
-                'employee.view', 'employee.report', 'employee.dashboard',
-                'teacher.view', 'teacher.report',
+                'employee.view', 'employee.report', 'employee.dashboard', 'employee.export',
+                'teacher.view', 'teacher.report', 'teacher.export',
                 'report.dashboard', 'report.employee', 'report.teacher',
                 'report.export_excel', 'report.export_pdf', 'report.print',
                 'notification.view', 'notification.read',
             ],
 
             'Department Manager' => [
-                'employee.view', 'employee.report', 'employee.dashboard',
+                'employee.view', 'employee.report', 'employee.dashboard', 'employee.export',
                 'report.dashboard', 'report.employee',
                 'report.export_excel', 'report.export_pdf', 'report.print',
                 'notification.view', 'notification.read',
@@ -164,13 +200,15 @@ class RoleSeeder extends Seeder
                 'notification.view', 'notification.read',
             ],
 
+            // Reads everything and takes copies; changes nothing.
             'Auditor' => [
-                'employee.view', 'employee.report',
-                'teacher.view', 'teacher.report',
-                'quran.class.view', 'quran.attendance.view', 'quran.attendance.report',
-                'quran.progress.view', 'quran.progress.report',
-                'jamaat.view', 'jamaat.report',
-                'salah.attendance.view', 'salah.attendance.report',
+                'employee.view', 'employee.report', 'employee.export',
+                'teacher.view', 'teacher.report', 'teacher.export',
+                'quran.class.view', 'quran.class.export',
+                'quran.attendance.view', 'quran.attendance.report', 'quran.attendance.export',
+                'quran.progress.view', 'quran.progress.report', 'quran.progress.export',
+                'jamaat.view', 'jamaat.report', 'jamaat.export',
+                'salah.attendance.view', 'salah.attendance.report', 'salah.attendance.export',
                 'report.dashboard', 'report.employee', 'report.teacher', 'report.quran', 'report.salah',
                 'report.audit', 'report.activity',
                 'report.export_excel', 'report.export_pdf', 'report.export_csv', 'report.print',

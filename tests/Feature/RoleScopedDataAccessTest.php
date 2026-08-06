@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Exports\EmployeeExport;
-use App\Exports\TeacherExport;
 use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Department;
@@ -22,6 +20,8 @@ use App\Models\Teacher;
 use App\Models\User;
 use App\Services\DashboardService;
 use App\Services\ReportService;
+use App\Support\DataTransfer\ResourceRegistry;
+use Illuminate\Database\Eloquent\Builder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -250,9 +250,9 @@ class RoleScopedDataAccessTest extends TestCase
         $this->assertSame([$branchTeacher->id], Teacher::orderBy('id')->pluck('id')->all());
         $this->assertSame(
             [$manager->id, $branchEmployee->id],
-            $this->sortedIds((new EmployeeExport)->query()->pluck('id')->all()),
+            $this->sortedIds($this->exportQuery('employees')->pluck('id')->all()),
         );
-        $this->assertSame([$branchTeacher->id], (new TeacherExport)->query()->orderBy('id')->pluck('id')->all());
+        $this->assertSame([$branchTeacher->id], $this->exportQuery('teachers')->orderBy('id')->pluck('id')->all());
 
         $reportSummary = app(ReportService::class)->dashboardSummary();
         $overview = app(DashboardService::class)->overviewStats();
@@ -298,7 +298,7 @@ class RoleScopedDataAccessTest extends TestCase
         );
         $this->assertSame(
             [$manager->id, $departmentEmployee->id],
-            $this->sortedIds((new EmployeeExport)->query()->pluck('id')->all()),
+            $this->sortedIds($this->exportQuery('employees')->pluck('id')->all()),
         );
         $this->assertSame(2, app(ReportService::class)->dashboardSummary()['total_employees']);
     }
@@ -468,5 +468,16 @@ class RoleScopedDataAccessTest extends TestCase
         sort($ids);
 
         return $ids;
+    }
+
+    /**
+     * The query a module's export would run, for the signed-in user.
+     *
+     * Exports must never widen what a role-restricted user can already see on
+     * screen, so these assertions run against the real export query.
+     */
+    private function exportQuery(string $resourceKey): Builder
+    {
+        return app(ResourceRegistry::class)->get($resourceKey)->newQuery();
     }
 }

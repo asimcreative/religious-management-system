@@ -94,7 +94,7 @@
 
             @if ($memberCount > 5)
                 <div class="table-toolbar">
-                    <div class="input-icon" style="max-width: 18rem;">
+                    <div class="input-icon w-cap-lg">
                         <i class="bi bi-search" aria-hidden="true"></i>
                         <input type="search" class="form-control form-control-sm"
                                data-table-filter="#classMembers"

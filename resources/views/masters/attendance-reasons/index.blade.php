@@ -14,6 +14,7 @@
     'intro' => __('masters.attendance_reasons_intro'),
     'icon' => 'bi-chat-left-text',
     'routeBase' => 'masters.attendance-reasons',
+    'transferResource' => 'attendance-reasons',
     'model' => App\Models\AttendanceReason::class,
     'records' => $reasons,
     'nameFor' => fn ($record) => $record->reason_name,

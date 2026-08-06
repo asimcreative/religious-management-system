@@ -1,0 +1,343 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Import / export
+//
+// Everything here uses the existing token set, so the toolbar and the transfer
+// screens pick up light and dark themes without a single hard-coded colour.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── The standard list toolbar ────────────────────────────────────────────────
+.data-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+
+    &__group {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding-inline-start: 0.5rem;
+        border-inline-start: 1px solid var(--rams-border);
+
+        // The separator is meaningless when a group wraps onto its own line.
+        &:first-child {
+            padding-inline-start: 0;
+            border-inline-start: 0;
+        }
+    }
+
+    // Below sm the labels go and the icons carry the meaning, so the toolbar
+    // stays on one line on a phone instead of pushing the table off screen.
+    @media (max-width: 575.98px) {
+        &__group {
+            padding-inline-start: 0.35rem;
+            gap: 0.125rem;
+        }
+
+        .btn span:not(.visually-hidden) {
+            display: none;
+        }
+
+        .btn i {
+            margin: 0;
+        }
+    }
+
+    &__export {
+        min-width: 15rem;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    &__export-format {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--rams-text-strong);
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+}
+
+// ── Import dialog ────────────────────────────────────────────────────────────
+.import-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px dashed var(--rams-border);
+    border-radius: var(--rams-radius);
+    background: var(--rams-surface-2);
+    color: var(--rams-text-muted);
+    font-size: 0.8125rem;
+
+    > i { color: var(--rams-primary); }
+}
+
+.import-option {
+    padding: 0.4rem 0.5rem 0.4rem 2rem;
+    border-radius: var(--rams-radius);
+
+    &:hover { background: var(--rams-surface-2); }
+
+    .form-check-label { cursor: pointer; }
+
+    &__title {
+        display: block;
+        color: var(--rams-text-strong);
+        font-weight: 500;
+    }
+
+    &__help {
+        display: block;
+        color: var(--rams-text-muted);
+        font-size: 0.75rem;
+        line-height: 1.35;
+    }
+}
+
+// ── Preview and result ───────────────────────────────────────────────────────
+.preview-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rams-border);
+}
+
+.result-headline {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+
+    &__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        font-size: 1.35rem;
+    }
+
+    &__status {
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--rams-text-strong);
+    }
+
+    &__summary {
+        color: var(--rams-text-muted);
+    }
+
+    // Reuses the same soft/text token pairs as the status badges, so a
+    // completed import reads the same green as an Active badge does.
+    @each $tone in (success, warning, danger, info) {
+        &--#{$tone} .result-headline__icon {
+            color: var(--rams-#{$tone}-text);
+            background: var(--rams-#{$tone}-soft);
+        }
+    }
+}
+
+.result-figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    gap: 0.75rem 1rem;
+    margin: 1.25rem 0 0;
+
+    dt {
+        color: var(--rams-text-muted);
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    dd {
+        margin: 0.1rem 0 0;
+        color: var(--rams-text-strong);
+        font-size: 1.25rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+// ── Bulk actions ─────────────────────────────────────────────────────────────
+// Pinned to the bottom of the viewport so it stays reachable while the user
+// scrolls a long list ticking rows.
+.bulk-bar {
+    position: fixed;
+    inset-inline: 1rem;
+    bottom: 1rem;
+    z-index: 1030;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 auto;
+    max-width: 52rem;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--rams-primary);
+    border-radius: var(--rams-radius-lg);
+    background: var(--rams-surface);
+    box-shadow: var(--rams-shadow-lg);
+
+    // On desktop the bar is anchored to the right rather than centred on the
+    // viewport. Centring put it over the sidebar's collapse control, which sits
+    // at the bottom of the rail — the button became unclickable while any row
+    // was selected.
+    @media (min-width: 992px) {
+        inset-inline-start: auto;
+        inset-inline-end: 1.5rem;
+        margin: 0;
+        max-width: min(46rem, calc(100vw - var(--rams-sidebar-width) - 3rem));
+    }
+
+    @media print { display: none !important; }
+
+    &__count {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.3rem;
+        color: var(--rams-primary-text);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        margin-inline-end: auto;
+
+        strong { font-size: 1rem; font-variant-numeric: tabular-nums; }
+    }
+
+    &__form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+
+        .form-select { width: auto; min-width: 10rem; }
+    }
+}
+
+// ── Column visibility ────────────────────────────────────────────────────────
+.data-toolbar__columns {
+    min-width: 14rem;
+    max-height: 60vh;
+    overflow-y: auto;
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-inline-start: 1rem;
+        margin: 0;
+        cursor: pointer;
+
+        .form-check-input { margin: 0; float: none; }
+    }
+}
+
+// Hiding a column must remove it from the layout, not just from view, or the
+// remaining columns keep its width.
+.is-column-hidden { display: none !important; }
+
+// ── Row selection ────────────────────────────────────────────────────────────
+.col-select {
+    width: 1%;
+    white-space: nowrap;
+    vertical-align: middle;
+
+    .form-check-input { margin: 0; }
+
+    // The stacked (card) table layout labels every cell; an unlabelled
+    // checkbox cell would render a stray empty row.
+    @media print { display: none; }
+}
+
+// ── Saved filters ────────────────────────────────────────────────────────────
+.data-toolbar__overflow { min-width: 17rem; }
+
+.saved-filter {
+    display: flex;
+    align-items: center;
+
+    .dropdown-item { flex: 1 1 auto; }
+    form { flex: 0 0 auto; padding-inline-end: 0.35rem; }
+
+    &__form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+// ── Permission grid (roles) ──────────────────────────────────────────────────
+.permission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.75rem;
+}
+
+.permission-group {
+    padding: 0.75rem;
+    border: 1px solid var(--rams-border);
+    border-radius: var(--rams-radius);
+    background: var(--rams-surface-2);
+
+    &__title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        float: none;
+        width: 100%;
+        margin-bottom: 0.4rem;
+        color: var(--rams-text-strong);
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    &__toggle {
+        padding: 0 0.35rem;
+        font-size: 0.6875rem;
+    }
+
+    .form-check { margin-bottom: 0.15rem; }
+    .form-check-label { font-size: 0.8125rem; }
+}
+
+// The dotted name is the thing an administrator actually greps for, so it
+// stays visible rather than hiding behind a tooltip.
+.permission-name {
+    display: block;
+    color: var(--rams-text-subtle);
+    font-family: var(--bs-font-monospace, monospace);
+    font-size: 0.6875rem;
+}
+
+// ── Role picker (users) ──────────────────────────────────────────────────────
+.role-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--rams-border);
+    border-radius: var(--rams-radius);
+    background: var(--rams-surface-2);
+    max-height: 14rem;
+    overflow-y: auto;
+}
+
+// ── History ──────────────────────────────────────────────────────────────────
+.transfer-tally {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem;
+}

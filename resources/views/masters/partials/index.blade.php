@@ -18,20 +18,34 @@
 
     Optional:
       $intro      string          Short explanation of what the data is for
+      $transferResource string    Import/export definition key, e.g. 'branches'.
+                                  Supplying it swaps the lone Add button for the
+                                  standard toolbar; omitting it leaves the page
+                                  exactly as it was.
 --}}
 @php
     $intro = $intro ?? null;
+    $transferResource = $transferResource ?? null;
     $hasSearch = filled(request('search'));
 @endphp
 
 <x-page-header :title="$title" :subtitle="$intro" :icon="$icon" :badge="number_format($records->total())">
     <x-slot:actions>
-        @can('create', $model)
-            <a href="{{ route($routeBase.'.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                <span>{{ __('masters.add_new') }}</span>
-            </a>
-        @endcan
+        @if ($transferResource)
+            <x-data-toolbar :resource="$transferResource"
+                            :create-route="route($routeBase.'.create')"
+                            :create-model="$model"
+                            :create-label="__('masters.add_new')"
+                            :filters="request()->query()"
+                            selectable />
+        @else
+            @can('create', $model)
+                <a href="{{ route($routeBase.'.create') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                    <span>{{ __('masters.add_new') }}</span>
+                </a>
+            @endcan
+        @endif
     </x-slot:actions>
 </x-page-header>
 
@@ -39,7 +53,7 @@
     <x-filters
         :active="$hasSearch ? [__('ui.search').': '.request('search') => route($routeBase.'.index')] : []"
         :reset-url="$hasSearch ? route($routeBase.'.index') : null">
-        <div class="flex-grow-1" style="min-width: 16rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -52,6 +66,11 @@
     <x-table sticky :label="$title">
         <thead>
             <tr>
+                @if ($transferResource)
+                    <th scope="col" class="col-select">
+                        <x-bulk-select :resource="$transferResource" all />
+                    </th>
+                @endif
                 <th scope="col" class="col-num">#</th>
                 @foreach ($columns as $column)
                     <th scope="col" class="{{ $column['class'] ?? '' }}">{{ $column['label'] }}</th>
@@ -64,6 +83,11 @@
         <tbody>
             @forelse ($records as $record)
                 <tr>
+                    @if ($transferResource)
+                        <td class="col-select" data-label="">
+                            <x-bulk-select :resource="$transferResource" :id="$record->id" :label="($nameFor)($record)" />
+                        </td>
+                    @endif
                     <td class="col-num" data-label="#">{{ $records->firstItem() + $loop->index }}</td>
 
                     @foreach ($columns as $column)
@@ -105,7 +129,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ count($columns) + 3 }}">
+                    <td colspan="{{ count($columns) + 3 + ($transferResource ? 1 : 0) }}">
                         @if ($hasSearch)
                             <x-empty-state icon="bi-search" :title="__('ui.no_results_title')" :text="__('ui.no_results_text')">
                                 <a href="{{ route($routeBase.'.index') }}" class="btn btn-outline-secondary btn-sm">

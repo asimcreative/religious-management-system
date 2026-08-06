@@ -33,17 +33,13 @@
                icon="bi-moon-stars"
                :badge="number_format($attendance->total())">
     <x-slot:actions>
-        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
-            <i class="bi bi-printer" aria-hidden="true"></i>
-            <span class="d-none d-sm-inline">{{ __('ui.print') }}</span>
-        </button>
-
-        @can('create', App\Models\SalahAttendance::class)
-            <a href="{{ route('salah-attendance.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-calendar-plus" aria-hidden="true"></i>
-                <span>{{ __('salah_attendance.mark_attendance') }}</span>
-            </a>
-        @endcan
+        {{-- Add / Import / Export / Sample / Print — the same toolbar on every
+             module, gated by this module's own permissions. --}}
+        <x-data-toolbar resource="salah-attendance"
+                        :create-route="route('salah-attendance.create')"
+                        :create-model="App\Models\SalahAttendance::class"
+                        :create-label="__('salah_attendance.mark_attendance')"
+                        :filters="request()->query()" />
     </x-slot:actions>
 </x-page-header>
 
@@ -56,7 +52,7 @@
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('salah-attendance.index')">
-        <div class="flex-grow-1" style="min-width: 14rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -65,7 +61,7 @@
             </div>
         </div>
 
-        <div style="min-width: 12rem;">
+        <div class="field field--lg">
             <label for="filter_jamaat" class="form-label">{{ __('salah_attendance.jamaat') }}</label>
             <select name="jamaat_id" id="filter_jamaat" class="form-select form-select-sm">
                 <option value="">{{ __('salah_attendance.all_jamaats') }}</option>
@@ -75,12 +71,12 @@
             </select>
         </div>
 
-        <div style="min-width: 9.5rem;">
+        <div class="field field--sm">
             <label for="date_from" class="form-label">{{ __('reports.date_from') }}</label>
             <input type="date" name="date_from" id="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}">
         </div>
 
-        <div style="min-width: 9.5rem;">
+        <div class="field field--sm">
             <label for="date_to" class="form-label">{{ __('reports.date_to') }}</label>
             <input type="date" name="date_to" id="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}">
         </div>

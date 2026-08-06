@@ -14,6 +14,7 @@
     'intro' => __('masters.quran_statuses_intro'),
     'icon' => 'bi-patch-check',
     'routeBase' => 'masters.quran-statuses',
+    'transferResource' => 'quran-statuses',
     'model' => App\Models\QuranStatus::class,
     'records' => $statuses,
     'nameFor' => fn ($record) => $record->status_name,

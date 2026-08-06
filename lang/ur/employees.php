@@ -3,6 +3,7 @@
 return [
     // Page titles
     'employees' => 'ملازمین',
+    'employee' => 'ملازم',
     'create_employee' => 'نیا ملازم بنائیں',
     'edit_employee' => 'ملازم میں ترمیم',
     'subtitle' => 'ادارے کے تمام ملازمین کا ریکارڈ۔',

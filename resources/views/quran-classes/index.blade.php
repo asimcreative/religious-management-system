@@ -36,18 +36,20 @@
                icon="bi-book"
                :badge="number_format($classes->total())">
     <x-slot:actions>
-        @can('create', App\Models\QuranClass::class)
-            <a href="{{ route('quran-classes.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                <span>{{ __('quran_classes.add_new') }}</span>
-            </a>
-        @endcan
+        {{-- Add / Import / Export / Sample / Print — the same toolbar on every
+             module, gated by this module's own permissions. --}}
+        <x-data-toolbar resource="quran-classes"
+                        :create-route="route('quran-classes.create')"
+                        :create-model="App\Models\QuranClass::class"
+                        :create-label="__('quran_classes.add_new')"
+                        :filters="request()->query()"
+                        selectable />
     </x-slot:actions>
 </x-page-header>
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('quran-classes.index')">
-        <div class="flex-grow-1" style="min-width: 14rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -56,7 +58,7 @@
             </div>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="filter_branch" class="form-label">{{ __('quran_classes.branch') }}</label>
             <select name="branch_id" id="filter_branch" class="form-select form-select-sm">
                 <option value="">{{ __('quran_classes.all_branches') }}</option>
@@ -66,7 +68,7 @@
             </select>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="filter_teacher" class="form-label">{{ __('quran_classes.teacher') }}</label>
             <select name="teacher_id" id="filter_teacher" class="form-select form-select-sm">
                 <option value="">{{ __('quran_classes.all_teachers') }}</option>
@@ -76,7 +78,7 @@
             </select>
         </div>
 
-        <div style="min-width: 9rem;">
+        <div class="field field--sm">
             <label for="filter_status" class="form-label">{{ __('quran_classes.status') }}</label>
             <select name="status" id="filter_status" class="form-select form-select-sm">
                 <option value="">{{ __('quran_classes.all_statuses') }}</option>
@@ -90,6 +92,9 @@
     <x-table sticky :label="__('quran_classes.quran_classes')">
         <thead>
             <tr>
+                <th scope="col" class="col-select">
+                    <x-bulk-select resource="quran-classes" all />
+                </th>
                 <th scope="col" class="col-num">#</th>
                 <th scope="col">{{ __('quran_classes.class_name') }}</th>
                 <th scope="col">{{ __('quran_classes.teacher') }}</th>
@@ -110,11 +115,14 @@
                         : 0;
                 @endphp
                 <tr>
+                    <td class="col-select" data-label="">
+                        <x-bulk-select resource="quran-classes" :id="$class->id" :label="$class->class_name" />
+                    </td>
                     <td class="col-num" data-label="#">{{ $classes->firstItem() + $loop->index }}</td>
 
                     <td data-label="{{ __('quran_classes.class_name') }}">
                         <div class="cell-primary">
-                            <span class="stat-card__icon tone-warning" style="width:34px;height:34px;font-size:0.95rem;" aria-hidden="true">
+                            <span class="stat-card__icon tone-warning icon-circle-sm" aria-hidden="true">
                                 <i class="bi bi-book"></i>
                             </span>
                             <span class="cell-primary__text">
@@ -153,8 +161,7 @@
                             <span class="tabular fw-semibold {{ $isFull ? 'text-danger' : '' }}">
                                 {{ $class->active_members_count }}/{{ $class->max_strength }}
                             </span>
-                            <span class="progress d-none d-md-block" style="width: 56px; height: 5px;"
-                                  role="img" aria-label="{{ $fillPct }}%">
+                            <span class="progress d-none d-md-block meter-track--inline" role="img" aria-label="{{ $fillPct }}%">
                                 <span class="progress-bar {{ $isFull ? 'bg-danger' : 'bg-success' }}" style="width: {{ $fillPct }}%"></span>
                             </span>
                             @if ($isFull)
@@ -198,7 +205,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8">
+                    <td colspan="9">
                         @if ($activeFilters)
                             <x-empty-state icon="bi-search" :title="__('ui.no_results_title')" :text="__('ui.no_results_text')">
                                 <a href="{{ route('quran-classes.index') }}" class="btn btn-outline-secondary btn-sm">

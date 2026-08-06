@@ -14,6 +14,7 @@
     'intro' => __('masters.designations_intro'),
     'icon' => 'bi-award',
     'routeBase' => 'masters.designations',
+    'transferResource' => 'designations',
     'model' => App\Models\Designation::class,
     'records' => $designations,
     'nameFor' => fn ($record) => $record->designation_name,

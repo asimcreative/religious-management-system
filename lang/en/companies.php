@@ -1,0 +1,45 @@
+<?php
+
+return [
+    'companies' => 'Companies',
+    'company' => 'Company',
+    'create_company' => 'Create Company',
+    'edit_company' => 'Edit Company',
+    'subtitle' => 'Every organisation using this platform.',
+    'create_subtitle' => 'Set up a new tenant.',
+
+    'company_code' => 'Company Code',
+    'company_name' => 'Company Name',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'address' => 'Address',
+    'city' => 'City',
+    'country' => 'Country',
+    'timezone' => 'Timezone',
+    'default_language' => 'Default Language',
+    'subscription_plan' => 'Subscription Plan',
+    'subscription_expiry' => 'Subscription Expiry',
+    'status' => 'Status',
+    'user_count' => 'Users',
+
+    'code_help' => 'A short unique identifier. Cannot be reused by another company.',
+    'timezone_help' => 'Dates and attendance lock times are shown in this timezone.',
+    'details' => 'Organisation details',
+    'contact' => 'Contact',
+    'subscription' => 'Subscription',
+
+    'add_new' => 'Add Company',
+    'search_placeholder' => 'Name, code or email…',
+    'back_to_list' => 'Back to companies',
+    'all_statuses' => 'All statuses',
+    'actions' => 'Actions',
+    'edit' => 'Edit',
+    'delete' => 'Delete',
+    'save' => 'Save',
+
+    'created' => 'Company ":name" created.',
+    'updated' => 'Company ":name" updated.',
+    'deleted' => 'Company deleted.',
+    'empty_title' => 'No companies yet',
+    'empty_text' => 'Create the first tenant to get started.',
+];

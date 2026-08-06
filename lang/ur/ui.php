@@ -63,6 +63,8 @@ return [
     'search' => 'تلاش',
     'refresh' => 'تازہ کریں',
     'select' => 'منتخب کریں…',
+    'select_all' => 'تمام سطریں منتخب کریں',
+    'select_row' => ':record منتخب کریں',
     'all' => 'تمام',
     'active' => 'فعال',
     'inactive' => 'غیر فعال',

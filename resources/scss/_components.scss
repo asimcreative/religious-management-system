@@ -610,9 +610,23 @@ a.stat-card:focus-visible {
 // ── Tables ───────────────────────────────────────────────────────────────────
 .table-wrap {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
     overflow-y: visible;
     -webkit-overflow-scrolling: touch;
+
+    // The wrapper must be a containing block, not just a scroller.
+    //
+    // .visually-hidden is position:absolute. Inside a static wrapper its
+    // containing block resolves to the nearest positioned ancestor — the card
+    // — so every screen-reader label in a wide table escaped the scroller and
+    // inflated the card's scroll width, which pushed the whole document
+    // sideways. Making the wrapper relative keeps them clipped where they
+    // belong. Same applies to any absolutely-positioned cell decoration.
+    position: relative;
+
+    // A flex or grid child refuses to shrink below its content unless told to.
+    min-width: 0;
 }
 
 // The header row stays put while a wide table is scrolled sideways. There is
@@ -1326,7 +1340,7 @@ td > .empty-state { padding-block: 2.5rem; }
         margin-top: 0.375rem;
         height: 1rem;
         text-align: center;
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
         font-variant-numeric: tabular-nums;
         color: var(--rams-text-subtle);
     }

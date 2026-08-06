@@ -3,6 +3,15 @@
 return [
     'notifications' => 'Notifications',
     'subtitle' => 'Alerts, reminders and security notices for your account.',
+
+    // ── Record fields (exports, tables) ─────────────────────────────
+    'title' => 'Title',
+    'message' => 'Message',
+    'type' => 'Type',
+    'priority' => 'Priority',
+    'recipient' => 'Recipient',
+    'read_at' => 'Read At',
+    'received_at' => 'Received At',
     'no_notifications' => 'No notifications yet',
     'empty_text' => 'Reminders and security notices will appear here when there is something to tell you.',
     'unread' => 'unread',

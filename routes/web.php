@@ -4,7 +4,10 @@ use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Web\BulkActionController;
+use App\Http\Controllers\Web\CompanyController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\DataTransferController;
 use App\Http\Controllers\Web\EmployeeController;
 use App\Http\Controllers\Web\JamaatController;
 use App\Http\Controllers\Web\JamaatMemberController;
@@ -22,8 +25,12 @@ use App\Http\Controllers\Web\QuranClassController;
 use App\Http\Controllers\Web\QuranClassMemberController;
 use App\Http\Controllers\Web\QuranProgressController;
 use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SalahAttendanceController;
+use App\Http\Controllers\Web\SavedFilterController;
+use App\Http\Controllers\Web\SettingController;
 use App\Http\Controllers\Web\TeacherController;
+use App\Http\Controllers\Web\UserController;
 use Illuminate\Support\Facades\Route;
 
 // ── Guest Routes ─────────────────────────────────────────────────
@@ -123,6 +130,43 @@ Route::middleware(['auth', 'company.active', 'user.active'])->group(function () 
         Route::post('mark-all-read', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
         Route::delete('{id}', [NotificationController::class, 'destroy'])->name('destroy');
         Route::get('unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
+    });
+
+    // ── Users ───────────────────────────────────
+    Route::resource('users', UserController::class);
+
+    // ── Roles ───────────────────────────────────
+    Route::resource('roles', RoleController::class)->except('show');
+
+    // ── Companies (platform account only) ──────────────
+    Route::resource('companies', CompanyController::class)->except('show');
+
+    // ── Settings ───────────────────────────────
+    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+
+    // ── Import / Export ─────────────────────────────────────────
+    // One set of routes serves every module. {resource} is bound to the
+    // module's definition by DataTransferServiceProvider; an unknown key 404s.
+    // The history routes are declared first so their literal segments are
+    // never mistaken for a module key.
+    Route::prefix('data')->name('data.')->group(function () {
+        Route::get('imports', [DataTransferController::class, 'imports'])->name('imports.index');
+        Route::get('imports/{importLog}', [DataTransferController::class, 'showImport'])->name('imports.show');
+        Route::get('imports/{importLog}/status', [DataTransferController::class, 'status'])->name('imports.status');
+        Route::get('imports/{importLog}/errors', [DataTransferController::class, 'errors'])->name('imports.errors');
+
+        Route::get('exports', [DataTransferController::class, 'exports'])->name('exports.index');
+        Route::get('exports/{exportLog}/download', [DataTransferController::class, 'download'])->name('exports.download');
+
+        Route::delete('filters/{savedFilter}', [SavedFilterController::class, 'destroy'])->name('filters.destroy');
+
+        Route::get('{resource}/sample', [DataTransferController::class, 'sample'])->name('sample');
+        Route::get('{resource}/export', [DataTransferController::class, 'export'])->name('export');
+        Route::post('{resource}/import/preview', [DataTransferController::class, 'preview'])->name('import.preview');
+        Route::post('{resource}/import', [DataTransferController::class, 'import'])->name('import');
+        Route::post('{resource}/bulk', BulkActionController::class)->name('bulk');
+        Route::post('{resource}/filters', [SavedFilterController::class, 'store'])->name('filters.store');
     });
 
     // ── Master Data ─────────────────────────────────────────────

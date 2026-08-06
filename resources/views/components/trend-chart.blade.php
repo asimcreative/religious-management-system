@@ -71,8 +71,14 @@
             </div>
         </div>
 
-        {{-- The same data, readable by screen readers and by search. --}}
-        <table class="visually-hidden">
+        {{-- The same data, readable by screen readers and by search.
+
+             The wrapper carries .visually-hidden rather than the table: a
+             table box does not honour the 1px clamp, so the class on the
+             <table> left a 370px-wide absolutely-positioned box that pushed
+             the document sideways on narrow screens. --}}
+        <div class="visually-hidden">
+        <table>
             <caption>{{ __('dashboard.trend_title') }}</caption>
             <thead>
                 <tr>
@@ -99,5 +105,6 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 @endif

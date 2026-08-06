@@ -1,0 +1,422 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RAMS — Responsive layer
+//
+// Cross-cutting responsive concerns only. Anything specific to one component
+// lives with that component; putting it here as well would mean two places to
+// change and two chances to forget.
+//
+// What belongs here:
+//   1. Overflow guards      — nothing may push the document sideways
+//   2. Fluid typography     — one scale, no per-breakpoint font stacks
+//   3. Field widths         — the utilities that replaced inline min-widths
+//   4. Touch targets        — sized by input type, not by screen width
+//   5. Shell & component refinements at the narrow end
+//
+// Breakpoints supported: 320 → 1920. The named Bootstrap tiers are used
+// throughout; the odd device widths in between are covered because every rule
+// is written as a range rather than for a specific device.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── 1. Overflow guards ───────────────────────────────────────────────────────
+//
+// One rule, applied once. A page that scrolls sideways is nearly always one
+// element that forgot it lives in a narrow box; these guards make that the
+// element's problem rather than the document's.
+
+html,
+body {
+    overflow-x: clip;   // clip, not hidden: keeps position:sticky working
+    max-width: 100%;
+}
+
+// Media and embeds never dictate layout width.
+img,
+svg,
+video,
+canvas,
+iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+// Long unbroken strings — an email, a URL, a code — must wrap rather than
+// stretch their container.
+.cell-primary__sub,
+.detail-list__value,
+.card-body,
+.breadcrumb-item,
+td,
+dd {
+    overflow-wrap: anywhere;
+}
+
+// Flex and grid children default to min-width:auto, which means "never shrink
+// below my content". Every layout column in the app wants the opposite.
+.rams-main,
+.rams-content,
+.card,
+.card-body,
+.page-header__text,
+.filter-bar__row > *,
+.auto-grid > * {
+    min-width: 0;
+}
+
+// ── 2. Fluid typography ──────────────────────────────────────────────────────
+//
+// clamp() scales between the smallest and largest supported viewport, so there
+// is no jump at a breakpoint and no separate mobile type scale to maintain.
+
+:root {
+    --rams-fluid: clamp(0px, (100vw - 320px) / 1600, 1px);
+}
+
+.page-header__title {
+    font-size: calc(1.1875rem + 3.5 * var(--rams-fluid));
+    line-height: 1.25;
+}
+
+.card-title,
+.form-section__title {
+    font-size: calc(0.875rem + 1.5 * var(--rams-fluid));
+}
+
+.stat-card__value {
+    font-size: calc(1.375rem + 4 * var(--rams-fluid));
+    line-height: 1.15;
+}
+
+// Below the smallest tablet, tighten the shell so content keeps its width.
+//
+// The horizontal padding is 0.75rem rather than something smaller on purpose:
+// Bootstrap's .row pulls itself 0.75rem wider than its container through
+// negative margins, and the padding is what absorbs that. Any less and a
+// two-column row clips its own edge at 320px.
+@media (max-width: 359.98px) {
+    .rams-content { padding-inline: 0.75rem; }
+    .card-body    { padding: 0.875rem; }
+    .filter-bar   { padding: 0.75rem; }
+
+    // g-4 rows are wider than a 320px screen can absorb; the tighter gutter
+    // keeps the columns inside the viewport without changing the layout.
+    .row.g-4 { --bs-gutter-x: 1rem; }
+}
+
+// ── 3. Field widths ──────────────────────────────────────────────────────────
+//
+// Replaces ~66 inline `style="min-width: …"` declarations on filter and form
+// fields. A fixed min-width is right on a wide screen and wrong on a phone, so
+// the utility drops to full width at the point the row can no longer hold two
+// fields side by side.
+
+.field {
+    flex: 0 1 auto;
+    min-width: var(--field-min, 11rem);
+}
+
+.field--xs   { --field-min: 8rem; }
+.field--sm   { --field-min: 9.5rem; }
+.field--md   { --field-min: 11rem; }
+.field--lg   { --field-min: 13rem; }
+.field--xl   { --field-min: 16rem; }
+
+// The field that should soak up whatever room is left — usually search.
+.field--grow {
+    flex: 1 1 var(--field-min, 15rem);
+    --field-min: 15rem;
+}
+
+@media (max-width: 575.98px) {
+    .field,
+    .field--grow {
+        flex-basis: 100%;
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+// Caps for controls that should not stretch across a wide row — a status
+// select next to a search box, for instance. They release on a phone, where
+// full width is the only sensible width.
+.w-cap-sm { max-width: 10rem; }
+.w-cap-md { max-width: 14rem; }
+.w-cap-lg { max-width: 18rem; }
+.w-auto-field { width: auto; }
+
+@media (max-width: 575.98px) {
+    .w-cap-sm,
+    .w-cap-md,
+    .w-cap-lg,
+    .w-auto-field {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+// Fixed media, sized fluidly so a photo never dominates a 320px screen.
+.media-thumb {
+    width: clamp(5.25rem, 22vw, 6.875rem);
+    height: clamp(5.25rem, 22vw, 6.875rem);
+    object-fit: cover;
+}
+
+.media-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+}
+
+.icon-circle-sm {
+    width: 2.125rem;
+    height: 2.125rem;
+    font-size: 0.95rem;
+    flex: 0 0 auto;
+}
+
+// Numeric readouts and the small inline meters beside them.
+.metric-value {
+    min-width: 2.75rem;
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+}
+
+.meter-track { min-width: 3.75rem; }
+.meter-track--inline { width: 3.5rem; height: 5px; }
+
+// Menus with real content in them — the account menu, the notification list —
+// need room, but never more than the screen has.
+.dropdown-menu--wide {
+    min-width: 15rem;
+    max-width: calc(100vw - 1.5rem);
+}
+
+// ── 4. Touch targets ─────────────────────────────────────────────────────────
+//
+// Keyed off the pointer, not the viewport. A 1024px tablet needs 44px targets
+// and a 1024px desktop window does not, and only `pointer: coarse` can tell
+// the two apart. Desktop keeps its compact density.
+
+@media (pointer: coarse) {
+    .btn,
+    .dropdown-item,
+    .page-link,
+    .nav-link {
+        min-height: 2.75rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dropdown-item { justify-content: flex-start; }
+
+    .btn-icon,
+    .btn.btn-icon {
+        min-width: 2.75rem;
+    }
+
+    .rams-sidebar__link {
+        min-height: 2.75rem;
+    }
+
+    .rams-topbar__icon-btn {
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+    }
+
+    // Form controls: 44px tall and 16px text, which is also what stops iOS
+    // Safari zooming the page when a field takes focus.
+    .form-control,
+    .form-select,
+    .input-group > .form-control,
+    .input-group > .form-select {
+        min-height: 2.75rem;
+        font-size: 1rem;
+    }
+
+    .form-control-sm,
+    .form-select-sm {
+        min-height: 2.5rem;
+        font-size: 1rem;
+    }
+
+    textarea.form-control { min-height: 5rem; }
+
+    // Checkboxes and radios are the smallest thing anyone has to hit. The box
+    // stays visually small; the row is what the finger actually gets, so the
+    // row carries the 44px and the label extends the hit area across it.
+    .form-check-input {
+        width: 1.375rem;
+        height: 1.375rem;
+        margin-top: 0.0625rem;
+    }
+
+    .form-check-label {
+        padding-inline-start: 0.25rem;
+        padding-block: 0.5rem;
+        flex: 1 1 auto;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        min-height: 2.75rem;
+    }
+
+    // Controls the shell owns, which are not .btn and were therefore missed by
+    // the rule above: the command palette rows, the password reveal toggle and
+    // the language switcher on the sign-in screens.
+    .rams-quicknav-btn,
+    .password-field__toggle,
+    .locale-inline__item {
+        min-height: 2.75rem;
+    }
+
+    .password-field__toggle,
+    .locale-inline__item {
+        min-width: 2.75rem;
+    }
+
+    // Text links standing on their own line — "Forgot password?", "Back to
+    // sign in" — are targets too, even though they read as prose. Scoped to
+    // the sign-in shell so links inside sentences elsewhere keep their
+    // natural line height.
+    .rams-auth a:not(.btn) {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+    }
+
+    // A card-style checkbox is its own target; the label is the surface.
+    .check-card { min-height: 2.75rem; }
+
+    // Row selection: the cell is the target, not the 22px box inside it.
+    .col-select {
+        min-width: 2.75rem;
+
+        .form-check-input {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+    }
+
+    // Row actions sit close together; give each one its own target.
+    .table-actions .btn {
+        min-width: 2.5rem;
+        min-height: 2.5rem;
+    }
+
+    .table-actions { gap: 0.25rem; }
+}
+
+// ── 5. Shell refinements ─────────────────────────────────────────────────────
+
+// Page header: the action cluster gets its own line on a phone and spreads to
+// the full width, so buttons are reachable rather than crushed into a corner.
+@media (max-width: 575.98px) {
+    .page-header {
+        gap: 0.75rem;
+
+        &__actions {
+            width: 100%;
+
+            > * { flex: 1 1 auto; }
+            .dropdown { flex: 0 0 auto; }
+        }
+    }
+
+    .filter-bar__actions {
+        width: 100%;
+        margin-inline-start: 0;
+
+        .btn { flex: 1 1 auto; }
+    }
+
+    .form-actions {
+        padding: 0.75rem;
+
+        &__hint { width: 100%; order: -1; }
+
+        .btn { flex: 1 1 auto; }
+    }
+
+    .table-footer {
+        justify-content: center;
+
+        &__count { width: 100%; text-align: center; }
+    }
+
+    .card-header { row-gap: 0.5rem; }
+}
+
+// Modals: full-height sheet on a phone, dialog everywhere else. A modal that
+// is taller than the viewport must scroll inside itself, not take the page
+// with it.
+@media (max-width: 575.98px) {
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+
+    .modal-content { max-height: calc(100dvh - 1rem); }
+
+    .modal-body { overflow-y: auto; }
+
+    .modal-footer {
+        gap: 0.5rem;
+
+        > .btn { flex: 1 1 auto; margin: 0; }
+    }
+}
+
+// Detail pages read as one column on a phone and as label/value pairs from
+// the tablet up, where there is room for both.
+@include media-breakpoint-up(md) {
+    .detail-list__row {
+        grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr);
+        gap: 1rem;
+        align-items: baseline;
+    }
+}
+
+// Wide data tables keep the first column readable while the rest scrolls.
+// Below sm the pinned column would eat most of the screen, so it is released.
+@media (max-width: 575.98px) {
+    .table-pinned {
+        th:first-child,
+        td:first-child,
+        th:nth-child(2),
+        td:nth-child(2) {
+            position: static;
+        }
+    }
+}
+
+// The floating add button must never cover the bulk bar or the last row.
+@media (max-width: 767.98px) {
+    .rams-content { padding-bottom: 5.5rem; }
+}
+
+// ── 6. Large screens ─────────────────────────────────────────────────────────
+//
+// Beyond the page max-width the content stops growing, so the remaining space
+// becomes margin. These widths only adjust density, never structure.
+
+@media (min-width: 1600px) {
+    .rams-content { padding-inline: 2.5rem; }
+    .auto-grid { --gap: 1.25rem; }
+}
+
+// ── 7. Reduced motion ────────────────────────────────────────────────────────
+//
+// The shell animates the sidebar and the toaster; both are decoration.
+
+@media (prefers-reduced-motion: reduce) {
+    .rams-sidebar,
+    .rams-main,
+    .rams-backdrop,
+    .bulk-bar {
+        transition: none !important;
+    }
+}

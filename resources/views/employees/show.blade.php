@@ -43,7 +43,7 @@
                 <img src="{{ route('employees.photo', $employee) }}"
                      alt="{{ $employee->employee_name }}"
                      class="radius-lg mb-3"
-                     style="width:110px;height:110px;object-fit:cover;"
+                     class="media-thumb"
                      loading="lazy" decoding="async">
             @else
                 <x-avatar :name="$employee->employee_name" size="xl" class="mb-3 mx-auto" />

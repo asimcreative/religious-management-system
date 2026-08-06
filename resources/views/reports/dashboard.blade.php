@@ -99,7 +99,7 @@
                     <td data-label="{{ __('masters.active') }}" class="col-fit tabular">{{ number_format($entity['active']) }}</td>
                     <td data-label="{{ __('reports.attendance_rate') }}">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="progress flex-grow-1" style="max-width: 10rem;">
+                            <span class="progress flex-grow-1 w-cap-sm">
                                 <span class="progress-bar bg-success" style="width: {{ $pct }}%"></span>
                             </span>
                             <span class="tabular fs-sm">{{ $pct }}%</span>

@@ -33,18 +33,19 @@
                icon="bi-graph-up-arrow"
                :badge="number_format($progress->total())">
     <x-slot:actions>
-        @can('create', App\Models\QuranProgress::class)
-            <a href="{{ route('quran-progress.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                <span>{{ __('quran_progress.update_progress') }}</span>
-            </a>
-        @endcan
+        {{-- Add / Import / Export / Sample / Print — the same toolbar on every
+             module, gated by this module's own permissions. --}}
+        <x-data-toolbar resource="quran-progress"
+                        :create-route="route('quran-progress.create')"
+                        :create-model="App\Models\QuranProgress::class"
+                        :create-label="__('quran_progress.update_progress')"
+                        :filters="request()->query()" />
     </x-slot:actions>
 </x-page-header>
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('quran-progress.index')">
-        <div class="flex-grow-1" style="min-width: 14rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -53,7 +54,7 @@
             </div>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="filter_department" class="form-label">{{ __('quran_progress.department') }}</label>
             <select name="quran_department_id" id="filter_department" class="form-select form-select-sm">
                 <option value="">{{ __('quran_progress.all_departments') }}</option>
@@ -63,7 +64,7 @@
             </select>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="filter_qstatus" class="form-label">{{ __('quran_progress.quran_status') }}</label>
             <select name="quran_status_id" id="filter_qstatus" class="form-select form-select-sm">
                 <option value="">{{ __('quran_progress.all_statuses') }}</option>
@@ -73,7 +74,7 @@
             </select>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="filter_teacher" class="form-label">{{ __('quran_progress.teacher') }}</label>
             <select name="teacher_id" id="filter_teacher" class="form-select form-select-sm">
                 <option value="">{{ __('quran_progress.all_teachers') }}</option>
@@ -142,11 +143,10 @@
 
                     <td data-label="{{ __('quran_progress.completion') }}">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="progress flex-grow-1" style="min-width: 60px;"
-                                  role="img" aria-label="{{ number_format($pct, 0) }}%">
+                            <span class="progress flex-grow-1 meter-track" role="img" aria-label="{{ number_format($pct, 0) }}%">
                                 <span class="progress-bar {{ $pct >= 100 ? 'bg-success' : 'bg-primary' }}" style="width: {{ $pct }}%"></span>
                             </span>
-                            <span class="tabular fw-semibold fs-sm" style="min-width: 2.75rem; text-align: end;">
+                            <span class="tabular fw-semibold fs-sm metric-value">
                                 {{ number_format($pct, 0) }}%
                             </span>
                         </div>

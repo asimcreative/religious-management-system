@@ -33,18 +33,20 @@
                icon="bi-people-fill"
                :badge="number_format($jamaats->total())">
     <x-slot:actions>
-        @can('create', App\Models\Jamaat::class)
-            <a href="{{ route('jamaats.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                <span>{{ __('jamaats.add_new') }}</span>
-            </a>
-        @endcan
+        {{-- Add / Import / Export / Sample / Print — the same toolbar on every
+             module, gated by this module's own permissions. --}}
+        <x-data-toolbar resource="jamaats"
+                        :create-route="route('jamaats.create')"
+                        :create-model="App\Models\Jamaat::class"
+                        :create-label="__('jamaats.add_new')"
+                        :filters="request()->query()"
+                        selectable />
     </x-slot:actions>
 </x-page-header>
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('jamaats.index')">
-        <div class="flex-grow-1" style="min-width: 15rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -53,7 +55,7 @@
             </div>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="filter_branch" class="form-label">{{ __('jamaats.branch') }}</label>
             <select name="branch_id" id="filter_branch" class="form-select form-select-sm">
                 <option value="">{{ __('jamaats.all_branches') }}</option>
@@ -63,7 +65,7 @@
             </select>
         </div>
 
-        <div style="min-width: 9rem;">
+        <div class="field field--sm">
             <label for="filter_status" class="form-label">{{ __('jamaats.status') }}</label>
             <select name="status" id="filter_status" class="form-select form-select-sm">
                 <option value="">{{ __('jamaats.all_statuses') }}</option>
@@ -77,6 +79,9 @@
     <x-table sticky :label="__('jamaats.jamaats')">
         <thead>
             <tr>
+                <th scope="col" class="col-select">
+                    <x-bulk-select resource="jamaats" all />
+                </th>
                 <th scope="col" class="col-num">#</th>
                 <th scope="col">{{ __('jamaats.jamaat_name') }}</th>
                 <th scope="col">{{ __('jamaats.leader') }}</th>
@@ -90,11 +95,14 @@
         <tbody>
             @forelse ($jamaats as $jamaat)
                 <tr>
+                    <td class="col-select" data-label="">
+                        <x-bulk-select resource="jamaats" :id="$jamaat->id" :label="$jamaat->jamaat_name" />
+                    </td>
                     <td class="col-num" data-label="#">{{ $jamaats->firstItem() + $loop->index }}</td>
 
                     <td data-label="{{ __('jamaats.jamaat_name') }}">
                         <div class="cell-primary">
-                            <span class="stat-card__icon tone-accent" style="width:34px;height:34px;font-size:0.95rem;" aria-hidden="true">
+                            <span class="stat-card__icon tone-accent icon-circle-sm" aria-hidden="true">
                                 <i class="bi bi-people-fill"></i>
                             </span>
                             <span class="cell-primary__text">
@@ -153,7 +161,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7">
+                    <td colspan="8">
                         @if ($activeFilters)
                             <x-empty-state icon="bi-search" :title="__('ui.no_results_title')" :text="__('ui.no_results_text')">
                                 <a href="{{ route('jamaats.index') }}" class="btn btn-outline-secondary btn-sm">

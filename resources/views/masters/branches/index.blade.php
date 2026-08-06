@@ -14,6 +14,7 @@
     'intro' => __('masters.branches_intro'),
     'icon' => 'bi-building',
     'routeBase' => 'masters.branches',
+    'transferResource' => 'branches',
     'model' => App\Models\Branch::class,
     'records' => $branches,
     'nameFor' => fn ($record) => $record->branch_name,

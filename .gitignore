@@ -38,3 +38,4 @@ database/database.sqlite
 /test-results
 /storage/playwright-report
 /playwright/.cache
+/storage/responsive-audit.json

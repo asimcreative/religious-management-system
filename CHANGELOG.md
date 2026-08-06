@@ -6,6 +6,132 @@ This project adheres to [Semantic Versioning](https://semver.org/). Format follo
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Universal Import / Export engine** — one engine serving every table-bearing module. A module
+  declares a single `ResourceDefinition` (`app/DataTransfer/Definitions/`) and gets Excel/CSV/PDF
+  export, validated import with preview, a downloadable template and the standard toolbar. There
+  is no import class, export class or controller per module. See
+  `docs/features/import-export/README.md`.
+- **Standard list toolbar** (`<x-data-toolbar>`) on all 17 registered modules: Add New, Import,
+  Export (3 formats × 4 scopes), Download Sample, Print, Refresh, and history links — each gated
+  by that module's own permission.
+- **Import flow** — upload → whole-file validation → preview with per-row errors quoting the real
+  spreadsheet row number → confirm. Nothing is written before confirmation. Modes: *import valid
+  rows* (default) or *all-or-nothing*. Duplicate handling: skip, update or fail.
+- **Sample workbooks** — Template, Instructions and Reference sheets per module, with drop-downs
+  populated from the signed-in company's own data.
+- **Failed-rows report** — original data plus reason and suggested fix, as a re-uploadable .xlsx.
+- **Import and export history** (`import_logs`, `export_logs`) with per-run counters, durations,
+  stored filters and downloadable artefacts.
+- **Queued transfers** — imports over 2,000 rows and exports over 5,000 rows run on dedicated
+  `imports` / `exports` queues with live progress polling.
+- ~40 new `*.import` / `*.export` permissions, granted to existing roles by
+  `2026_08_06_100002_grant_transfer_permissions_to_existing_roles` so no live installation loses
+  or unexpectedly gains capability.
+- English and Urdu translations for the entire feature (`lang/{en,ur}/data_transfer.php`).
+
+### Security
+
+- Imports never accept foreign keys. Relationships travel as names and are resolved through the
+  tenant-scoped model, so a row naming another company's record resolves to nothing.
+- `id`, `company_id`, `created_by`, `updated_by`, `deleted_by` and timestamps are stripped from
+  every imported row; `company_id` is taken from the authenticated user only.
+- Uploads, generated exports and error reports live on a private disk partitioned per company and
+  are served only through policy-checked controller actions.
+- Attendance imports honour `AttendanceLockService`; a locked date is refused unless the caller
+  holds the lock-override permission.
+- Uniqueness checks include soft-deleted rows, which still occupy the database's unique indexes.
+
+### Added — list toolbar, second pass
+
+- **Bulk delete and bulk status change** (`POST data/{resource}/bulk`). Every record is authorised
+  individually through its policy and checked against the module's own referential rules, so a
+  selection cannot do what forty single deletes would each have been refused. Modules whose rows
+  are events — attendance, notifications, progress, memberships — opt out.
+- **Row selection** that works without JavaScript: the checkboxes sit in the table but belong to
+  the bulk form through the HTML `form` attribute.
+- **Column visibility**, driven by the rendered table headings and remembered per module; **Copy**
+  the visible table as TSV; **Saved filters** stored per user in a new `saved_filters` table.
+
+### Added — administration modules
+
+Four modules that previously had no route, controller or view:
+
+- **Users** — accounts, roles and status. `User` is the one model without the `BelongsToCompany`
+  global scope, so `UserRepository::scoped()` applies the tenant boundary by hand in one place.
+- **Roles** — permissions grouped by module. Nobody may grant a right they do not hold themselves;
+  seeded roles cannot be renamed or deleted, and a role still held by someone cannot be removed.
+- **Companies** — the tenant register, reachable only by the platform account (`CompanyPolicy`
+  requires `isSystemAdministrator()`, not merely the `company.*` permission).
+- **Settings** — attendance lock time and backdating limit, from a fixed catalogue; a key outside
+  it is ignored rather than stored.
+
+### Changed
+
+- The Reports module's four bespoke export classes (`EmployeeExport`, `TeacherExport`,
+  `QuranAttendanceExport`, `SalahAttendanceExport`) are **removed**. Report exports run through the
+  shared engine and gain CSV and PDF alongside Excel, plus an entry in the export log.
+- `Column::related()` replaces six hand-written "name behind a lookup" closures and registers its
+  own eager load.
+
+### Fixed
+
+- The bulk selection bar covered the sidebar's collapse control on desktop, making it unclickable
+  while any row was selected. Found by the new Playwright suite.
+
+### Added — full responsive coverage (320px → 1920px)
+
+- **`resources/scss/_responsive.scss`** — one cross-cutting layer holding overflow guards, fluid
+  `clamp()` typography, field-width utilities, touch targets and narrow-screen refinements for
+  the shell, filters, forms, modals, tables and detail pages.
+- **Touch targets sized by pointer, not viewport.** A single `@media (pointer: coarse)` block
+  gives every control a 44px target on phones and tablets; desktop keeps its compact density,
+  because a 1024px tablet and a 1024px desktop window are not the same thing.
+- **12 utility classes replaced 80 static inline styles** across 33 views (`.field--*`,
+  `.w-cap-*`, `.media-thumb`, `.metric-value`, `.meter-track`, …). The only inline styles left
+  carry runtime values a stylesheet cannot express.
+- **Automated responsive testing** — `responsive-audit.spec.ts` sweeps 39 pages at 6–18 widths
+  each and reports overflow, offending elements, touch targets and unreadable text;
+  `responsive.spec.ts` is the 10-assertion CI guard. See
+  `docs/features/responsive/RESPONSIVE_AUDIT.md`.
+
+### Fixed
+
+- **Wide tables pushed the whole page sideways** — up to 468px on Salah attendance at 320px.
+  `.table-wrap` was `position: static`, so the `.visually-hidden` labels inside it (which are
+  `position: absolute`) resolved their containing block to the card and escaped the scroller
+  entirely. Making the wrapper a containing block fixed every wide table at once.
+- **The dashboard overflowed by 50px on a 320px screen.** The trend chart's screen-reader data
+  table carried `.visually-hidden` on the `<table>` itself; a table box ignores the 1px clamp, so
+  it rendered as an invisible 370px box. The class now sits on a wrapping `<div>`.
+- **Two-column rows clipped 2px of their own edge at 320px** — `.row.g-4`'s negative margins
+  exceeded the shell padding at that width.
+- **Content text at 10px** (trend chart day labels, count badges) raised to 11px.
+- **Accessible names lost at narrow widths.** Hiding a toolbar button's text label to fit a phone
+  removed its accessible name (WCAG 4.1.2); every affected control now carries `aria-label`.
+  Caught by a Playwright query that looks controls up by role and name.
+- The bulk selection bar covered the sidebar's collapse control on desktop, making it
+  unclickable while any row was selected.
+
+### Quality
+
+- Laravel Pint: 0 issues
+- PHPStan level 5: 0 errors
+- PHPUnit: 508 tests, 3,834 assertions, 100% passing (up from 416)
+- Playwright: 74 passing, 1 skipped; responsive sweep reports 0 findings across 39 pages
+- CSS cost of full responsive coverage: +1.45 kB gzipped (+2.7%)
+- Playwright: 65 tests, 64 passing / 1 skipped, including a permanent E2E suite for the toolbar,
+  the whole import journey, column visibility, row selection and mobile width
+- New suites: `ExportEngineTest`, `SampleSheetTest`, `ImportEngineTest`, `DataTransferRoutesTest`,
+  `ModuleImportRulesTest`, `BulkActionTest`, `UserCrudTest`, `AdminModulesTest`, and
+  `AllResourcesTest` — an architectural guard that runs permission, fillability, relation,
+  export-query and template checks across every registered module.
+
+---
+
 ## [1.0.1] — 2026-08-04
 
 Production readiness audit — all findings resolved.

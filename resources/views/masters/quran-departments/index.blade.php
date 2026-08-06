@@ -14,6 +14,7 @@
     'intro' => __('masters.quran_departments_intro'),
     'icon' => 'bi-bookmarks',
     'routeBase' => 'masters.quran-departments',
+    'transferResource' => 'quran-departments',
     'model' => App\Models\QuranDepartment::class,
     'records' => $departments,
     'nameFor' => fn ($record) => $record->department_name,

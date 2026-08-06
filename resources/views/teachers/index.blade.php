@@ -33,18 +33,20 @@
                icon="bi-mortarboard"
                :badge="number_format($teachers->total())">
     <x-slot:actions>
-        @can('create', App\Models\Teacher::class)
-            <a href="{{ route('teachers.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                <span>{{ __('teachers.add_new') }}</span>
-            </a>
-        @endcan
+        {{-- Add / Import / Export / Sample / Print — the same toolbar on every
+             module, gated by this module's own permissions. --}}
+        <x-data-toolbar resource="teachers"
+                        :create-route="route('teachers.create')"
+                        :create-model="App\Models\Teacher::class"
+                        :create-label="__('teachers.add_new')"
+                        :filters="request()->query()"
+                        selectable />
     </x-slot:actions>
 </x-page-header>
 
 <x-card flush>
     <x-filters :active="$activeFilters" :reset-url="route('teachers.index')">
-        <div class="flex-grow-1" style="min-width: 15rem;">
+        <div class="field field--grow">
             <label for="search" class="form-label">{{ __('ui.search') }}</label>
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
@@ -53,7 +55,7 @@
             </div>
         </div>
 
-        <div style="min-width: 11rem;">
+        <div class="field field--md">
             <label for="filter_branch" class="form-label">{{ __('teachers.branches') }}</label>
             <select name="branch_id" id="filter_branch" class="form-select form-select-sm">
                 <option value="">{{ __('teachers.all_branches') }}</option>
@@ -63,7 +65,7 @@
             </select>
         </div>
 
-        <div style="min-width: 9rem;">
+        <div class="field field--sm">
             <label for="filter_status" class="form-label">{{ __('teachers.status') }}</label>
             <select name="status" id="filter_status" class="form-select form-select-sm">
                 <option value="">{{ __('teachers.all_statuses') }}</option>
@@ -77,6 +79,9 @@
     <x-table sticky :label="__('teachers.teachers')">
         <thead>
             <tr>
+                <th scope="col" class="col-select">
+                    <x-bulk-select resource="teachers" all />
+                </th>
                 <th scope="col" class="col-num">#</th>
                 <th scope="col">{{ __('teachers.teacher_name') }}</th>
                 <th scope="col">{{ __('teachers.branches') }}</th>
@@ -89,6 +94,9 @@
             @forelse ($teachers as $teacher)
                 @php($teacherName = $teacher->employee?->employee_name ?? $teacher->teacher_code)
                 <tr>
+                    <td class="col-select" data-label="">
+                        <x-bulk-select resource="teachers" :id="$teacher->id" :label="$teacher->teacher_code" />
+                    </td>
                     <td class="col-num" data-label="#">{{ $teachers->firstItem() + $loop->index }}</td>
 
                     <td data-label="{{ __('teachers.teacher_name') }}">
@@ -143,7 +151,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5">
+                    <td colspan="6">
                         @if ($activeFilters)
                             <x-empty-state icon="bi-search" :title="__('ui.no_results_title')" :text="__('ui.no_results_text')">
                                 <a href="{{ route('teachers.index') }}" class="btn btn-outline-secondary btn-sm">

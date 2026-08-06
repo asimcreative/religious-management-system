@@ -92,7 +92,7 @@
                 <x-detail-row :label="__('quran_progress.surah')" :value="$quranProgress->current_surah" />
                 <x-detail-row :label="__('quran_progress.completion')">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="progress flex-grow-1" style="max-width: 14rem;">
+                        <span class="progress flex-grow-1 w-cap-md">
                             <span class="progress-bar {{ $pct >= 100 ? 'bg-success' : 'bg-primary' }}" style="width: {{ min(100, $pct) }}%"></span>
                         </span>
                         <span class="tabular fw-semibold">{{ number_format($pct, 1) }}%</span>
@@ -141,7 +141,7 @@
                                 </td>
                                 <td data-label="{{ __('quran_progress.completion') }}">
                                     <div class="d-flex align-items-center gap-2">
-                                        <span class="progress flex-grow-1" style="min-width: 60px; max-width: 8rem;">
+                                        <span class="progress flex-grow-1 meter-track w-cap-sm">
                                             <span class="progress-bar {{ $entryPct >= 100 ? 'bg-success' : 'bg-primary' }}"
                                                   style="width: {{ min(100, $entryPct) }}%"></span>
                                         </span>
