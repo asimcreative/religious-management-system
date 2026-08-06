@@ -5,6 +5,20 @@ return [
     'teachers' => 'Teachers',
     'create_teacher' => 'Create Teacher',
     'edit_teacher' => 'Edit Teacher',
+    'subtitle' => 'Employees authorised to run Quran classes.',
+    'create_subtitle' => 'Link an employee to a teaching role and assign their branches.',
+
+    // Empty / helper copy
+    'empty_title' => 'No teachers yet',
+    'empty_text' => 'Link an existing employee to a teaching role to run Quran classes.',
+    'teacher_code_help' => 'Must be unique within your organisation.',
+    'select_employee_help' => 'Only active employees who are not already teachers are listed.',
+    'assign_branches_hint' => 'Select every branch where this teacher may take classes. At least one is required.',
+    'no_branches_available' => 'No branches available',
+    'no_branches_available_text' => 'Add a branch under Configuration before assigning teachers.',
+    'no_employee_linked' => 'No employee linked',
+    'view_employee_record' => 'View employee record',
+    'notes_placeholder' => 'Any additional information about this teacher…',
 
     // Fields
     'teacher_code' => 'Teacher Code',

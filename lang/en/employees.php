@@ -5,6 +5,19 @@ return [
     'employees' => 'Employees',
     'create_employee' => 'Create Employee',
     'edit_employee' => 'Edit Employee',
+    'subtitle' => 'Every person on your organisation register.',
+    'create_subtitle' => 'Add a new person to the organisation register.',
+
+    // Empty / helper copy
+    'empty_title' => 'No employees yet',
+    'empty_text' => 'Add your first employee to start tracking attendance, Quran classes and Salah records.',
+    'more_filters' => 'More filters',
+    'employee_code_help' => 'Must be unique within your organisation.',
+    'cnic_help' => 'Stored securely and masked when displayed.',
+    'religious_info_hint' => 'Used to group employees for Quran classes and progress reporting.',
+    'photo_help' => 'JPG or PNG, up to 2 MB. A clear head-and-shoulders photo works best.',
+    'upload_photo' => 'Upload photo',
+    'notes_placeholder' => 'Any additional information about this employee…',
 
     // Fields
     'employee_code' => 'Employee Code',

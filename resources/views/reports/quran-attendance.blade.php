@@ -2,122 +2,168 @@
 
 @section('title', __('reports.quran_attendance_report'))
 
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">{{ __('reports.reports') }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ __('reports.quran_attendance_report') }}</li>
+@endsection
+
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ __('reports.quran_attendance_report') }}</h4>
-    <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> {{ __('reports.back_to_reports') }}
-    </a>
+@php
+    $chip = static fn (string $key, string $label) => [
+        $label => request()->fullUrlWithQuery([$key => null, 'page' => null]),
+    ];
+
+    $activeFilters = [];
+    if (filled($filters['search'] ?? null))     { $activeFilters += $chip('search', __('ui.search').': '.$filters['search']); }
+    if (filled($filters['class_id'] ?? null))   { $activeFilters += $chip('class_id', __('reports.class').': '.($classes[$filters['class_id']] ?? '')); }
+    if (filled($filters['teacher_id'] ?? null)) { $activeFilters += $chip('teacher_id', __('reports.teacher').': '.($teachers[$filters['teacher_id']] ?? '')); }
+    if (filled($filters['date_from'] ?? null))  { $activeFilters += $chip('date_from', __('reports.date_from').': '.$filters['date_from']); }
+    if (filled($filters['date_to'] ?? null))    { $activeFilters += $chip('date_to', __('reports.date_to').': '.$filters['date_to']); }
+
+    $rate = (int) ($summary['percentage'] ?? 0);
+    $rateTone = $rate >= 85 ? 'success' : ($rate >= 60 ? 'warning' : 'danger');
+@endphp
+
+<x-page-header :title="__('reports.quran_attendance_report')"
+               :subtitle="__('reports.quran_attendance_report_desc')"
+               icon="bi-journal-check">
+    <x-slot:actions>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+            <i class="bi bi-printer" aria-hidden="true"></i>
+            <span>{{ __('ui.print') }}</span>
+        </button>
+
+        <a href="{{ route('reports.export.quran-attendance', request()->query()) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i>
+            <span>{{ __('ui.download_excel') }}</span>
+        </a>
+
+        <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <span class="d-none d-md-inline">{{ __('reports.back_to_reports') }}</span>
+        </a>
+    </x-slot:actions>
+</x-page-header>
+
+<x-print-header :title="__('reports.quran_attendance_report')"
+                :filters="[
+                    __('reports.class') => ($filters['class_id'] ?? null) ? ($classes[$filters['class_id']] ?? null) : null,
+                    __('reports.teacher') => ($filters['teacher_id'] ?? null) ? ($teachers[$filters['teacher_id']] ?? null) : null,
+                    __('reports.date_from') => $filters['date_from'] ?? null,
+                    __('reports.date_to') => $filters['date_to'] ?? null,
+                ]" />
+
+{{-- ── Executive summary ───────────────────────────────────────────────── --}}
+<div class="report-summary mb-4">
+    <x-stat-card :label="__('reports.total')" :value="number_format($summary['total'])" icon="bi-list-check" tone="neutral" />
+    <x-stat-card :label="__('reports.present')" :value="number_format($summary['present'])" icon="bi-check-circle" tone="success" />
+    <x-stat-card :label="__('reports.absent')" :value="number_format($summary['absent'])" icon="bi-x-circle" tone="danger" />
+    <x-stat-card :label="__('reports.attendance_rate')" :value="$rate.'%'" icon="bi-percent" :tone="$rateTone">
+        <x-slot:meta>
+            <span class="progress w-100">
+                <span class="progress-bar bg-{{ $rateTone === 'danger' ? 'danger' : ($rateTone === 'warning' ? 'warning' : 'success') }}"
+                      style="width: {{ $rate }}%"></span>
+            </span>
+        </x-slot:meta>
+    </x-stat-card>
 </div>
 
-{{-- Summary Cards --}}
-<div class="row g-3 mb-3">
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body py-2">
-                <div class="text-muted small">{{ __('reports.total') }}</div>
-                <h4 class="mb-0">{{ $summary['total'] }}</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center border-success">
-            <div class="card-body py-2">
-                <div class="text-muted small">{{ __('reports.present') }}</div>
-                <h4 class="mb-0 text-success">{{ $summary['present'] }}</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center border-danger">
-            <div class="card-body py-2">
-                <div class="text-muted small">{{ __('reports.absent') }}</div>
-                <h4 class="mb-0 text-danger">{{ $summary['absent'] }}</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center border-primary">
-            <div class="card-body py-2">
-                <div class="text-muted small">{{ __('reports.attendance_rate') }}</div>
-                <h4 class="mb-0 text-primary">{{ $summary['percentage'] }}%</h4>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <form method="GET" class="row g-2 mb-3">
-            <div class="col-md-2">
-                <input type="text" name="search" class="form-control form-control-sm"
+<x-card flush>
+    <x-filters :active="$activeFilters" :reset-url="route('reports.quran-attendance')">
+        <div class="flex-grow-1" style="min-width: 12rem;">
+            <label for="search" class="form-label">{{ __('ui.search') }}</label>
+            <div class="input-icon">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" name="search" id="search" class="form-control form-control-sm"
                        placeholder="{{ __('reports.search_placeholder') }}" value="{{ $filters['search'] ?? '' }}">
             </div>
-            <div class="col-md-2">
-                <select name="class_id" class="form-select form-select-sm">
-                    <option value="">{{ __('reports.all_classes') }}</option>
-                    @foreach($classes as $id => $name)
-                        <option value="{{ $id }}" {{ ($filters['class_id'] ?? '') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="teacher_id" class="form-select form-select-sm">
-                    <option value="">{{ __('reports.all_teachers') }}</option>
-                    @foreach($teachers as $id => $name)
-                        <option value="{{ $id }}" {{ ($filters['teacher_id'] ?? '') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ $filters['date_from'] ?? '' }}">
-            </div>
-            <div class="col-md-2">
-                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ $filters['date_to'] ?? '' }}">
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i> {{ __('reports.filter') }}</button>
-                <a href="{{ route('reports.quran-attendance') }}" class="btn btn-outline-light btn-sm text-dark"><i class="bi bi-x-lg"></i> {{ __('reports.reset') }}</a>
-            </div>
-        </form>
-
-        <div class="table-responsive">
-            <table class="table table-sm table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>{{ __('reports.date') }}</th>
-                        <th>{{ __('reports.class') }}</th>
-                        <th>{{ __('reports.teacher') }}</th>
-                        <th>{{ __('reports.employee_name') }}</th>
-                        <th>{{ __('reports.attendance_status') }}</th>
-                        <th>{{ __('reports.remarks') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($attendance as $record)
-                        <tr>
-                            <td>{{ $attendance->firstItem() + $loop->index }}</td>
-                            <td>{{ $record->attendance_date->format('d M Y') }}</td>
-                            <td>{{ $record->quranClass?->class_name ?? '-' }}</td>
-                            <td>{{ $record->teacher?->getEmployeeName() ?? '-' }}</td>
-                            <td>{{ $record->employee?->employee_name ?? '-' }}</td>
-                            <td>
-                                @if($record->attendance_reason_id === null)
-                                    <span class="badge bg-success">{{ __('reports.present') }}</span>
-                                @else
-                                    <span class="badge bg-danger">{{ $record->attendanceReason?->reason_name ?? '-' }}</span>
-                                @endif
-                            </td>
-                            <td>{{ $record->remarks ?? '-' }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="7" class="text-center text-muted">{{ __('reports.no_records') }}</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
-        {{ $attendance->withQueryString()->links() }}
+
+        <div style="min-width: 11rem;">
+            <label for="class_id" class="form-label">{{ __('reports.class') }}</label>
+            <select name="class_id" id="class_id" class="form-select form-select-sm">
+                <option value="">{{ __('reports.all_classes') }}</option>
+                @foreach ($classes as $id => $name)
+                    <option value="{{ $id }}" @selected(($filters['class_id'] ?? '') == $id)>{{ $name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div style="min-width: 11rem;">
+            <label for="teacher_id" class="form-label">{{ __('reports.teacher') }}</label>
+            <select name="teacher_id" id="teacher_id" class="form-select form-select-sm">
+                <option value="">{{ __('reports.all_teachers') }}</option>
+                @foreach ($teachers as $id => $name)
+                    <option value="{{ $id }}" @selected(($filters['teacher_id'] ?? '') == $id)>{{ $name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div style="min-width: 9.5rem;">
+            <label for="date_from" class="form-label">{{ __('reports.date_from') }}</label>
+            <input type="date" name="date_from" id="date_from" class="form-control form-control-sm" value="{{ $filters['date_from'] ?? '' }}">
+        </div>
+
+        <div style="min-width: 9.5rem;">
+            <label for="date_to" class="form-label">{{ __('reports.date_to') }}</label>
+            <input type="date" name="date_to" id="date_to" class="form-control form-control-sm" value="{{ $filters['date_to'] ?? '' }}">
+        </div>
+    </x-filters>
+
+    <div class="table-toolbar">
+        <span>{{ __('reports.total_records') }}: <strong class="text-strong tabular">{{ number_format($attendance->total()) }}</strong></span>
+        <span class="table-toolbar__actions fs-xs text-subtle">{{ __('ui.generated_on', ['datetime' => now()->format('d M Y, H:i')]) }}</span>
     </div>
-</div>
+
+    <x-table sticky :label="__('reports.quran_attendance_report')">
+        <thead>
+            <tr>
+                <th scope="col" class="col-num">#</th>
+                <th scope="col">{{ __('reports.date') }}</th>
+                <th scope="col">{{ __('reports.employee_name') }}</th>
+                <th scope="col">{{ __('reports.class') }}</th>
+                <th scope="col">{{ __('reports.teacher') }}</th>
+                <th scope="col">{{ __('reports.attendance_status') }}</th>
+                <th scope="col">{{ __('reports.remarks') }}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse ($attendance as $record)
+                <tr>
+                    <td class="col-num" data-label="#">{{ $attendance->firstItem() + $loop->index }}</td>
+                    <td data-label="{{ __('reports.date') }}" class="col-fit tabular">{{ $record->attendance_date->format('d M Y') }}</td>
+                    <td data-label="{{ __('reports.employee_name') }}" class="fw-semibold text-strong">{{ $record->employee?->employee_name ?? '—' }}</td>
+                    <td data-label="{{ __('reports.class') }}">{{ $record->quranClass?->class_name ?? '—' }}</td>
+                    <td data-label="{{ __('reports.teacher') }}">{{ $record->teacher?->getEmployeeName() ?? '—' }}</td>
+                    <td data-label="{{ __('reports.attendance_status') }}">
+                        @if ($record->attendance_reason_id === null)
+                            <span class="badge-soft badge-soft-success">{{ __('reports.present') }}</span>
+                        @else
+                            <span class="badge-soft badge-soft-danger">{{ $record->attendanceReason?->reason_name ?? '—' }}</span>
+                        @endif
+                    </td>
+                    <td data-label="{{ __('reports.remarks') }}">{{ $record->remarks ?? '—' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="7">
+                        <x-empty-state icon="bi-funnel"
+                                       :title="$activeFilters ? __('ui.no_results_title') : __('ui.report_ready_title')"
+                                       :text="$activeFilters ? __('ui.no_results_text') : __('ui.report_ready_text')">
+                            @if ($activeFilters)
+                                <a href="{{ route('reports.quran-attendance') }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                                    <span>{{ __('ui.clear_filters') }}</span>
+                                </a>
+                            @endif
+                        </x-empty-state>
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </x-table>
+
+    <x-table-footer :paginator="$attendance" />
+</x-card>
 @endsection

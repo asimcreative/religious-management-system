@@ -2,125 +2,232 @@
 
 @section('title', __('quran_classes.quran_classes'))
 
-@section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ __('quran_classes.quran_classes') }}</h4>
-    @can('create', App\Models\QuranClass::class)
-        <a href="{{ route('quran-classes.create') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> {{ __('quran_classes.add_new') }}
-        </a>
-    @endcan
-</div>
+@section('breadcrumbs')
+    <li class="breadcrumb-item active" aria-current="page">{{ __('quran_classes.quran_classes') }}</li>
+@endsection
 
-<div class="card">
-    <div class="card-body">
-        <form method="GET" class="row g-2 mb-3">
-            <div class="col-md-3">
-                <input type="text" name="search" class="form-control form-control-sm"
+@section('content')
+@php
+    $chip = static fn (string $key, string $label) => [
+        $label => request()->fullUrlWithQuery([$key => null, 'page' => null]),
+    ];
+
+    $activeFilters = [];
+
+    if (filled(request('search'))) {
+        $activeFilters += $chip('search', __('ui.search').': '.request('search'));
+    }
+    if (filled(request('branch_id')) && isset($branches[request('branch_id')])) {
+        $activeFilters += $chip('branch_id', __('quran_classes.branch').': '.$branches[request('branch_id')]);
+    }
+    if (filled(request('teacher_id')) && isset($teachers[request('teacher_id')])) {
+        $activeFilters += $chip('teacher_id', __('quran_classes.teacher').': '.$teachers[request('teacher_id')]);
+    }
+    if (filled(request('status'))) {
+        $case = App\Enums\Status::tryFrom((int) request('status'));
+        if ($case) {
+            $activeFilters += $chip('status', __('quran_classes.status').': '.$case->label());
+        }
+    }
+@endphp
+
+<x-page-header :title="__('quran_classes.quran_classes')"
+               :subtitle="__('quran_classes.subtitle')"
+               icon="bi-book"
+               :badge="number_format($classes->total())">
+    <x-slot:actions>
+        @can('create', App\Models\QuranClass::class)
+            <a href="{{ route('quran-classes.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                <span>{{ __('quran_classes.add_new') }}</span>
+            </a>
+        @endcan
+    </x-slot:actions>
+</x-page-header>
+
+<x-card flush>
+    <x-filters :active="$activeFilters" :reset-url="route('quran-classes.index')">
+        <div class="flex-grow-1" style="min-width: 14rem;">
+            <label for="search" class="form-label">{{ __('ui.search') }}</label>
+            <div class="input-icon">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" name="search" id="search" class="form-control form-control-sm"
                        placeholder="{{ __('quran_classes.search_placeholder') }}" value="{{ request('search') }}">
             </div>
-            <div class="col-md-2">
-                <select name="branch_id" class="form-select form-select-sm">
-                    <option value="">{{ __('quran_classes.all_branches') }}</option>
-                    @foreach($branches as $id => $name)
-                        <option value="{{ $id }}" {{ request('branch_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="teacher_id" class="form-select form-select-sm">
-                    <option value="">{{ __('quran_classes.all_teachers') }}</option>
-                    @foreach($teachers as $id => $name)
-                        <option value="{{ $id }}" {{ request('teacher_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="status" class="form-select form-select-sm">
-                    <option value="">{{ __('quran_classes.all_statuses') }}</option>
-                    @foreach(App\Enums\Status::cases() as $status)
-                        <option value="{{ $status->value }}" {{ request('status') === (string) $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-search"></i> {{ __('quran_classes.filter') }}
-                </button>
-                <a href="{{ route('quran-classes.index') }}" class="btn btn-outline-light btn-sm text-dark">
-                    <i class="bi bi-x-lg"></i> {{ __('quran_classes.reset') }}
-                </a>
-            </div>
-        </form>
-
-        <div class="table-responsive">
-            <table class="table table-sm table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>{{ __('quran_classes.class_code') }}</th>
-                        <th>{{ __('quran_classes.class_name') }}</th>
-                        <th>{{ __('quran_classes.teacher') }}</th>
-                        <th>{{ __('quran_classes.branch') }}</th>
-                        <th>{{ __('quran_classes.strength') }}</th>
-                        <th>{{ __('quran_classes.status') }}</th>
-                        <th>{{ __('quran_classes.actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($classes as $class)
-                        <tr>
-                            <td>{{ $classes->firstItem() + $loop->index }}</td>
-                            <td>{{ $class->class_code }}</td>
-                            <td>
-                                <a href="{{ route('quran-classes.show', $class) }}">
-                                    {{ $class->class_name }}
-                                </a>
-                            </td>
-                            <td>{{ $class->teacher?->employee?->employee_name ?? '-' }}</td>
-                            <td>{{ $class->branch?->branch_name ?? '-' }}</td>
-                            <td>
-                                <span class="{{ $class->active_members_count >= $class->max_strength ? 'text-danger fw-bold' : '' }}">
-                                    {{ $class->active_members_count }}/{{ $class->max_strength }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge {{ $class->status->badgeClass() }}">
-                                    {{ $class->status->label() }}
-                                </span>
-                            </td>
-                            <td>
-                                @can('view', $class)
-                                    <a href="{{ route('quran-classes.show', $class) }}" class="btn btn-outline-info btn-sm" title="{{ __('quran_classes.view') }}">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                @endcan
-                                @can('update', $class)
-                                    <a href="{{ route('quran-classes.edit', $class) }}" class="btn btn-outline-primary btn-sm" title="{{ __('quran_classes.edit') }}">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                @endcan
-                                @can('delete', $class)
-                                    <form method="POST" action="{{ route('quran-classes.destroy', $class) }}" class="d-inline"
-                                          onsubmit="return confirm('{{ __('quran_classes.confirm_delete') }}')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="{{ __('quran_classes.delete') }}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                @endcan
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted">{{ __('quran_classes.no_records') }}</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
 
-        {{ $classes->withQueryString()->links() }}
-    </div>
-</div>
+        <div style="min-width: 11rem;">
+            <label for="filter_branch" class="form-label">{{ __('quran_classes.branch') }}</label>
+            <select name="branch_id" id="filter_branch" class="form-select form-select-sm">
+                <option value="">{{ __('quran_classes.all_branches') }}</option>
+                @foreach ($branches as $id => $name)
+                    <option value="{{ $id }}" @selected(request('branch_id') == $id)>{{ $name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div style="min-width: 11rem;">
+            <label for="filter_teacher" class="form-label">{{ __('quran_classes.teacher') }}</label>
+            <select name="teacher_id" id="filter_teacher" class="form-select form-select-sm">
+                <option value="">{{ __('quran_classes.all_teachers') }}</option>
+                @foreach ($teachers as $id => $name)
+                    <option value="{{ $id }}" @selected(request('teacher_id') == $id)>{{ $name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div style="min-width: 9rem;">
+            <label for="filter_status" class="form-label">{{ __('quran_classes.status') }}</label>
+            <select name="status" id="filter_status" class="form-select form-select-sm">
+                <option value="">{{ __('quran_classes.all_statuses') }}</option>
+                @foreach (App\Enums\Status::cases() as $status)
+                    <option value="{{ $status->value }}" @selected(request('status') === (string) $status->value)>{{ $status->label() }}</option>
+                @endforeach
+            </select>
+        </div>
+    </x-filters>
+
+    <x-table sticky :label="__('quran_classes.quran_classes')">
+        <thead>
+            <tr>
+                <th scope="col" class="col-num">#</th>
+                <th scope="col">{{ __('quran_classes.class_name') }}</th>
+                <th scope="col">{{ __('quran_classes.teacher') }}</th>
+                <th scope="col">{{ __('quran_classes.branch') }}</th>
+                <th scope="col">{{ __('quran_classes.schedule') }}</th>
+                <th scope="col">{{ __('quran_classes.strength') }}</th>
+                <th scope="col">{{ __('quran_classes.status') }}</th>
+                <th scope="col" class="col-actions"><span class="visually-hidden">{{ __('quran_classes.actions') }}</span></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse ($classes as $class)
+                @php
+                    $isFull = $class->active_members_count >= $class->max_strength;
+                    $fillPct = $class->max_strength > 0
+                        ? min(100, (int) round($class->active_members_count / $class->max_strength * 100))
+                        : 0;
+                @endphp
+                <tr>
+                    <td class="col-num" data-label="#">{{ $classes->firstItem() + $loop->index }}</td>
+
+                    <td data-label="{{ __('quran_classes.class_name') }}">
+                        <div class="cell-primary">
+                            <span class="stat-card__icon tone-warning" style="width:34px;height:34px;font-size:0.95rem;" aria-hidden="true">
+                                <i class="bi bi-book"></i>
+                            </span>
+                            <span class="cell-primary__text">
+                                @can('view', $class)
+                                    <a href="{{ route('quran-classes.show', $class) }}" class="cell-primary__title">{{ $class->class_name }}</a>
+                                @else
+                                    <span class="cell-primary__title">{{ $class->class_name }}</span>
+                                @endcan
+                                <span class="cell-primary__sub code-cell">{{ $class->class_code }}</span>
+                            </span>
+                        </div>
+                    </td>
+
+                    <td data-label="{{ __('quran_classes.teacher') }}">
+                        {{ $class->teacher?->employee?->employee_name ?? '—' }}
+                    </td>
+
+                    <td data-label="{{ __('quran_classes.branch') }}">
+                        {{ $class->branch?->branch_name ?? '—' }}
+                    </td>
+
+                    <td data-label="{{ __('quran_classes.schedule') }}" class="col-fit">
+                        @if ($class->start_time || $class->end_time)
+                            <span class="tabular fs-sm">
+                                {{ $class->start_time ? \Carbon\Carbon::parse($class->start_time)->format('h:i A') : '—' }}
+                                –
+                                {{ $class->end_time ? \Carbon\Carbon::parse($class->end_time)->format('h:i A') : '—' }}
+                            </span>
+                        @else
+                            <span class="dash">—</span>
+                        @endif
+                    </td>
+
+                    <td data-label="{{ __('quran_classes.strength') }}" class="col-fit">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="tabular fw-semibold {{ $isFull ? 'text-danger' : '' }}">
+                                {{ $class->active_members_count }}/{{ $class->max_strength }}
+                            </span>
+                            <span class="progress d-none d-md-block" style="width: 56px; height: 5px;"
+                                  role="img" aria-label="{{ $fillPct }}%">
+                                <span class="progress-bar {{ $isFull ? 'bg-danger' : 'bg-success' }}" style="width: {{ $fillPct }}%"></span>
+                            </span>
+                            @if ($isFull)
+                                <span class="badge-soft badge-soft-danger badge-soft--plain">{{ __('quran_classes.full') }}</span>
+                            @endif
+                        </div>
+                    </td>
+
+                    <td data-label="{{ __('quran_classes.status') }}">
+                        <x-status-badge :status="$class->status" />
+                    </td>
+
+                    <td class="col-actions" data-label="{{ __('quran_classes.actions') }}">
+                        <div class="table-actions">
+                            @can('view', $class)
+                                <a href="{{ route('quran-classes.show', $class) }}" class="btn btn-sm btn-ghost btn-icon"
+                                   data-bs-toggle="tooltip" title="{{ __('quran_classes.view') }}"
+                                   aria-label="{{ __('quran_classes.view') }} — {{ $class->class_name }}">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
+                                </a>
+                            @endcan
+                            @can('update', $class)
+                                <a href="{{ route('quran-classes.members.index', $class) }}" class="btn btn-sm btn-ghost btn-icon"
+                                   data-bs-toggle="tooltip" title="{{ __('quran_classes.manage_members') }}"
+                                   aria-label="{{ __('quran_classes.manage_members') }} — {{ $class->class_name }}">
+                                    <i class="bi bi-people" aria-hidden="true"></i>
+                                </a>
+                                <a href="{{ route('quran-classes.edit', $class) }}" class="btn btn-sm btn-ghost btn-icon"
+                                   data-bs-toggle="tooltip" title="{{ __('quran_classes.edit') }}"
+                                   aria-label="{{ __('quran_classes.edit') }} — {{ $class->class_name }}">
+                                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                                </a>
+                            @endcan
+                            @can('delete', $class)
+                                <x-delete-button :action="route('quran-classes.destroy', $class)"
+                                                 :record="$class->class_name"
+                                                 :title="__('quran_classes.delete')" />
+                            @endcan
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="8">
+                        @if ($activeFilters)
+                            <x-empty-state icon="bi-search" :title="__('ui.no_results_title')" :text="__('ui.no_results_text')">
+                                <a href="{{ route('quran-classes.index') }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                                    <span>{{ __('ui.clear_filters') }}</span>
+                                </a>
+                            </x-empty-state>
+                        @else
+                            <x-empty-state icon="bi-book" :title="__('quran_classes.empty_title')" :text="__('quran_classes.empty_text')">
+                                @can('create', App\Models\QuranClass::class)
+                                    <a href="{{ route('quran-classes.create') }}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                        <span>{{ __('quran_classes.add_new') }}</span>
+                                    </a>
+                                @endcan
+                            </x-empty-state>
+                        @endif
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </x-table>
+
+    <x-table-footer :paginator="$classes" />
+</x-card>
+
+@can('create', App\Models\QuranClass::class)
+    <a href="{{ route('quran-classes.create') }}" class="btn btn-primary btn-fab" aria-label="{{ __('quran_classes.add_new') }}">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </a>
+@endcan
 @endsection

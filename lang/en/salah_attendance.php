@@ -4,6 +4,26 @@ return [
     // Module
     'salah_attendance' => 'Salah Attendance',
     'mark_attendance' => 'Mark Attendance',
+    'subtitle' => 'Daily prayer attendance across every jamaat.',
+    'mark_subtitle' => 'Choose a jamaat and date, then record every prayer for the day.',
+
+    // Empty / helper copy
+    'empty_title' => 'No Salah attendance recorded yet',
+    'empty_text' => 'Attendance you record for jamaats will appear here.',
+    'choose_jamaat_title' => 'Choose a jamaat and date',
+    'choose_jamaat_text' => 'Select a jamaat and the date you are recording for; the member list loads automatically.',
+    'no_members_title' => 'This jamaat has no members',
+    'member_count' => ':count member|:count members',
+    'not_recorded' => 'Not recorded',
+    'optional_remarks' => 'Optional remarks',
+    'bulk_intro' => 'Set a status for a whole prayer at once:',
+    'bulk_prayer_label' => 'Prayer to update',
+    'bulk_status_label' => 'Status to apply',
+    'all_prayers' => 'All prayers',
+    'apply' => 'Apply',
+    'save_hint' => 'Anyone left without a reason is recorded as present.',
+    'date_not_allowed_title' => 'Date outside the allowed window',
+    'attendance_locked_title' => 'Attendance is locked',
     'attendance_history' => 'Attendance History',
 
     // Fields

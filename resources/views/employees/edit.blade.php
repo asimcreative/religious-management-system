@@ -2,176 +2,30 @@
 
 @section('title', __('employees.edit_employee'))
 
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('employees.index') }}">{{ __('employees.employees') }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('employees.show', $employee) }}">{{ $employee->employee_name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ __('employees.edit') }}</li>
+@endsection
+
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ __('employees.edit_employee') }}</h4>
-    <a href="{{ route('employees.show', $employee) }}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> {{ __('employees.back_to_detail') }}
-    </a>
-</div>
+<x-page-header :title="__('employees.edit_employee')"
+               :subtitle="$employee->employee_name.' · '.$employee->employee_code"
+               icon="bi-pencil-square">
+    <x-slot:actions>
+        <a href="{{ route('employees.show', $employee) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <span>{{ __('employees.back_to_detail') }}</span>
+        </a>
+    </x-slot:actions>
+</x-page-header>
 
-<form method="POST" action="{{ route('employees.update', $employee) }}" enctype="multipart/form-data">
-    @csrf @method('PUT')
+<form method="POST" action="{{ route('employees.update', $employee) }}" enctype="multipart/form-data" novalidate data-guard>
+    @csrf
+    @method('PUT')
 
-    {{-- Personal Information --}}
-    <div class="card mb-3">
-        <div class="card-header">
-            <h6 class="mb-0">{{ __('employees.personal_info') }}</h6>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="employee_code" class="form-label">{{ __('employees.employee_code') }} <span class="text-danger">*</span></label>
-                    <input type="text" name="employee_code" id="employee_code" class="form-control @error('employee_code') is-invalid @enderror"
-                           value="{{ old('employee_code', $employee->employee_code) }}" required>
-                    @error('employee_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="employee_name" class="form-label">{{ __('employees.employee_name') }} <span class="text-danger">*</span></label>
-                    <input type="text" name="employee_name" id="employee_name" class="form-control @error('employee_name') is-invalid @enderror"
-                           value="{{ old('employee_name', $employee->employee_name) }}" required>
-                    @error('employee_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="cnic" class="form-label">{{ __('employees.cnic') }}</label>
-                    <input type="text" name="cnic" id="cnic" class="form-control @error('cnic') is-invalid @enderror"
-                           value="{{ old('cnic', $employee->cnic) }}" placeholder="XXXXX-XXXXXXX-X">
-                    @error('cnic') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="mobile" class="form-label">{{ __('employees.mobile') }}</label>
-                    <input type="text" name="mobile" id="mobile" class="form-control @error('mobile') is-invalid @enderror"
-                           value="{{ old('mobile', $employee->mobile) }}">
-                    @error('mobile') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="email" class="form-label">{{ __('employees.email') }}</label>
-                    <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror"
-                           value="{{ old('email', $employee->email) }}">
-                    @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="dob" class="form-label">{{ __('employees.dob') }}</label>
-                    <input type="date" name="dob" id="dob" class="form-control @error('dob') is-invalid @enderror"
-                           value="{{ old('dob', $employee->dob?->format('Y-m-d')) }}">
-                    @error('dob') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="gender" class="form-label">{{ __('employees.gender') }}</label>
-                    <select name="gender" id="gender" class="form-select @error('gender') is-invalid @enderror">
-                        <option value="">{{ __('employees.select') }}</option>
-                        <option value="male" {{ old('gender', $employee->gender) === 'male' ? 'selected' : '' }}>{{ __('employees.male') }}</option>
-                        <option value="female" {{ old('gender', $employee->gender) === 'female' ? 'selected' : '' }}>{{ __('employees.female') }}</option>
-                    </select>
-                    @error('gender') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="photo" class="form-label">{{ __('employees.photo') }}</label>
-                    <input type="file" name="photo" id="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*">
-                    @if($employee->photo)
-                        <small class="text-muted">{{ __('employees.current_photo_exists') }}</small>
-                    @endif
-                    @error('photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('employees.partials.form', ['employee' => $employee])
 
-    {{-- Organization --}}
-    <div class="card mb-3">
-        <div class="card-header">
-            <h6 class="mb-0">{{ __('employees.organization_info') }}</h6>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="branch_id" class="form-label">{{ __('employees.branch') }} <span class="text-danger">*</span></label>
-                    <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror" required>
-                        <option value="">{{ __('employees.select') }}</option>
-                        @foreach($branches as $id => $name)
-                            <option value="{{ $id }}" {{ (int) old('branch_id', $employee->branch_id) === $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('branch_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="department_id" class="form-label">{{ __('employees.department') }} <span class="text-danger">*</span></label>
-                    <select name="department_id" id="department_id" class="form-select @error('department_id') is-invalid @enderror" required>
-                        <option value="">{{ __('employees.select') }}</option>
-                        @foreach($departments as $id => $name)
-                            <option value="{{ $id }}" {{ (int) old('department_id', $employee->department_id) === $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="designation_id" class="form-label">{{ __('employees.designation') }} <span class="text-danger">*</span></label>
-                    <select name="designation_id" id="designation_id" class="form-select @error('designation_id') is-invalid @enderror" required>
-                        <option value="">{{ __('employees.select') }}</option>
-                        @foreach($designations as $id => $name)
-                            <option value="{{ $id }}" {{ (int) old('designation_id', $employee->designation_id) === $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('designation_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="employment_status" class="form-label">{{ __('employees.status') }} <span class="text-danger">*</span></label>
-                    <select name="employment_status" id="employment_status" class="form-select @error('employment_status') is-invalid @enderror" required>
-                        @foreach(App\Enums\Status::cases() as $status)
-                            <option value="{{ $status->value }}" {{ old('employment_status', $employee->employment_status->value) == $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
-                        @endforeach
-                    </select>
-                    @error('employment_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Religious Information --}}
-    <div class="card mb-3">
-        <div class="card-header">
-            <h6 class="mb-0">{{ __('employees.religious_info') }}</h6>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="quran_department_id" class="form-label">{{ __('employees.quran_department') }}</label>
-                    <select name="quran_department_id" id="quran_department_id" class="form-select @error('quran_department_id') is-invalid @enderror">
-                        <option value="">{{ __('employees.select') }}</option>
-                        @foreach($quranDepartments as $id => $name)
-                            <option value="{{ $id }}" {{ (int) old('quran_department_id', $employee->quran_department_id) === $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('quran_department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <label for="quran_status_id" class="form-label">{{ __('employees.quran_status') }}</label>
-                    <select name="quran_status_id" id="quran_status_id" class="form-select @error('quran_status_id') is-invalid @enderror">
-                        <option value="">{{ __('employees.select') }}</option>
-                        @foreach($quranStatuses as $id => $name)
-                            <option value="{{ $id }}" {{ (int) old('quran_status_id', $employee->quran_status_id) === $id ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('quran_status_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Notes --}}
-    <div class="card mb-3">
-        <div class="card-body">
-            <label for="notes" class="form-label">{{ __('employees.notes') }}</label>
-            <textarea name="notes" id="notes" rows="3" class="form-control @error('notes') is-invalid @enderror">{{ old('notes', $employee->notes) }}</textarea>
-            @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
-        </div>
-    </div>
-
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-check-lg"></i> {{ __('employees.save') }}
-        </button>
-        <a href="{{ route('employees.show', $employee) }}" class="btn btn-outline-secondary">{{ __('employees.cancel') }}</a>
-    </div>
+    <x-form.actions :submit="__('employees.save')" :cancel-url="route('employees.show', $employee)" />
 </form>
 @endsection

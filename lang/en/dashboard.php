@@ -23,6 +23,14 @@ return [
     'attendance_pct' => 'Attendance %',
     'no_attendance_today' => 'No attendance marked today.',
 
+    // Attendance Trend
+    'trend_title' => 'Attendance Trend',
+    'trend_subtitle' => 'Daily attendance rate across both modules.',
+    'trend_range' => 'Last :days days',
+    'trend_no_record' => 'Not recorded',
+    'trend_empty_title' => 'No attendance recorded in this period',
+    'trend_empty_text' => 'Once attendance is recorded, the daily rate appears here.',
+
     // Module Summary
     'module_summary' => 'Module Summary',
     'avg_quran_completion' => 'Avg. Quran Completion',

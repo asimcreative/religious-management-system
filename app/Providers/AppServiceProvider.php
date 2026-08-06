@@ -20,6 +20,7 @@ use App\Models\Setting;
 use App\Models\Teacher;
 use App\Observers\BusinessAuditObserver;
 use App\Observers\DashboardCacheObserver;
+use App\View\Composers\AppShellComposer;
 use App\View\Composers\NotificationComposer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
@@ -50,6 +51,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Share unread notification count with the main layout via View Composer.
         View::composer('layouts.app', NotificationComposer::class);
+
+        // Share the signed-in user's company name with the application shell.
+        View::composer('layouts.app', AppShellComposer::class);
 
         Employee::observe(DashboardCacheObserver::class);
         Teacher::observe(DashboardCacheObserver::class);

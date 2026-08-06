@@ -1,0 +1,92 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RAMS — Utilities
+// Small, composable helpers. Prefer these over one-off inline styles.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Surfaces & lines ─────────────────────────────────────────────────────────
+.bg-surface     { background-color: var(--rams-surface) !important; }
+.bg-surface-2   { background-color: var(--rams-surface-2) !important; }
+.bg-surface-3   { background-color: var(--rams-surface-3) !important; }
+.bg-app         { background-color: var(--rams-app-bg) !important; }
+.border-subtle  { border-color: var(--rams-border) !important; }
+
+// ── Text ─────────────────────────────────────────────────────────────────────
+.text-strong    { color: var(--rams-text-strong) !important; }
+.text-soft      { color: var(--rams-text-muted) !important; }
+.text-subtle    { color: var(--rams-text-subtle) !important; }
+.text-brand     { color: var(--rams-primary) !important; }
+
+.fs-xs   { font-size: 0.75rem !important; }
+.fs-sm   { font-size: 0.8125rem !important; }
+.fs-md   { font-size: 0.875rem !important; }
+
+.fw-medium   { font-weight: 500 !important; }
+.fw-semibold { font-weight: 600 !important; }
+
+.tracking-tight { letter-spacing: -0.02em !important; }
+.tabular        { font-variant-numeric: tabular-nums !important; }
+
+.mono {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace !important;
+    font-size: 0.8125rem;
+}
+
+// Clamp long text to N lines
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+// ── Layout helpers ───────────────────────────────────────────────────────────
+.stack       { display: flex; flex-direction: column; gap: 0.75rem; }
+.stack-sm    { display: flex; flex-direction: column; gap: 0.375rem; }
+.row-center  { display: flex; align-items: center; gap: 0.5rem; }
+.row-between { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+
+.min-w-0 { min-width: 0 !important; }
+
+// Fluid auto-fit grid used by dashboards and report summaries
+.auto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--min, 220px), 1fr));
+    gap: var(--gap, 1rem);
+}
+
+.auto-grid--sm { --min: 170px; --gap: 0.875rem; }
+.auto-grid--lg { --min: 280px; }
+
+// ── Elevation ────────────────────────────────────────────────────────────────
+.shadow-xs { box-shadow: var(--rams-shadow-xs) !important; }
+.shadow-sm { box-shadow: var(--rams-shadow-sm) !important; }
+.shadow-md { box-shadow: var(--rams-shadow-md) !important; }
+.shadow-lg { box-shadow: var(--rams-shadow-lg) !important; }
+
+// ── Radii ────────────────────────────────────────────────────────────────────
+.radius     { border-radius: var(--rams-radius) !important; }
+.radius-lg  { border-radius: var(--rams-radius-lg) !important; }
+.radius-xl  { border-radius: var(--rams-radius-xl) !important; }
+
+// ── Misc ─────────────────────────────────────────────────────────────────────
+.cursor-pointer { cursor: pointer; }
+
+// Placeholder dash for empty values, consistent across the app
+.dash { color: var(--rams-text-subtle); }
+
+// Hide from screen but keep for print (report headers)
+.print-only { display: none !important; }
+
+// Remove from print output
+@media print {
+    .no-print { display: none !important; }
+    .print-only { display: revert !important; }
+}

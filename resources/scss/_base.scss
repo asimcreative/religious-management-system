@@ -1,0 +1,168 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RAMS — Base / Reset / Typography
+// ─────────────────────────────────────────────────────────────────────────────
+
+* {
+    // Prevent iOS text auto-inflation inside flex/grid panels
+    -webkit-text-size-adjust: 100%;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--rams-app-bg);
+    color: var(--rams-text);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum" 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+}
+
+// ── Urdu typography (ADR-0009: LTR layout, Urdu content support) ─────────────
+html[lang="ur"] {
+    body,
+    .rams-sidebar,
+    .btn,
+    .form-label,
+    .table {
+        font-family: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Segoe UI", $font-family-sans-serif;
+    }
+
+    // Nastaliq needs extra vertical room to avoid clipped descenders
+    body { line-height: 1.9; }
+    .table > :not(caption) > * > * { padding-top: 0.85rem; padding-bottom: 0.85rem; }
+    .btn { line-height: 1.7; }
+}
+
+// ── Headings ─────────────────────────────────────────────────────────────────
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    color: var(--rams-text-strong);
+    letter-spacing: -0.011em;
+}
+
+h1, .h1 { letter-spacing: -0.021em; }
+h2, .h2 { letter-spacing: -0.018em; }
+
+// Tabular figures everywhere numbers are compared vertically
+.rams-num,
+.table td,
+.stat-card__value,
+.pagination {
+    font-variant-numeric: tabular-nums;
+}
+
+// ── Links ────────────────────────────────────────────────────────────────────
+a {
+    text-decoration: none;
+    transition: color var(--rams-speed) var(--rams-ease);
+}
+
+a:not(.btn):not(.dropdown-item):not(.nav-link):not(.page-link):hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+// ── Accessible focus: visible ring for keyboards, quiet for mouse ────────────
+:focus-visible {
+    outline: 2px solid var(--rams-primary);
+    outline-offset: 2px;
+    border-radius: var(--rams-radius-sm);
+}
+
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible,
+.page-link:focus-visible,
+.dropdown-item:focus-visible {
+    outline: none;
+    box-shadow: var(--rams-ring);
+}
+
+// Never leave a user without a focus indicator
+:focus:not(:focus-visible) { outline: none; }
+
+// ── Skip link (WCAG 2.4.1 Bypass Blocks) ────────────────────────────────────
+.skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 2000;
+    padding: 0.625rem 1rem;
+    background: var(--rams-primary);
+    color: #fff;
+    border-radius: var(--rams-radius);
+    font-weight: $font-weight-semibold;
+    box-shadow: var(--rams-shadow-lg);
+    transform: translateY(-160%);
+    transition: transform var(--rams-speed) var(--rams-ease);
+
+    &:focus {
+        transform: translateY(0);
+        color: #fff;
+        text-decoration: none;
+    }
+}
+
+// ── Screen-reader-only helper that becomes visible on focus ─────────────────
+.visually-hidden-focusable:focus,
+.visually-hidden-focusable:focus-within {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    clip: auto !important;
+}
+
+// ── Selection ────────────────────────────────────────────────────────────────
+::selection {
+    background: var(--rams-primary-soft-2);
+    color: var(--rams-primary-text);
+}
+
+// ── Scrollbars ───────────────────────────────────────────────────────────────
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rams-border-strong) transparent;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background-color: var(--rams-border-strong);
+    border-radius: 10px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--rams-text-subtle); }
+
+// ── Reduced motion (WCAG 2.3.3) ─────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+// ── Forced colors / Windows High Contrast ───────────────────────────────────
+@media (forced-colors: active) {
+    .btn,
+    .card,
+    .form-control,
+    .form-select,
+    .rams-sidebar__link {
+        border: 1px solid ButtonBorder;
+    }
+
+    .rams-sidebar__link.is-active { forced-color-adjust: none; }
+}

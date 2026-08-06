@@ -4,6 +4,13 @@ return [
     // Module
     'reports' => 'Reports',
     'report_center' => 'Report Center',
+    'center_subtitle' => 'Filter, print or export the data your team needs.',
+    'no_reports_title' => 'No reports available',
+    'no_reports_text' => 'Your role does not include access to any report. Contact your administrator if you need one.',
+    'tip_title' => 'Tip',
+    'tip_text' => 'Every report keeps your filters in the address bar — bookmark or share the link to reuse the same view.',
+    'records_heading' => 'Records',
+    'volume_heading' => 'Activity volume',
 
     // Report Types
     'employee_report' => 'Employee Report',

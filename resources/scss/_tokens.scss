@@ -1,0 +1,150 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RAMS Design Tokens — runtime CSS custom properties
+//
+// Everything the app shell and custom components use is expressed here so that
+// light / dark theming is a single attribute flip on <html data-bs-theme>.
+// ─────────────────────────────────────────────────────────────────────────────
+
+:root {
+    // Surfaces
+    --rams-app-bg:          #{$body-bg};
+    --rams-surface:         #FFFFFF;
+    --rams-surface-2:       #{$rams-slate-50};
+    --rams-surface-3:       #{$rams-slate-100};
+    --rams-surface-inset:   #{$rams-slate-50};
+
+    // Lines
+    --rams-border:          #{$rams-slate-200};
+    --rams-border-strong:   #{$rams-slate-300};
+    --rams-divider:         #{rgba($rams-slate-900, 0.06)};
+
+    // Text
+    --rams-text:            #{$rams-slate-800};
+    --rams-text-strong:     #{$rams-slate-900};
+    --rams-text-muted:      #{$rams-slate-500};
+    --rams-text-subtle:     #{$rams-slate-400};
+    --rams-text-inverse:    #FFFFFF;
+
+    // Brand
+    --rams-primary:         #{$primary};
+    --rams-primary-hover:   #{$rams-teal-800};
+    --rams-primary-active:  #{$rams-teal-900};
+    --rams-primary-soft:    #{$rams-teal-50};
+    --rams-primary-soft-2:  #{$rams-teal-100};
+    --rams-primary-text:    #{$rams-teal-800};
+    --rams-accent:          #{$rams-teal-500};
+
+    // Status soft backgrounds (badges, banners, tinted rows)
+    --rams-success-soft:    #DCFCE7;
+    --rams-success-text:    #15803D;
+    --rams-danger-soft:     #FEE2E2;
+    --rams-danger-text:     #B91C1C;
+    --rams-warning-soft:    #FEF3C7;
+    --rams-warning-text:    #B45309;
+    --rams-info-soft:       #DBEAFE;
+    --rams-info-text:       #1D4ED8;
+    --rams-neutral-soft:    #{$rams-slate-100};
+    --rams-neutral-text:    #{$rams-slate-600};
+
+    // Sidebar
+    --rams-sidebar-bg:            #FFFFFF;
+    --rams-sidebar-border:        #{$rams-slate-200};
+    --rams-sidebar-text:          #{$rams-slate-600};
+    --rams-sidebar-text-hover:    #{$rams-slate-900};
+    --rams-sidebar-hover-bg:      #{$rams-slate-100};
+    --rams-sidebar-active-bg:     #{$rams-teal-50};
+    --rams-sidebar-active-text:   #{$rams-teal-800};
+    --rams-sidebar-section:       #{$rams-slate-400};
+
+    // Topbar
+    --rams-topbar-bg:       #{rgba(#FFFFFF, 0.86)};
+    --rams-topbar-border:   #{$rams-slate-200};
+
+    // Elevation
+    --rams-shadow-xs:  0 1px 2px 0 rgba(15, 23, 42, 0.05);
+    --rams-shadow-sm:  0 1px 3px 0 rgba(15, 23, 42, 0.07), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+    --rams-shadow-md:  0 4px 12px -2px rgba(15, 23, 42, 0.10), 0 2px 6px -2px rgba(15, 23, 42, 0.06);
+    --rams-shadow-lg:  0 16px 40px -12px rgba(15, 23, 42, 0.20), 0 6px 16px -6px rgba(15, 23, 42, 0.10);
+    --rams-ring:       0 0 0 3px #{rgba($primary, 0.28)};
+
+    // Geometry
+    --rams-radius-sm:  #{$border-radius-sm};
+    --rams-radius:     #{$border-radius};
+    --rams-radius-lg:  #{$border-radius-lg};
+    --rams-radius-xl:  #{$border-radius-xl};
+
+    --rams-sidebar-width:           264px;
+    --rams-sidebar-width-collapsed: 76px;
+    --rams-topbar-height:           60px;
+    --rams-page-max:                1600px;
+
+    // Motion
+    --rams-ease:       cubic-bezier(0.4, 0, 0.2, 1);
+    --rams-speed:      180ms;
+}
+
+// ── Dark theme ───────────────────────────────────────────────────────────────
+[data-bs-theme="dark"] {
+    --rams-app-bg:          #{$rams-slate-950};
+    --rams-surface:         #101A2C;
+    --rams-surface-2:       #16223A;
+    --rams-surface-3:       #1D2B46;
+    --rams-surface-inset:   #0C1524;
+
+    --rams-border:          #26344E;
+    --rams-border-strong:   #35476A;
+    --rams-divider:         #{rgba(#FFFFFF, 0.08)};
+
+    --rams-text:            #DCE5F2;
+    --rams-text-strong:     #F4F8FF;
+    --rams-text-muted:      #93A3BC;
+    --rams-text-subtle:     #6B7C97;
+    --rams-text-inverse:    #0B1220;
+
+    --rams-primary:         #{$rams-teal-400};
+    --rams-primary-hover:   #{$rams-teal-300};
+    --rams-primary-active:  #{$rams-teal-200};
+    --rams-primary-soft:    #{rgba($rams-teal-400, 0.14)};
+    --rams-primary-soft-2:  #{rgba($rams-teal-400, 0.22)};
+    --rams-primary-text:    #{$rams-teal-300};
+    --rams-accent:          #{$rams-teal-400};
+
+    --rams-success-soft:    #{rgba(#22C55E, 0.16)};
+    --rams-success-text:    #6EE7A8;
+    --rams-danger-soft:     #{rgba(#EF4444, 0.16)};
+    --rams-danger-text:     #FCA5A5;
+    --rams-warning-soft:    #{rgba(#F59E0B, 0.16)};
+    --rams-warning-text:    #FCD34D;
+    --rams-info-soft:       #{rgba(#3B82F6, 0.16)};
+    --rams-info-text:       #93C5FD;
+    --rams-neutral-soft:    #{rgba(#FFFFFF, 0.08)};
+    --rams-neutral-text:    #A9B8D0;
+
+    --rams-sidebar-bg:          #0C1524;
+    --rams-sidebar-border:      #22304A;
+    --rams-sidebar-text:        #A5B4CC;
+    --rams-sidebar-text-hover:  #F1F6FF;
+    --rams-sidebar-hover-bg:    #{rgba(#FFFFFF, 0.06)};
+    --rams-sidebar-active-bg:   #{rgba($rams-teal-400, 0.16)};
+    --rams-sidebar-active-text: #{$rams-teal-300};
+    --rams-sidebar-section:     #6B7C97;
+
+    --rams-topbar-bg:       #{rgba(#101A2C, 0.86)};
+    --rams-topbar-border:   #26344E;
+
+    --rams-shadow-xs:  0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --rams-shadow-sm:  0 1px 3px 0 rgba(0, 0, 0, 0.45);
+    --rams-shadow-md:  0 4px 14px -2px rgba(0, 0, 0, 0.55);
+    --rams-shadow-lg:  0 18px 44px -12px rgba(0, 0, 0, 0.7);
+    --rams-ring:       0 0 0 3px #{rgba($rams-teal-400, 0.32)};
+
+    // Bootstrap surface mapping so built-in components follow suit
+    --bs-body-bg:            var(--rams-app-bg);
+    --bs-body-color:         var(--rams-text);
+    --bs-border-color:       var(--rams-border);
+    --bs-secondary-color:    var(--rams-text-muted);
+    --bs-emphasis-color:     var(--rams-text-strong);
+    --bs-heading-color:      var(--rams-text-strong);
+    --bs-tertiary-bg:        var(--rams-surface-2);
+    --bs-secondary-bg:       var(--rams-surface-3);
+}

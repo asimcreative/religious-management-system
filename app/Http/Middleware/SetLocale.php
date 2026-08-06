@@ -17,8 +17,15 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class SetLocale
 {
-    /** @var list<string> */
-    private const SUPPORTED_LOCALES = ['en', 'ur'];
+    /**
+     * The locales the application ships translations for.
+     *
+     * Public so the locale switcher validates against exactly the same list
+     * this middleware honours — one source of truth rather than two.
+     *
+     * @var list<string>
+     */
+    public const SUPPORTED_LOCALES = ['en', 'ur'];
 
     public function handle(Request $request, Closure $next): Response
     {

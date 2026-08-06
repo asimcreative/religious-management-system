@@ -31,6 +31,7 @@ class DashboardController extends Controller
         $todaySalah = $this->service->todaySalahAttendance();
         $quranSummary = $this->service->quranSummary();
         $salahSummary = $this->service->salahSummary();
+        $trend = $this->service->attendanceTrend();
 
         return view('dashboard', compact(
             'overview',
@@ -38,6 +39,7 @@ class DashboardController extends Controller
             'todaySalah',
             'quranSummary',
             'salahSummary',
+            'trend',
         ));
     }
 }

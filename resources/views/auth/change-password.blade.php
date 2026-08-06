@@ -2,69 +2,70 @@
 
 @section('title', __('auth.change_password'))
 
+@section('breadcrumbs')
+    <li class="breadcrumb-item active" aria-current="page">{{ __('auth.change_password') }}</li>
+@endsection
+
 @section('content')
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">{{ __('auth.change_password') }}</h5>
+<x-page-header :title="__('auth.change_password')"
+               :subtitle="__('ui.change_password_sub')"
+               icon="bi-shield-lock" />
+
+<div class="row g-4">
+    <div class="col-12 col-lg-7 col-xl-6">
+        <x-form.error-summary />
+
+        <x-card>
+            <form method="POST" action="{{ route('password.change') }}">
+                @csrf
+
+                <x-form.password
+                    name="current_password"
+                    :label="__('auth.current_password')"
+                    autocomplete="current-password"
+                    required
+                    autofocus
+                />
+
+                <hr class="my-4 border-subtle">
+
+                <x-form.password
+                    name="password"
+                    :label="__('auth.new_password')"
+                    :help="__('auth.password_requirements')"
+                    autocomplete="new-password"
+                    meter
+                    required
+                />
+
+                <x-form.password
+                    name="password_confirmation"
+                    :label="__('auth.confirm_password')"
+                    autocomplete="new-password"
+                    required
+                />
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg" aria-hidden="true"></i>
+                        <span>{{ __('auth.change_password') }}</span>
+                    </button>
+                    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">{{ __('ui.cancel') }}</a>
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('password.change') }}">
-                        @csrf
+            </form>
+        </x-card>
+    </div>
 
-                        {{-- Current Password --}}
-                        <div class="mb-3">
-                            <label for="current_password" class="form-label">{{ __('auth.current_password') }}</label>
-                            <input type="password"
-                                   id="current_password"
-                                   name="current_password"
-                                   class="form-control @error('current_password') is-invalid @enderror"
-                                   required
-                                   autocomplete="current-password">
-                            @error('current_password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        {{-- New Password --}}
-                        <div class="mb-3">
-                            <label for="password" class="form-label">{{ __('auth.new_password') }}</label>
-                            <input type="password"
-                                   id="password"
-                                   name="password"
-                                   class="form-control @error('password') is-invalid @enderror"
-                                   required
-                                   autocomplete="new-password">
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">{{ __('auth.password_requirements') }}</div>
-                        </div>
-
-                        {{-- Confirm Password --}}
-                        <div class="mb-3">
-                            <label for="password_confirmation" class="form-label">{{ __('auth.confirm_password') }}</label>
-                            <input type="password"
-                                   id="password_confirmation"
-                                   name="password_confirmation"
-                                   class="form-control"
-                                   required
-                                   autocomplete="new-password">
-                        </div>
-
-                        {{-- Submit --}}
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-key me-1"></i>
-                                {{ __('auth.change_password') }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+    <div class="col-12 col-lg-5 col-xl-6">
+        <x-card :title="__('ui.password_tips_title')" icon="bi-lightbulb">
+            <ul class="stack-sm list-unstyled mb-0 fs-md text-soft">
+                <li><i class="bi bi-check2 text-success me-2" aria-hidden="true"></i>{{ __('ui.password_tip_length') }}</li>
+                <li><i class="bi bi-check2 text-success me-2" aria-hidden="true"></i>{{ __('ui.password_tip_mix') }}</li>
+                <li><i class="bi bi-check2 text-success me-2" aria-hidden="true"></i>{{ __('ui.password_tip_unique') }}</li>
+                <li><i class="bi bi-check2 text-success me-2" aria-hidden="true"></i>{{ __('ui.password_tip_reuse') }}</li>
+                <li><i class="bi bi-x-lg text-danger me-2" aria-hidden="true"></i>{{ __('ui.password_tip_share') }}</li>
+            </ul>
+        </x-card>
     </div>
 </div>
 @endsection
