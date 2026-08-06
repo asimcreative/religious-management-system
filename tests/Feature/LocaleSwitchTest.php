@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Tests\TestCase;
 
 /**
@@ -67,5 +68,35 @@ class LocaleSwitchTest extends TestCase
             ->assertOk()
             ->assertSee(route('locale.update'), false)
             ->assertSee('locale-inline', false);
+    }
+
+    /**
+     * The real guest journey: switching language must actually change what the
+     * guest sees on the very next page. Storing the cookie is not enough — the
+     * guest screens must READ it. This regressed because SetLocale was applied
+     * only to the authenticated route group, so a guest could switch language
+     * and have the cookie stored, but the login page they were returned to
+     * never read it. SetLocale now runs on the whole web group.
+     *
+     * EncryptCookies is disabled here only to inject the cookie in plaintext —
+     * that middleware is orthogonal plumbing, already covered by
+     * test_guest_can_switch_language_and_choice_is_remembered (which asserts the
+     * encrypted round-trip). What this test isolates is that a guest request
+     * carrying a `locale` cookie renders in that language.
+     */
+    public function test_guest_locale_cookie_drives_the_rendered_login_page(): void
+    {
+        // Baseline: default English.
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('lang="en"', false);
+
+        // A guest arriving with a locale=ur cookie sees the Urdu login page.
+        $this->withoutMiddleware(EncryptCookies::class)
+            ->withUnencryptedCookie('locale', 'ur')
+            ->get(route('login'))
+            ->assertOk()
+            ->assertSee('lang="ur"', false)
+            ->assertSee(__('ui.locale_ur', [], 'ur'), false);
     }
 }

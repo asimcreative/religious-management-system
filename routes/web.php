@@ -49,7 +49,9 @@ Route::post('locale', LocaleController::class)->name('locale.update');
 
 // ── Authenticated Routes ─────────────────────────────────────────
 
-Route::middleware(['auth', 'company.active', 'user.active', 'set.locale'])->group(function () {
+// set.locale runs globally on the web group (see bootstrap/app.php), so it is
+// not repeated here.
+Route::middleware(['auth', 'company.active', 'user.active'])->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('password.change.form');

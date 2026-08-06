@@ -29,6 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // password reset/change invalidates sessions held by other devices.
         $middleware->authenticateSessions();
 
+        // Apply the display locale on every web request — guest screens (login,
+        // password reset) included, not just the authenticated area. Otherwise a
+        // guest can switch language and have the cookie stored, but the very page
+        // they are returned to never reads it, so nothing appears to change.
+        $middleware->web(append: [SetLocale::class]);
+
         $middleware->alias([
             'api.account.active' => EnsureApiAccountIsActive::class,
             'company.active' => EnsureCompanyIsActive::class,
