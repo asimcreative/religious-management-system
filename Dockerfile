@@ -105,8 +105,17 @@ RUN docker-php-ext-configure gd \
         opcache
 
 # phpredis — required by REDIS_CLIENT=phpredis in .env
-RUN pecl install redis \
+#
+# pecl compiles from source, so it needs autoconf and a toolchain. The
+# docker-php-ext-install above appears to prove they are present, but it
+# installs $PHPIZE_DEPS as its own virtual package and removes them again on the
+# way out — so by the time this line runs, phpize cannot find autoconf. They are
+# added here explicitly and dropped again, which keeps the image just as small
+# without depending on what the previous step happened to leave behind.
+RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+    && pecl install redis \
     && docker-php-ext-enable redis \
+    && apk del --no-network .phpize-deps \
     && rm -rf /tmp/pear
 
 # -----------------------------------------------------------------
