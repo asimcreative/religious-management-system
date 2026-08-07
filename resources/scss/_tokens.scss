@@ -46,6 +46,11 @@
     --rams-neutral-soft:    #{$rams-slate-100};
     --rams-neutral-text:    #{$rams-slate-600};
 
+    // Impersonation banner — a solid surface, not a soft badge tint. It has to
+    // read as an interruption in both themes, so it gets its own pair.
+    --rams-impersonation-bg:   #B45309;
+    --rams-impersonation-text: #FFFFFF;
+
     // Sidebar
     --rams-sidebar-bg:            #FFFFFF;
     --rams-sidebar-border:        #{$rams-slate-200};
@@ -119,6 +124,9 @@
     --rams-info-text:       #93C5FD;
     --rams-neutral-soft:    #{rgba(#FFFFFF, 0.08)};
     --rams-neutral-text:    #A9B8D0;
+
+    --rams-impersonation-bg:   #92400E;
+    --rams-impersonation-text: #FFF7ED;
 
     --rams-sidebar-bg:          #0C1524;
     --rams-sidebar-border:      #22304A;

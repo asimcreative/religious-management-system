@@ -140,12 +140,13 @@ class ReportController extends Controller
         $filters = $request->only(['search', 'jamaat_id', 'prayer_id', 'date_from', 'date_to']);
         $attendance = $this->service->salahAttendanceReport($filters, $this->perPage($request, 50));
         $summary = $this->service->salahAttendanceSummary($filters);
-        $companyId = $request->user()->isSystemAdministrator()
-            ? null
-            : (int) $request->user()->company_id;
+        // Always the caller's own company. This used to widen to every tenant
+        // for the platform account, but that account no longer reaches the
+        // tenant modules at all — it opens a company and reads that company's
+        // report, which is the only figure anyone can act on.
         $prayerWise = $this->service->salahPrayerWiseSummary(
             $filters,
-            $companyId,
+            (int) $request->user()->company_id,
             $this->dataAccess->allowedJamaatIds($request->user()),
         );
 

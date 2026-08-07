@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnforcePlatformBoundary;
+use App\Http\Middleware\EnforceReadOnlyImpersonation;
 use App\Http\Middleware\EnsureApiAccountIsActive;
 use App\Http\Middleware\EnsureCompanyIsActive;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -38,7 +40,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'api.account.active' => EnsureApiAccountIsActive::class,
             'company.active' => EnsureCompanyIsActive::class,
+            'impersonation.readonly' => EnforceReadOnlyImpersonation::class,
             'permission.team' => SetPermissionTeamContext::class,
+            'platform.boundary' => EnforcePlatformBoundary::class,
             'set.locale' => SetLocale::class,
             'user.active' => EnsureUserIsActive::class,
         ]);

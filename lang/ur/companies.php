@@ -42,4 +42,18 @@ return [
     'deleted' => 'کمپنی حذف ہو گئی۔',
     'empty_title' => 'ابھی کوئی کمپنی نہیں',
     'empty_text' => 'شروع کرنے کے لیے پہلا ادارہ بنائیں۔',
+
+    'impersonate' => 'کمپنی کھولیں',
+    'impersonate_confirm' => '":company" میں بطور ایڈمن داخل ہوں اور نظام وہی دیکھیں جو وہ دیکھتے ہیں۔ آپ سب کچھ دیکھ سکیں گے، کچھ تبدیل نہیں کر سکیں گے۔',
+    'impersonation_started' => 'اب آپ ":company" دیکھ رہے ہیں۔',
+    'impersonation_stopped' => 'آپ اپنے اکاؤنٹ پر واپس آ گئے ہیں۔',
+    'impersonation_stop' => 'کمپنی سے باہر نکلیں',
+    'impersonation_viewing' => ':company دیکھ رہے ہیں',
+    'impersonation_as' => 'بطور :name داخل ہیں',
+    'impersonation_read_only_note' => 'صرف دیکھنے کے لیے',
+    'impersonation_read_only' => 'آپ یہ کمپنی صرف دیکھ رہے ہیں، کچھ تبدیل نہیں کر سکتے۔ پہلے کمپنی سے باہر نکلیں۔',
+    'impersonation_already_active' => 'آپ پہلے ہی ایک کمپنی دیکھ رہے ہیں۔ دوسری کھولنے سے پہلے اس سے باہر نکلیں۔',
+    'impersonation_no_admin' => '":company" میں کوئی فعال صارف موجود نہیں جس کے طور پر داخل ہوا جا سکے۔',
+    'impersonation_company_inactive' => '":company" فعال نہیں ہے۔ کھولنے سے پہلے اسے فعال کریں۔',
+    'platform_boundary' => 'یہ حصہ کسی کمپنی کا ہے۔ اسے دیکھنے کے لیے کمپنی کھولیں۔',
 ];

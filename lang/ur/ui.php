@@ -18,6 +18,7 @@ return [
     'locale_unsupported' => 'یہ زبان دستیاب نہیں۔',
 
     'nav_overview' => 'جائزہ',
+    'nav_platform' => 'پلیٹ فارم',
     'nav_people' => 'افراد',
     'nav_quran' => 'قرآن',
     'nav_salah' => 'نماز',

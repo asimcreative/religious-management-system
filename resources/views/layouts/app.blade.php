@@ -41,6 +41,8 @@
 
             @include('partials.topbar')
 
+            @include('partials.impersonation-banner')
+
             <main class="rams-content" id="main-content" tabindex="-1">
                 <x-flash />
 

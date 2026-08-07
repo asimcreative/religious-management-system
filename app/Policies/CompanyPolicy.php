@@ -43,12 +43,29 @@ class CompanyPolicy
     {
         return $user->isSystemAdministrator()
             && $user->can('company.delete')
-            && $company->company_code !== 'SYSTEM'
+            && ! $company->isPlatform()
             && $company->id !== $user->getAttribute('company_id');
     }
 
     public function export(User $user): bool
     {
         return $this->viewAny($user);
+    }
+
+    /**
+     * Sign in to a tenant to see what it sees.
+     *
+     * Gated on company.update rather than company.view: seeing the register row
+     * is not the same as seeing the tenant's employees, identity numbers and
+     * attendance, and company.update is the permission that already means
+     * "administer this tenant". The platform's own company is excluded — it
+     * holds no tenant data, and the account is already signed in to it.
+     */
+    public function impersonate(User $user, Company $company): bool
+    {
+        return $user->isSystemAdministrator()
+            && $user->can('company.update')
+            && ! $company->isPlatform()
+            && $company->id !== $user->getAttribute('company_id');
     }
 }

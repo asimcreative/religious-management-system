@@ -18,8 +18,14 @@
         [
             'label' => __('ui.nav_overview'),
             'items' => [
-                ['permission' => null, 'route' => 'dashboard', 'active' => 'dashboard', 'icon' => 'bi-grid-1x2', 'label' => __('dashboard.dashboard')],
-                ['permission' => 'notification.view', 'route' => 'notifications.index', 'active' => 'notifications.*', 'icon' => 'bi-bell', 'label' => __('notifications.notifications'), 'badge' => $unreadNotificationCount ?? 0],
+                ['permission' => null, 'route' => 'dashboard', 'active' => 'dashboard', 'icon' => 'bi-grid-1x2', 'label' => __('dashboard.dashboard'), 'scope' => 'both'],
+                ['permission' => 'notification.view', 'route' => 'notifications.index', 'active' => 'notifications.*', 'icon' => 'bi-bell', 'label' => __('notifications.notifications'), 'badge' => $unreadNotificationCount ?? 0, 'scope' => 'both'],
+            ],
+        ],
+        [
+            'label' => __('ui.nav_platform'),
+            'items' => [
+                ['permission' => 'company.view', 'route' => 'companies.index', 'active' => 'companies.*', 'icon' => 'bi-buildings', 'label' => __('companies.companies'), 'scope' => 'platform'],
             ],
         ],
         [
@@ -69,17 +75,24 @@
                 ['permission' => 'quran_status.manage', 'route' => 'masters.quran-statuses.index', 'active' => 'masters.quran-statuses.*', 'icon' => 'bi-patch-check', 'label' => __('masters.quran_statuses')],
                 ['permission' => 'language.manage', 'route' => 'masters.languages.index', 'active' => 'masters.languages.*', 'icon' => 'bi-translate', 'label' => __('masters.languages')],
                 ['permission' => 'settings.view', 'route' => 'settings.index', 'active' => 'settings.*', 'icon' => 'bi-sliders', 'label' => __('settings.settings')],
-                ['permission' => 'company.view', 'route' => 'companies.index', 'active' => 'companies.*', 'icon' => 'bi-buildings', 'label' => __('companies.companies'), 'platform' => true],
             ],
         ],
     ];
 
     $user = auth()->user();
 
-    $maySee = static function (array $item) use ($user): bool {
-        // Platform-only entries administer every tenant, so holding the
-        // permission is not enough — the caller must be the system account.
-        if (($item['platform'] ?? false) && ! $user?->isSystemAdministrator()) {
+    // The platform account administers companies and holds no data of its own.
+    // Showing it every tenant module would invite it to create records that get
+    // stamped with the platform's own company_id, so the menu is split the same
+    // way EnforcePlatformBoundary splits the routes behind it. While it is
+    // viewing a tenant the authenticated user is that tenant's own user, so the
+    // tenant menu returns without a special case.
+    $isPlatformAccount = (bool) $user?->isSystemAdministrator();
+
+    $maySee = static function (array $item) use ($user, $isPlatformAccount): bool {
+        $scope = $item['scope'] ?? 'tenant';
+
+        if ($scope !== 'both' && $isPlatformAccount !== ($scope === 'platform')) {
             return false;
         }
 

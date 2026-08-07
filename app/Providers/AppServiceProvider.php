@@ -20,9 +20,11 @@ use App\Models\Setting;
 use App\Models\Teacher;
 use App\Observers\BusinessAuditObserver;
 use App\Observers\DashboardCacheObserver;
+use App\Support\Impersonation;
 use App\View\Composers\AppShellComposer;
 use App\View\Composers\NotificationComposer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -48,6 +50,18 @@ class AppServiceProvider extends ServiceProvider
 
         // Prevent silently discarding fills on non-fillable attributes.
         Model::preventSilentlyDiscardingAttributes(! app()->isProduction());
+
+        // A platform account viewing a tenant may look, not touch. This covers
+        // the policy abilities the views ask for — @can('create', Branch::class)
+        // and friends — so the write controls simply are not rendered. Raw
+        // permission strings are refused a layer earlier, in User::
+        // hasPermissionTo(), because Spatie answers those before this callback
+        // is reached. Returning null leaves every other decision untouched.
+        Gate::before(static function ($user, string $ability): ?bool {
+            return Impersonation::isReadOnly() && Impersonation::isWriteAbility($ability)
+                ? false
+                : null;
+        });
 
         // Share unread notification count with the main layout via View Composer.
         View::composer('layouts.app', NotificationComposer::class);

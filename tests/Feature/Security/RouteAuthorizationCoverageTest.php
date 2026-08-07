@@ -44,6 +44,11 @@ class RouteAuthorizationCoverageTest extends TestCase
         // there is no cross-account surface. The value is constrained to
         // SetLocale::SUPPORTED_LOCALES and it is a POST, not a GET mutation.
         'locale.update',
+        // Ending your own impersonation returns you to the account you already
+        // had. There is nothing to authorize: the only thing it can do is give
+        // up access, and refusing it would trap the platform account inside a
+        // tenant. Starting one is authorized by CompanyPolicy::impersonate.
+        'impersonate.stop',
     ];
 
     public function test_every_state_changing_application_route_enforces_authorization(): void

@@ -62,12 +62,18 @@ class DomainTenantIntegrityTest extends TestCase
         $this->assertSame(1, (int) $summary->first()->total);
     }
 
-    public function test_only_the_system_super_admin_gets_global_salah_report_data(): void
+    public function test_the_platform_account_gets_no_cross_tenant_salah_report(): void
     {
+        // There is no longer a merged all-companies report. Adding two tenants'
+        // attendance together produced a figure nobody could act on, and it was
+        // the one place the platform account read tenant records from outside a
+        // tenant. It is now turned away and must open a company instead.
         $superAdmin = $this->createSuperAdmin();
-        $permission = Permission::firstOrCreate(['name' => 'report.salah', 'guard_name' => 'web']);
-        app(PermissionRegistrar::class)->setPermissionsTeamId($superAdmin->company_id);
-        Role::findByName('Super Admin', 'web')->givePermissionTo($permission);
+        foreach (['report.salah', 'company.view'] as $name) {
+            $permission = Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
+            app(PermissionRegistrar::class)->setPermissionsTeamId($superAdmin->company_id);
+            Role::findByName('Super Admin', 'web')->givePermissionTo($permission);
+        }
 
         $companyA = Company::factory()->create();
         $companyB = Company::factory()->create();
@@ -85,12 +91,9 @@ class DomainTenantIntegrityTest extends TestCase
             'employee_id' => $employeeB->id,
         ]);
 
-        $response = $this->actingAs($superAdmin)->get(route('reports.salah-attendance'));
-        $summary = $response->viewData('prayerWise');
-
-        $response->assertOk();
-        $this->assertCount(1, $summary);
-        $this->assertSame(2, (int) $summary->first()->total);
+        $this->actingAs($superAdmin)
+            ->get(route('reports.salah-attendance'))
+            ->assertRedirect(route('companies.index'));
     }
 
     public function test_quran_class_member_store_rejects_an_employee_from_another_company(): void

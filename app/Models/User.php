@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Status;
 use App\Models\Concerns\HasStatus;
+use App\Support\Impersonation;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,13 +14,20 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, HasStatus, Notifiable;
+    use HasApiTokens, HasFactory, HasStatus, Notifiable;
+
+    // Aliased so hasPermissionTo() below can add the read-only impersonation
+    // rule in front of Spatie's own answer.
+    use HasRoles {
+        hasPermissionTo as protected spatieHasPermissionTo;
+    }
 
     /**
      * Auto-populate company_id when creating a new user if not explicitly set.
@@ -92,13 +100,40 @@ class User extends Authenticatable
     {
         $company = $this->company;
 
-        if ($company === null || $company->company_code !== 'SYSTEM') {
+        if ($company === null || ! $company->isPlatform()) {
             return false;
         }
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($company->id);
 
         return $this->hasRole('Super Admin');
+    }
+
+    /**
+     * A read-only impersonation session holds no write permissions.
+     *
+     * Overridden here rather than only at the Gate because Spatie answers
+     * permission checks from its own `Gate::before` callback, which is
+     * registered before ours and would short-circuit the denial. Refusing at
+     * the source covers that callback, `can()`, `hasAnyPermission()` and every
+     * `@can('employee.create')` in a view with one rule.
+     *
+     * Note that this narrows what RoleDataAccessService considers company-wide
+     * access, so an impersonated role-limited user may see fewer records than
+     * they normally would. That errs towards showing less, which is the safe
+     * direction for a session that exists only to look.
+     *
+     * @param  string|int|\BackedEnum|Permission  $permission
+     */
+    public function hasPermissionTo($permission, ?string $guardName = null): bool
+    {
+        if (is_string($permission)
+            && Impersonation::isReadOnly()
+            && Impersonation::isWriteAbility($permission)) {
+            return false;
+        }
+
+        return $this->spatieHasPermissionTo($permission, $guardName);
     }
 
     // ── Relationships ──────────────────────────────────────────────

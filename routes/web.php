@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\CompanyController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DataTransferController;
 use App\Http\Controllers\Web\EmployeeController;
+use App\Http\Controllers\Web\ImpersonationController;
 use App\Http\Controllers\Web\JamaatController;
 use App\Http\Controllers\Web\JamaatMemberController;
 use App\Http\Controllers\Web\LocaleController;
@@ -58,7 +59,17 @@ Route::post('locale', LocaleController::class)->name('locale.update');
 
 // set.locale runs globally on the web group (see bootstrap/app.php), so it is
 // not repeated here.
-Route::middleware(['auth', 'company.active', 'user.active'])->group(function () {
+//
+// platform.boundary keeps the platform account on the tenant register and off
+// every tenant module; impersonation.readonly refuses writes while it is
+// looking inside a company. Both are no-ops for ordinary tenant users.
+Route::middleware([
+    'auth',
+    'company.active',
+    'user.active',
+    'platform.boundary',
+    'impersonation.readonly',
+])->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('password.change.form');
@@ -140,6 +151,10 @@ Route::middleware(['auth', 'company.active', 'user.active'])->group(function () 
 
     // ── Companies (platform account only) ──────────────
     Route::resource('companies', CompanyController::class)->except('show');
+
+    // Signing in to a tenant to see what it sees, and signing back out of it.
+    Route::post('companies/{company}/impersonate', [ImpersonationController::class, 'start'])->name('impersonate.start');
+    Route::post('impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
 
     // ── Settings ───────────────────────────────
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

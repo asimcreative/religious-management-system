@@ -31,6 +31,12 @@
     @php
         $user = auth()->user();
 
+        // A platform account looking inside a company may not change anything.
+        // The write permissions are already denied, which removes Create and
+        // Import on their own; these two are gated on reading, so they need
+        // saying explicitly rather than offering buttons that cannot work.
+        $readOnly = App\Support\Impersonation::isReadOnly();
+
         $allows = static function (?string $permission) use ($user): bool {
             return $permission === null || (bool) $user?->can($permission);
         };
@@ -64,12 +70,13 @@
         // Selection is offered only where the module accepts it and the caller
         // could actually act on a selection.
         $selectable = $selectable
+            && ! $readOnly
             && $definition->supportsBulkActions()
             && $user?->can('viewAny', $definition->modelClass());
 
         $statusColumn = $definition->statusColumn();
 
-        $savedFilters = $user
+        $savedFilters = $user && ! $readOnly
             ? App\Models\SavedFilter::query()
                 ->forResource($definition->key())
                 ->ownedBy($user->id)
@@ -215,6 +222,7 @@
 
                 <ul class="dropdown-menu dropdown-menu-end data-toolbar__overflow">
                     {{-- Saved filters ------------------------------------- --}}
+                    @unless ($readOnly)
                     <li><h6 class="dropdown-header">{{ __('data_transfer.saved_filters') }}</h6></li>
 
                     @forelse ($savedFilters as $saved)
@@ -258,6 +266,7 @@
                     </li>
 
                     <li><hr class="dropdown-divider"></li>
+                    @endunless
 
                     <li>
                         <a class="dropdown-item" href="{{ route('data.imports.index', ['resource' => $definition->key()]) }}">

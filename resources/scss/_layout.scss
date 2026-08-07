@@ -472,6 +472,56 @@
     &--xl { width: 84px; height: 84px; font-size: 1.75rem; border-radius: var(--rams-radius-lg); }
 }
 
+// ── Impersonation banner ─────────────────────────────────────────────────────
+// Deliberately loud. It is the one thing on the page that must not be mistaken
+// for chrome: everything below it belongs to a different company.
+.rams-impersonation {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.625rem 0.875rem;
+    background: var(--rams-impersonation-bg);
+    color: var(--rams-impersonation-text);
+    font-size: 0.8125rem;
+    line-height: 1.35;
+
+    @include media-breakpoint-up(md) { padding-inline: 1.5rem; }
+
+    &__icon {
+        flex: 0 0 auto;
+        display: inline-grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgb(255 255 255 / 0.18);
+        font-size: 0.9375rem;
+    }
+
+    &__text {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+
+        strong { font-weight: 650; }
+        span { opacity: 0.9; }
+    }
+
+    &__exit {
+        margin-inline-start: auto;
+
+        // The way out must stay reachable when the message wraps onto its own
+        // line on a narrow screen.
+        @media (max-width: 575.98px) {
+            margin-inline-start: 0;
+            width: 100%;
+
+            .btn { width: 100%; justify-content: center; }
+        }
+    }
+}
+
 // ── Content region ───────────────────────────────────────────────────────────
 .rams-content {
     flex: 1 1 auto;

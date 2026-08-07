@@ -80,6 +80,8 @@
 
                     <td class="col-actions" data-label="{{ __('companies.actions') }}">
                         <div class="table-actions">
+                            <x-impersonate-button :company="$company" />
+
                             @can('update', $company)
                                 <a href="{{ route('companies.edit', $company) }}" class="btn btn-sm btn-ghost btn-icon"
                                    data-bs-toggle="tooltip" title="{{ __('companies.edit') }}"

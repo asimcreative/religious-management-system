@@ -18,6 +18,7 @@ return [
     'locale_unsupported' => 'That language is not available.',
 
     'nav_overview' => 'Overview',
+    'nav_platform' => 'Platform',
     'nav_people' => 'People',
     'nav_quran' => 'Quran',
     'nav_salah' => 'Salah',

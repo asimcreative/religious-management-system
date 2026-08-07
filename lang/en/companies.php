@@ -42,4 +42,19 @@ return [
     'deleted' => 'Company deleted.',
     'empty_title' => 'No companies yet',
     'empty_text' => 'Create the first tenant to get started.',
+
+    // Signing in to a tenant to see what it sees.
+    'impersonate' => 'Open company',
+    'impersonate_confirm' => 'Sign in to ":company" and see the system as their administrator does. You will be able to look at everything and change nothing.',
+    'impersonation_started' => 'You are now viewing ":company".',
+    'impersonation_stopped' => 'You are back on your own account.',
+    'impersonation_stop' => 'Leave company',
+    'impersonation_viewing' => 'Viewing :company',
+    'impersonation_as' => 'Signed in as :name',
+    'impersonation_read_only_note' => 'read only',
+    'impersonation_read_only' => 'You are viewing this company and cannot change anything. Leave the company first.',
+    'impersonation_already_active' => 'You are already viewing a company. Leave it before opening another.',
+    'impersonation_no_admin' => '":company" has no active user to sign in as.',
+    'impersonation_company_inactive' => '":company" is not active. Activate it before opening it.',
+    'platform_boundary' => 'That section belongs to a company. Open the company to see it.',
 ];

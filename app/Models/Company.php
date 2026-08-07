@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Status;
 use App\Models\Concerns\HasStatus;
 use Database\Factories\CompanyFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +15,14 @@ class Company extends Model
 {
     /** @use HasFactory<CompanyFactory> */
     use HasFactory, HasStatus, SoftDeletes;
+
+    /**
+     * The code of the company that administers the platform rather than using it.
+     *
+     * Its users are not tenant users: they manage the register of companies and
+     * hold no business data of their own.
+     */
+    public const PLATFORM_CODE = 'SYSTEM';
 
     protected $fillable = [
         'company_code',
@@ -116,7 +125,25 @@ class Company extends Model
         return $this->hasMany(AuditLog::class);
     }
 
+    // ── Scopes ──────────────────────────────────────────────────────
+
+    /**
+     * Only the companies that actually use the platform.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeTenants(Builder $query): Builder
+    {
+        return $query->where('company_code', '!=', self::PLATFORM_CODE);
+    }
+
     // ── Helpers ─────────────────────────────────────────────────────
+
+    public function isPlatform(): bool
+    {
+        return $this->company_code === self::PLATFORM_CODE;
+    }
 
     public function setting(string $key, mixed $default = null): mixed
     {
