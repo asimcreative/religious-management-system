@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Web\AnalyticsController;
 use App\Http\Controllers\Web\BulkActionController;
 use App\Http\Controllers\Web\CompanyController;
 use App\Http\Controllers\Web\DashboardController;
@@ -126,6 +127,15 @@ Route::middleware([
         Route::get('quran-progress', [ReportController::class, 'quranProgress'])->name('quran-progress');
         Route::get('salah-attendance', [ReportController::class, 'salahAttendance'])->name('salah-attendance');
         Route::get('dashboard', [ReportController::class, 'dashboard'])->name('dashboard');
+
+        // ── Analysis ────────────────────────────────────────────
+        // One screen per dataset, any breakdown, any filter. {dataset} binds
+        // to its definition via AnalyticsServiceProvider; an unknown key 404s.
+        // Declared before the export routes so "analysis" is never mistaken
+        // for one of the literal report segments above.
+        Route::get('analysis', [AnalyticsController::class, 'index'])->name('analysis.index');
+        Route::get('analysis/{dataset}', [AnalyticsController::class, 'show'])->name('analysis.show');
+        Route::get('analysis/{dataset}/export', [AnalyticsController::class, 'export'])->name('analysis.export');
 
         // Excel Exports
         Route::get('export/employees', [ReportController::class, 'exportEmployees'])->name('export.employees');

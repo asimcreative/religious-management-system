@@ -54,6 +54,7 @@
             'label' => __('ui.nav_insights'),
             'items' => [
                 ['permission' => ['report.employee', 'report.teacher', 'report.quran', 'report.salah', 'report.dashboard'], 'route' => 'reports.index', 'active' => 'reports.index', 'icon' => 'bi-collection', 'label' => __('reports.report_center')],
+                ['permission' => ['report.quran', 'report.salah'], 'route' => 'reports.analysis.index', 'active' => 'reports.analysis.*', 'icon' => 'bi-diagram-3', 'label' => __('analytics.title')],
                 ['permission' => 'report.dashboard', 'route' => 'reports.dashboard', 'active' => 'reports.dashboard', 'icon' => 'bi-pie-chart', 'label' => __('reports.dashboard_summary')],
                 ['permission' => 'report.employee', 'route' => 'reports.employees', 'active' => 'reports.employees', 'icon' => 'bi-file-earmark-person', 'label' => __('reports.employee_report')],
                 ['permission' => 'report.teacher', 'route' => 'reports.teachers', 'active' => 'reports.teachers', 'icon' => 'bi-file-earmark-text', 'label' => __('reports.teacher_report')],

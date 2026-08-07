@@ -11,6 +11,10 @@
     // Declaring the catalogue as data keeps the tiles consistent and makes
     // adding a report a one-line change.
     $reports = [
+        // First, because it is the one that answers questions the fixed
+        // reports below cannot: any breakdown, any combination of filters.
+        ['permission' => ['report.quran', 'report.salah'], 'route' => 'reports.analysis.index', 'icon' => 'bi-diagram-3', 'tone' => 'accent',
+         'title' => __('analytics.title'), 'desc' => __('analytics.subtitle')],
         ['permission' => 'report.dashboard', 'route' => 'reports.dashboard', 'icon' => 'bi-pie-chart', 'tone' => 'primary',
          'title' => __('reports.dashboard_summary'), 'desc' => __('reports.dashboard_summary_desc')],
         ['permission' => 'report.employee', 'route' => 'reports.employees', 'icon' => 'bi-people', 'tone' => 'info',
@@ -25,7 +29,18 @@
          'title' => __('reports.salah_attendance_report'), 'desc' => __('reports.salah_attendance_report_desc')],
     ];
 
-    $visible = array_values(array_filter($reports, fn ($r) => auth()->user()?->can($r['permission'])));
+    // A tile may accept any one of several permissions — the analysis screen
+    // opens for a Quran reader or a Salah reader, and shows them only the
+    // datasets they hold.
+    $visible = array_values(array_filter($reports, function (array $report): bool {
+        foreach ((array) $report['permission'] as $ability) {
+            if (auth()->user()?->can($ability)) {
+                return true;
+            }
+        }
+
+        return false;
+    }));
 @endphp
 
 <x-page-header :title="__('reports.report_center')"

@@ -72,6 +72,12 @@ const PAGES: PageSpec[] = [
     { path: '/reports/quran-attendance', label: 'Quran attendance report', group: 'Reports' },
     { path: '/reports/quran-progress', label: 'Quran progress report', group: 'Reports' },
     { path: '/reports/salah-attendance', label: 'Salah attendance report', group: 'Reports' },
+    { path: '/reports/analysis', label: 'Analysis centre', group: 'Reports' },
+    // The densest filter bar in the application — every filter the dataset
+    // offers, on one row. Worth auditing at 320px in its own right.
+    { path: '/reports/analysis/salah-attendance', label: 'Salah analysis', group: 'Reports' },
+    { path: '/reports/analysis/quran-attendance', label: 'Quran analysis', group: 'Reports' },
+    { path: '/reports/analysis/quran-progress', label: 'Quran progress analysis', group: 'Reports' },
 
     { path: '/masters/branches', label: 'Branches list', group: 'Master data' },
     { path: '/masters/branches/create', label: 'Branch form', group: 'Master data' },
