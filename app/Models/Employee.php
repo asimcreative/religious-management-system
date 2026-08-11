@@ -153,6 +153,32 @@ class Employee extends Model
         return $query->where('employees.employment_status', $status);
     }
 
+    /**
+     * Employees free to join a jamaat.
+     *
+     * One employee belongs to at most one active jamaat, so anyone who has one
+     * is unavailable to every jamaat — including, by the same token, the one
+     * they are already in.
+     *
+     * @param  Builder<Employee>  $query
+     * @return Builder<Employee>
+     */
+    public function scopeWithoutActiveJamaat(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('activeJamaat');
+    }
+
+    /**
+     * Employees free to join a Quran class. Counterpart of the jamaat rule.
+     *
+     * @param  Builder<Employee>  $query
+     * @return Builder<Employee>
+     */
+    public function scopeWithoutActiveQuranClass(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('activeQuranClass');
+    }
+
     public function isActive(): bool
     {
         return $this->employment_status === Status::Active;

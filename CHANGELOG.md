@@ -8,6 +8,28 @@ This project adheres to [Semantic Versioning](https://semver.org/). Format follo
 
 ## [Unreleased]
 
+### Fixed — a member of one jamaat could be taken by another ([#3](https://github.com/asimcreative/religious-management-system/issues/3))
+
+- **The add-member list excluded only the group being viewed.** An employee who was an active
+  member of a *different* jamaat was still offered, and choosing them did not fail: the service
+  deactivated their existing membership and attached them here. The jamaat they left lost a member
+  because of something done on another jamaat's page — nothing on its own screen said so, and its
+  attendance sheet was simply one row shorter the next morning. Quran classes behaved identically.
+- The rule was never in doubt. It is specified in four documents, and the interface copy already
+  claimed it: *"Only active employees not already in a jamaat are listed."* Only the query
+  disagreed.
+- **`Employee::scopeWithoutActiveJamaat()` / `scopeWithoutActiveQuranClass()`** now decide who may
+  be offered, on both member screens.
+- **Both services refuse the write too**, naming the jamaat or class currently holding the
+  employee, so a stale page or a hand-made request cannot perform the silent move either. Moving
+  someone is remove-then-add — two deliberate acts, each audited on the screen it affects. The
+  controllers surface it as a page-level message, because when nobody is free to add there is no
+  form for a field error to attach to.
+- Quran class copy corrected: it said *"not already in **this** class"*, which described the bug.
+- Production held no employee in two active groups, so no data repair was needed — the fault was
+  latent and would have struck on the next add.
+- See `docs/features/membership/README.md`.
+
 ### Fixed — attendance could only ever be "Present" ([#1](https://github.com/asimcreative/religious-management-system/issues/1))
 
 - **A company started with no attendance reasons, so no absence could be recorded.** Presence is

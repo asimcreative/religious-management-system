@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class JamaatMemberService
 {
@@ -36,7 +37,12 @@ class JamaatMemberService
 
     /**
      * Add an employee to a Jamaat.
-     * Deactivates any existing active membership first (one active Jamaat rule).
+     *
+     * An employee belongs to at most one active jamaat. Someone already in
+     * another one is refused rather than quietly moved: a silent move takes a
+     * member away from a jamaat whose own screen never mentions it, and its
+     * attendance sheet just gets shorter the next morning. Moving someone is
+     * remove-then-add — two deliberate acts, both audited.
      */
     public function addMember(int $jamaatId, int $employeeId): void
     {
@@ -53,19 +59,7 @@ class JamaatMemberService
                 ->lockForUpdate()
                 ->first();
 
-            $activeMemberships = JamaatMember::query()
-                ->where('employee_id', $employee->id)
-                ->where('is_active', true)
-                ->whereHas('jamaat', fn ($query) => $query->where('company_id', $jamaat->company_id));
-
-            if ($existing?->is_active) {
-                $activeMemberships->whereKeyNot($existing->id);
-            }
-
-            $activeMemberships->update([
-                'is_active' => false,
-                'left_at' => $today,
-            ]);
+            $this->ensureFreeToJoin($jamaat, $employee);
 
             if ($existing) {
                 $oldValues = $this->membershipValues($existing);
@@ -131,6 +125,35 @@ class JamaatMemberService
         if ((int) $jamaat->company_id !== (int) $employee->company_id) {
             throw (new ModelNotFoundException)->setModel(Employee::class, [$employee->id]);
         }
+    }
+
+    /**
+     * Refuse an employee who is already active in a different jamaat.
+     *
+     * The message names that jamaat, because the person doing the adding is
+     * usually not the person who needs to release them.
+     */
+    private function ensureFreeToJoin(Jamaat $jamaat, Employee $employee): void
+    {
+        /** @var JamaatMember|null $elsewhere */
+        $elsewhere = JamaatMember::query()
+            ->with('jamaat')
+            ->where('employee_id', $employee->id)
+            ->where('is_active', true)
+            ->where('jamaat_id', '!=', $jamaat->id)
+            ->whereHas('jamaat', fn ($query) => $query->where('company_id', $jamaat->company_id))
+            ->first();
+
+        if ($elsewhere === null) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'employee_id' => __('jamaats.already_in_another_jamaat', [
+                'name' => $employee->employee_name,
+                'jamaat' => $elsewhere->jamaat?->jamaat_name ?? '',
+            ]),
+        ]);
     }
 
     /**

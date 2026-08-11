@@ -36,7 +36,12 @@ class QuranClassMemberService
 
     /**
      * Add an employee to a class.
-     * Deactivates any existing active membership first (one active class rule).
+     *
+     * An employee belongs to at most one active class. Someone already in
+     * another one is refused rather than quietly moved: a silent move takes a
+     * student away from a class whose own screen never mentions it, and its
+     * attendance sheet just gets shorter the next day. Moving someone is
+     * remove-then-add — two deliberate acts, both audited.
      */
     public function addMember(int $classId, int $employeeId): void
     {
@@ -59,19 +64,7 @@ class QuranClassMemberService
                 ]);
             }
 
-            $activeMemberships = QuranClassMember::query()
-                ->where('employee_id', $employee->id)
-                ->where('is_active', true)
-                ->whereHas('quranClass', fn ($query) => $query->where('company_id', $class->company_id));
-
-            if ($existing?->is_active) {
-                $activeMemberships->whereKeyNot($existing->id);
-            }
-
-            $activeMemberships->update([
-                'is_active' => false,
-                'left_at' => $today,
-            ]);
+            $this->ensureFreeToJoin($class, $employee);
 
             if ($existing) {
                 $oldValues = $this->membershipValues($existing);
@@ -137,6 +130,35 @@ class QuranClassMemberService
         if ((int) $class->company_id !== (int) $employee->company_id) {
             throw (new ModelNotFoundException)->setModel(Employee::class, [$employee->id]);
         }
+    }
+
+    /**
+     * Refuse an employee who is already active in a different class.
+     *
+     * The message names that class, because the person doing the adding is
+     * usually not the person who needs to release them.
+     */
+    private function ensureFreeToJoin(QuranClass $class, Employee $employee): void
+    {
+        /** @var QuranClassMember|null $elsewhere */
+        $elsewhere = QuranClassMember::query()
+            ->with('quranClass')
+            ->where('employee_id', $employee->id)
+            ->where('is_active', true)
+            ->where('class_id', '!=', $class->id)
+            ->whereHas('quranClass', fn ($query) => $query->where('company_id', $class->company_id))
+            ->first();
+
+        if ($elsewhere === null) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'employee_id' => __('quran_classes.already_in_another_class', [
+                'name' => $employee->employee_name,
+                'class' => $elsewhere->quranClass?->class_name ?? '',
+            ]),
+        ]);
     }
 
     /**
