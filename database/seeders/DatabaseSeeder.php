@@ -9,7 +9,8 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      *
-     * Order matters: Companies → Prayers → Permissions → Roles → Users.
+     * Order matters: Companies → Prayers → Permissions → Roles → Users, then the
+     * per-company master data that only exists once its company does.
      */
     public function run(): void
     {
@@ -19,6 +20,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
+            AttendanceReasonSeeder::class,
         ]);
     }
 }

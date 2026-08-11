@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\Status;
-use App\Models\AttendanceReason;
 use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Department;
@@ -21,6 +20,7 @@ use App\Models\QuranProgress;
 use App\Models\QuranStatus;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
+use App\Services\CompanyProvisioningService;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -30,6 +30,10 @@ use Illuminate\Database\Seeder;
  */
 class DemoDataSeeder extends Seeder
 {
+    public function __construct(
+        private readonly CompanyProvisioningService $provisioning,
+    ) {}
+
     public function run(): void
     {
         $company = Company::where('company_code', 'DEMO')->firstOrFail();
@@ -42,7 +46,9 @@ class DemoDataSeeder extends Seeder
         $this->seedLanguages($companyId);
         $quranDepts = $this->seedQuranDepartments($companyId);
         $quranStatuses = $this->seedQuranStatuses($companyId);
-        $attendanceReasons = $this->seedAttendanceReasons($companyId);
+        // Attendance reasons are baseline data for any company, demo or not, so
+        // the demo company gets them from the same place a real one does.
+        $this->provisioning->provision($company);
         $prayers = Prayer::all();
 
         // ── Employees ────────────────────────────────────────────────
@@ -137,27 +143,6 @@ class DemoDataSeeder extends Seeder
             $result[] = QuranDepartment::updateOrCreate(
                 ['company_id' => $companyId, 'department_name' => $name],
                 ['company_id' => $companyId, 'department_name' => $name, 'status' => Status::Active]
-            );
-        }
-
-        return $result;
-    }
-
-    private function seedAttendanceReasons(int $companyId): array
-    {
-        $reasons = [
-            ['reason_name' => 'Absent',     'color' => '#dc3545', 'icon' => 'bi-x-circle',    'counts_as_absent' => true,  'counts_as_leave' => false],
-            ['reason_name' => 'Late',       'color' => '#fd7e14', 'icon' => 'bi-clock',        'counts_as_absent' => false, 'counts_as_leave' => false],
-            ['reason_name' => 'On Leave',   'color' => '#0dcaf0', 'icon' => 'bi-calendar-x',  'counts_as_absent' => false, 'counts_as_leave' => true],
-            ['reason_name' => 'Sick',       'color' => '#6f42c1', 'icon' => 'bi-bandaid',      'counts_as_absent' => false, 'counts_as_leave' => true],
-            ['reason_name' => 'Travelling', 'color' => '#20c997', 'icon' => 'bi-airplane',     'counts_as_absent' => false, 'counts_as_leave' => true],
-        ];
-
-        $result = [];
-        foreach ($reasons as $reason) {
-            $result[] = AttendanceReason::updateOrCreate(
-                ['company_id' => $companyId, 'reason_name' => $reason['reason_name']],
-                array_merge($reason, ['company_id' => $companyId, 'status' => Status::Active])
             );
         }
 

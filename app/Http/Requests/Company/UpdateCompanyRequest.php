@@ -21,7 +21,8 @@ class UpdateCompanyRequest extends FormRequest
         return [
             'company_code' => ['required', 'string', 'max:50', Rule::unique('companies', 'company_code')->ignore($this->route('company'))],
             'company_name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
+            // companies.email is NOT NULL and unique — see StoreCompanyRequest.
+            'email' => ['required', 'email', 'max:255', Rule::unique('companies', 'email')->ignore($this->route('company'))],
             'phone' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
             'city' => ['nullable', 'string', 'max:100'],
