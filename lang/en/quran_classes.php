@@ -20,8 +20,8 @@ return [
     'about_point_3' => 'Attendance can only be recorded for active classes with members.',
     'no_members_text' => 'Enrol members to start recording attendance for this class.',
     'no_available_employees' => 'No employees available',
-    'no_available_employees_text' => 'Every eligible employee is already enrolled in this class.',
-    'add_member_help' => 'Only active employees not already in this class are listed.',
+    'no_available_employees_text' => 'Every eligible employee is already enrolled in a class.',
+    'add_member_help' => 'Only active employees not already in a class are listed.',
 
     // Fields
     'class_code' => 'Class Code',
@@ -77,6 +77,7 @@ return [
     'remove_member' => 'Remove',
     'select_employee' => '-- Select Employee --',
     'joined_at' => 'Joined',
+    'already_in_another_class' => ':name is already an active member of :class. Remove them from that class first.',
     'member_added' => 'Member added successfully.',
     'member_removed' => 'Member removed successfully.',
     'confirm_remove_member' => 'Are you sure you want to remove this member?',

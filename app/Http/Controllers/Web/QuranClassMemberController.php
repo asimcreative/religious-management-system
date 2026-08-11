@@ -9,6 +9,7 @@ use App\Services\QuranClassMemberService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class QuranClassMemberController extends Controller
@@ -24,10 +25,10 @@ class QuranClassMemberController extends Controller
         $quranClass->load(['teacher.employee', 'branch']);
         $activeMembers = $this->service->getActiveMembers($quranClass->id);
 
-        // Employees available to add (active, not already in this class)
-        $activeMemberIds = $activeMembers->pluck('id')->toArray();
+        // An employee belongs to at most one active class, so the ones already
+        // in another are no more available than the ones already in this one.
         $availableEmployees = Employee::active()
-            ->whereNotIn('id', $activeMemberIds)
+            ->withoutActiveQuranClass()
             ->orderBy('employee_name')
             ->get(['id', 'employee_code', 'employee_name']);
 
@@ -53,7 +54,17 @@ class QuranClassMemberController extends Controller
                 ->with('error', __('quran_classes.class_full'));
         }
 
-        $this->service->addMember($quranClass->id, (int) $validated['employee_id']);
+        // An employee already in another class is never offered by the form, so
+        // reaching this is a stale page or a hand-made request. Flash it rather
+        // than rely on the field error: when no employee is free to add, the
+        // form is replaced by an empty state and a field error would go unseen.
+        try {
+            $this->service->addMember($quranClass->id, (int) $validated['employee_id']);
+        } catch (ValidationException $e) {
+            return redirect()
+                ->route('quran-classes.members.index', $quranClass)
+                ->with('error', $e->validator->errors()->first('employee_id'));
+        }
 
         return redirect()
             ->route('quran-classes.members.index', $quranClass)

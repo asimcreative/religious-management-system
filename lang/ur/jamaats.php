@@ -78,6 +78,7 @@ return [
     'members' => 'اراکین',
     'add_member' => 'رکن شامل کریں',
     'remove_member' => 'رکن ہٹائیں',
+    'already_in_another_jamaat' => ':name پہلے ہی :jamaat کا فعال رکن ہے۔ پہلے انہیں اُس جماعت سے ہٹائیں۔',
     'member_added' => 'رکن کامیابی سے جماعت میں شامل ہوا۔',
     'member_removed' => 'رکن کامیابی سے جماعت سے ہٹایا گیا۔',
     'employee' => 'ملازم',

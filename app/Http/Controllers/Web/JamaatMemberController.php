@@ -9,6 +9,7 @@ use App\Services\JamaatMemberService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class JamaatMemberController extends Controller
@@ -23,10 +24,10 @@ class JamaatMemberController extends Controller
 
         $members = $this->service->getActiveMembers($jamaat->id);
 
-        // Get employees not already active in this Jamaat
-        $activeMemberIds = $members->pluck('employee_id')->toArray();
+        // An employee belongs to at most one active jamaat, so the ones already
+        // in another are no more available than the ones already in this one.
         $availableEmployees = Employee::active()
-            ->whereNotIn('id', $activeMemberIds)
+            ->withoutActiveJamaat()
             ->orderBy('employee_name')
             ->get(['id', 'employee_code', 'employee_name']);
 
@@ -46,7 +47,17 @@ class JamaatMemberController extends Controller
             ],
         ]);
 
-        $this->service->addMember($jamaat->id, (int) $validated['employee_id']);
+        // An employee already in another jamaat is never offered by the form, so
+        // reaching this is a stale page or a hand-made request. Flash it rather
+        // than rely on the field error: when no employee is free to add, the
+        // form is replaced by an empty state and a field error would go unseen.
+        try {
+            $this->service->addMember($jamaat->id, (int) $validated['employee_id']);
+        } catch (ValidationException $e) {
+            return redirect()
+                ->route('jamaats.members.index', $jamaat)
+                ->with('error', $e->validator->errors()->first('employee_id'));
+        }
 
         return redirect()
             ->route('jamaats.members.index', $jamaat)

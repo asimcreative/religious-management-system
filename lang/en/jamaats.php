@@ -78,6 +78,7 @@ return [
     'members' => 'Members',
     'add_member' => 'Add Member',
     'remove_member' => 'Remove Member',
+    'already_in_another_jamaat' => ':name is already an active member of :jamaat. Remove them from that jamaat first.',
     'member_added' => 'Member added to Jamaat successfully.',
     'member_removed' => 'Member removed from Jamaat successfully.',
     'employee' => 'Employee',
