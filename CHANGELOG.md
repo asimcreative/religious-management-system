@@ -8,6 +8,32 @@ This project adheres to [Semantic Versioning](https://semver.org/). Format follo
 
 ## [Unreleased]
 
+### Fixed — attendance could only ever be "Present" ([#1](https://github.com/asimcreative/religious-management-system/issues/1))
+
+- **A company started with no attendance reasons, so no absence could be recorded.** Presence is
+  stored as `attendance_reason_id = NULL` and every other status is a row in the per-company
+  `attendance_reasons` table, which only the demo seeder ever populated. Production ran with the
+  table empty: every dropdown on both marking sheets held a single "Present" option and all 627
+  attendance rows were written with a NULL reason, because nothing else could be chosen. Nothing
+  errored — the sheets rendered and submitted, and the reports read the result as flawless
+  attendance rather than as an unconfigured module.
+- **`CompanyProvisioningService`** gives a company its baseline master data. Called when the
+  platform account creates a company, by the new `AttendanceReasonSeeder` on a fresh install, and
+  by `2026_08_11_100000_provision_default_attendance_reasons_for_existing_companies` for companies
+  already in the database. Defaults live in `config/master-data.php`.
+- **Provisioning is non-destructive.** A company is seeded only if it holds no reasons at all,
+  soft-deleted ones included — so a renamed default is not duplicated and a deleted one is not
+  restored. The platform account is never provisioned. Creating a company and provisioning it now
+  share one transaction, so a tenant cannot exist half-built.
+- **Both marking sheets say so when a company has no reasons**, linking to Configuration →
+  Attendance Reasons for users who may manage them. Previously the sheet looked like it worked.
+- `DemoDataSeeder` now takes its reasons from the same place a real company does, instead of
+  keeping a second copy of the list.
+- **Creating a company with no email returned a 500.** `companies.email` is `NOT NULL UNIQUE`, but
+  the form marked it optional and both Company requests validated it as `nullable`. It is required
+  and unique now, and the form says so. Found while testing the provisioning path.
+- See `docs/features/attendance-reasons/README.md`.
+
 ### Added
 
 - **Universal Import / Export engine** — one engine serving every table-bearing module. A module

@@ -19,6 +19,10 @@
     </x-slot:actions>
 </x-page-header>
 
+@if ($reasons->isEmpty())
+    @include('partials.attendance-reasons-missing')
+@endif
+
 {{-- ── Step 1 — choose class and date ──────────────────────────────────── --}}
 <x-card class="mb-3">
     <x-slot:title>

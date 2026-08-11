@@ -8,8 +8,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Company\StoreCompanyRequest;
 use App\Http\Requests\Company\UpdateCompanyRequest;
 use App\Models\Company;
+use App\Services\CompanyProvisioningService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -23,6 +25,7 @@ class CompanyController extends Controller
 {
     public function __construct(
         private readonly CompanyRepositoryInterface $companies,
+        private readonly CompanyProvisioningService $provisioning,
     ) {}
 
     public function index(Request $request): View
@@ -47,7 +50,15 @@ class CompanyController extends Controller
 
     public function store(StoreCompanyRequest $request): RedirectResponse
     {
-        $this->companies->create($request->validated());
+        // A tenant without its baseline master data is not usable — the attendance
+        // sheets can only record "present" until it has attendance reasons — so the
+        // company and its defaults are created together or not at all.
+        DB::transaction(function () use ($request): void {
+            /** @var Company $company */
+            $company = $this->companies->create($request->validated());
+
+            $this->provisioning->provision($company);
+        });
 
         return redirect()
             ->route('companies.index')

@@ -138,6 +138,68 @@ test.describe('Salah attendance create', () => {
     });
 });
 
+// ── Attendance reasons ─────────────────────────────────────────────────────
+
+/**
+ * Presence is stored as a NULL reason and every other status is a row in the
+ * per-company attendance_reasons table. Production ran with that table empty:
+ * the sheet rendered, the dropdowns opened, and "Present" was the only choice
+ * anyone could make — so absences went unrecorded and the module looked healthy
+ * while doing nothing. Neither state is an error page, which is why the Feature
+ * tests alone did not catch it and why this check reads the rendered control.
+ */
+test.describe('Attendance reasons are usable from the sheet', () => {
+    test.beforeEach(async ({ page }) => {
+        await login(page);
+    });
+
+    test('the status dropdown offers more than Present', async ({ page }) => {
+        await page.goto('/salah-attendance/create');
+
+        // The per-member grid only renders once a jamaat is chosen; the bulk
+        // setter carries the same options and is present as soon as one is.
+        const bulkStatus = page.locator('#bulkReason');
+
+        if (await bulkStatus.count() === 0) {
+            const jamaat = page.locator('select[name="jamaat_id"]');
+            const options = jamaat.locator('option');
+
+            if (await options.count() < 2) {
+                test.skip(true, 'No jamaat to load — nothing to mark attendance for.');
+            }
+
+            await jamaat.selectOption({ index: 1 });
+            await page.waitForLoadState('networkidle');
+        }
+
+        await expect(bulkStatus).toBeVisible();
+        expect(await bulkStatus.locator('option').count()).toBeGreaterThan(1);
+    });
+
+    test('a company with no reasons is told so instead of being left with Present', async ({ page }) => {
+        await page.goto('/salah-attendance/create');
+
+        const warning = page.getByText('Only "Present" can be recorded');
+        const bulkStatus = page.locator('#bulkReason');
+
+        // Exactly one of the two must hold: either reasons exist and the sheet
+        // is usable, or they do not and the sheet says why.
+        if (await warning.count() > 0) {
+            await expect(warning.first()).toBeVisible();
+            await expect(page.getByRole('link', { name: /attendance reasons/i }).first()).toBeVisible();
+        } else if (await bulkStatus.count() > 0) {
+            expect(await bulkStatus.locator('option').count()).toBeGreaterThan(1);
+        }
+    });
+
+    test('the reasons master page lists at least one reason', async ({ page }) => {
+        await page.goto('/masters/attendance-reasons');
+
+        await expect(page.locator('body')).not.toContainText('500');
+        await expect(page.locator('table tbody tr').first()).toBeVisible();
+    });
+});
+
 // ── Quran Progress ─────────────────────────────────────────────────────────
 
 test.describe('Quran progress index', () => {

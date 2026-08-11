@@ -41,7 +41,7 @@
 <x-form.section :title="__('companies.contact')" icon="bi-telephone">
     <div class="row">
         <div class="col-md-6">
-            <x-form.input name="email" type="email" :label="__('companies.email')" :value="$company?->email" optional icon="bi-envelope" />
+            <x-form.input name="email" type="email" :label="__('companies.email')" :value="$company?->email" required icon="bi-envelope" />
         </div>
 
         <div class="col-md-6">
