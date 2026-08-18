@@ -59,7 +59,38 @@ class LocaleSwitchTest extends TestCase
             ->get(route('employees.index'))
             ->assertOk()
             ->assertSee(__('employees.employees', [], 'ur'), false)
-            ->assertSee('lang="ur"', false);
+            ->assertSee('lang="ur"', false)
+            ->assertSee('dir="rtl"', false);
+    }
+
+    /**
+     * The `lang` attribute alone does not mirror the layout — the sidebar,
+     * tables and forms only flip once `dir="rtl"` is on `<html>`, which is
+     * what every logical CSS property (inset-inline-start, margin-inline-start,
+     * …) already in the stylesheets keys off. Urdu rendered with `lang="ur"`
+     * but no `dir` attribute is the exact bug this guards: the page reads
+     * Urdu text but keeps a left-to-right layout.
+     */
+    public function test_urdu_renders_right_to_left(): void
+    {
+        $user = $this->createUserWithCompany(['employee.view']);
+        $user->update(['language' => 'ur']);
+
+        $this->actingAs($user)
+            ->get(route('employees.index'))
+            ->assertOk()
+            ->assertSee('dir="rtl"', false);
+    }
+
+    public function test_english_renders_left_to_right(): void
+    {
+        $user = $this->createUserWithCompany(['employee.view']);
+        $user->update(['language' => 'en']);
+
+        $this->actingAs($user)
+            ->get(route('employees.index'))
+            ->assertOk()
+            ->assertSee('dir="ltr"', false);
     }
 
     public function test_switcher_is_offered_before_sign_in(): void
@@ -89,7 +120,8 @@ class LocaleSwitchTest extends TestCase
         // Baseline: default English.
         $this->get(route('login'))
             ->assertOk()
-            ->assertSee('lang="en"', false);
+            ->assertSee('lang="en"', false)
+            ->assertSee('dir="ltr"', false);
 
         // A guest arriving with a locale=ur cookie sees the Urdu login page.
         $this->withoutMiddleware(EncryptCookies::class)
@@ -97,6 +129,7 @@ class LocaleSwitchTest extends TestCase
             ->get(route('login'))
             ->assertOk()
             ->assertSee('lang="ur"', false)
+            ->assertSee('dir="rtl"', false)
             ->assertSee(__('ui.locale_ur', [], 'ur'), false);
     }
 }

@@ -27,6 +27,18 @@ class SetLocale
      */
     public const SUPPORTED_LOCALES = ['en', 'ur'];
 
+    /**
+     * Locales that read right-to-left.
+     *
+     * Not the company-configurable `languages` master data table — that list
+     * is business content (e.g. a teacher's spoken languages) and is never
+     * consulted for the application's own UI direction. This is purely about
+     * which of SUPPORTED_LOCALES needs the page mirrored.
+     *
+     * @var list<string>
+     */
+    public const RTL_LOCALES = ['ur'];
+
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
@@ -42,5 +54,11 @@ class SetLocale
         }
 
         return $next($request);
+    }
+
+    /** "rtl" or "ltr" for the given locale, defaulting to the active one. */
+    public static function direction(?string $locale = null): string
+    {
+        return in_array($locale ?? App::getLocale(), self::RTL_LOCALES, true) ? 'rtl' : 'ltr';
     }
 }

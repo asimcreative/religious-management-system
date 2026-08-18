@@ -6,7 +6,7 @@
     dompdf actually supports (no flexbox, no grid, no custom properties).
 --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Http\Middleware\SetLocale::direction() }}">
 <head>
     <meta charset="utf-8">
     <title>{{ $definition->label() }}</title>

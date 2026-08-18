@@ -91,7 +91,7 @@ a:not(.btn):not(.dropdown-item):not(.nav-link):not(.page-link):hover {
 .skip-link {
     position: fixed;
     top: 0.75rem;
-    left: 0.75rem;
+    inset-inline-start: 0.75rem;
     z-index: 2000;
     padding: 0.625rem 1rem;
     background: var(--rams-primary);
