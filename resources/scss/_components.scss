@@ -1140,15 +1140,24 @@ td > .empty-state { padding-block: 2.5rem; }
 
 // ── Dropdowns ────────────────────────────────────────────────────────────────
 //
-// Bootstrap only right-aligns .dropdown-menu-end via a [data-bs-popper]-gated
-// rule, i.e. only while Popper is actively positioning the menu. The account
-// menu opts out of Popper (data-bs-display="static", to avoid its reflow
-// jank), so without this it falls back to the browser's default static
-// position for an absolutely positioned element — which happened to land
-// acceptably in LTR but hangs off the wrong edge and clips under dir="rtl".
-// Logical properties so it is correct in both directions unconditionally, and
-// harmless for any Popper-managed dropdown: Popper's own inline styles always
-// win over a class rule.
+// Bootstrap's dropdown.js still marks the menu [data-bs-popper] (value
+// "static") even under data-bs-display="static" — only the modifier that
+// writes an inline position is disabled, not the attribute Bootstrap's own
+// CSS keys off. That CSS is physical (right:0;left:auto), so it does not
+// flip for dir="rtl": the account menu (whose trigger sits near the RTL
+// topbar's left edge, since it is last in DOM order and the topbar mirrors)
+// still gets pinned to its container's *physical* right edge and hangs its
+// left portion off the actual left edge of the viewport.
+//
+// Same selector Bootstrap uses ([data-bs-popper], so this wins on source
+// order at equal specificity) but with logical properties, so it resolves
+// correctly in both directions. The unconditional rule below covers the
+// (currently theoretical) case where popper is skipped entirely.
+.dropdown-menu-end[data-bs-popper] {
+    inset-inline-end: 0;
+    inset-inline-start: auto;
+}
+
 .dropdown-menu-end {
     inset-inline-end: 0;
     inset-inline-start: auto;
