@@ -5,6 +5,8 @@ namespace Tests\Feature\Reports;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\QuranAttendance;
+use App\Models\QuranClass;
+use App\Models\QuranTeacherAttendance;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
 use App\Models\User;
@@ -142,6 +144,45 @@ class ReportTest extends TestCase
         $this->assertSame(1, QuranAttendance::count());
     }
 
+    // ── Teacher Attendance Report ──────────────────────────────────────────
+
+    public function test_quran_teacher_attendance_report_requires_permission(): void
+    {
+        $user = $this->createUserWithCompany(['report.dashboard']); // no report.quran
+        $this->actingAs($user)
+            ->get(route('reports.quran-teacher-attendance'))
+            ->assertForbidden();
+    }
+
+    public function test_quran_teacher_attendance_report_accessible(): void
+    {
+        $user = $this->reportAdmin();
+
+        $this->actingAs($user)
+            ->get(route('reports.quran-teacher-attendance'))
+            ->assertOk();
+    }
+
+    public function test_quran_teacher_attendance_report_scoped_to_company(): void
+    {
+        $userA = $this->reportAdmin();
+        $classA = QuranClass::factory()->create(['company_id' => $userA->company_id]);
+        QuranTeacherAttendance::factory()->create([
+            'company_id' => $userA->company_id,
+            'class_id' => $classA->id,
+        ]);
+
+        $companyB = Company::factory()->create();
+        $classB = QuranClass::factory()->create(['company_id' => $companyB->id]);
+        QuranTeacherAttendance::factory()->create([
+            'company_id' => $companyB->id,
+            'class_id' => $classB->id,
+        ]);
+
+        $this->actingAs($userA);
+        $this->assertSame(1, QuranTeacherAttendance::count());
+    }
+
     // ── Salah Attendance Report ───────────────────────────────────────────
 
     public function test_salah_attendance_report_accessible(): void
@@ -214,6 +255,16 @@ class ReportTest extends TestCase
 
         $response = $this->actingAs($user)
             ->get(route('reports.export.salah-attendance'));
+
+        $response->assertOk();
+    }
+
+    public function test_quran_teacher_attendance_export_returns_download(): void
+    {
+        $user = $this->reportAdmin();
+
+        $response = $this->actingAs($user)
+            ->get(route('reports.export.quran-teacher-attendance'));
 
         $response->assertOk();
     }

@@ -2,6 +2,7 @@
 
 use App\Analytics\Definitions\QuranAttendanceAnalytics;
 use App\Analytics\Definitions\QuranProgressAnalytics;
+use App\Analytics\Definitions\QuranTeacherAttendanceAnalytics;
 use App\Analytics\Definitions\SalahAttendanceAnalytics;
 
 return [
@@ -25,6 +26,7 @@ return [
     'datasets' => [
         'salah-attendance' => SalahAttendanceAnalytics::class,
         'quran-attendance' => QuranAttendanceAnalytics::class,
+        'quran-teacher-attendance' => QuranTeacherAttendanceAnalytics::class,
         'quran-progress' => QuranProgressAnalytics::class,
     ],
 

@@ -124,6 +124,7 @@ Route::middleware([
         Route::get('employees', [ReportController::class, 'employees'])->name('employees');
         Route::get('teachers', [ReportController::class, 'teachers'])->name('teachers');
         Route::get('quran-attendance', [ReportController::class, 'quranAttendance'])->name('quran-attendance');
+        Route::get('quran-teacher-attendance', [ReportController::class, 'quranTeacherAttendance'])->name('quran-teacher-attendance');
         Route::get('quran-progress', [ReportController::class, 'quranProgress'])->name('quran-progress');
         Route::get('salah-attendance', [ReportController::class, 'salahAttendance'])->name('salah-attendance');
         Route::get('dashboard', [ReportController::class, 'dashboard'])->name('dashboard');
@@ -141,6 +142,7 @@ Route::middleware([
         Route::get('export/employees', [ReportController::class, 'exportEmployees'])->name('export.employees');
         Route::get('export/teachers', [ReportController::class, 'exportTeachers'])->name('export.teachers');
         Route::get('export/quran-attendance', [ReportController::class, 'exportQuranAttendance'])->name('export.quran-attendance');
+        Route::get('export/quran-teacher-attendance', [ReportController::class, 'exportQuranTeacherAttendance'])->name('export.quran-teacher-attendance');
         Route::get('export/salah-attendance', [ReportController::class, 'exportSalahAttendance'])->name('export.salah-attendance');
     });
 

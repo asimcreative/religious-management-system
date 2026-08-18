@@ -10,6 +10,7 @@ use App\Models\QuranAttendance;
 use App\Models\QuranClass;
 use App\Models\QuranProgress;
 use App\Models\QuranProgressHistory;
+use App\Models\QuranTeacherAttendance;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
 use App\Models\User;
@@ -68,6 +69,12 @@ class RoleDataAccessService
 
         if ($model instanceof QuranAttendance) {
             $this->applyQuranAttendanceScope($query, $user);
+
+            return;
+        }
+
+        if ($model instanceof QuranTeacherAttendance) {
+            $this->applyQuranTeacherAttendanceScope($query, $user);
 
             return;
         }
@@ -172,6 +179,20 @@ class RoleDataAccessService
             || ($this->restrictsEmployeeToSelf($user) && $this->employeeId($user) === $attendance->employee_id)
             || ($this->scopesQuranByBranch($user) && $this->quranClassIsInBranch($user, $attendance->class_id))
             || ($this->scopesQuranByDepartment($user) && $this->employeeIsInDepartment($user, $attendance->employee_id));
+    }
+
+    /**
+     * No per-student self-restriction here (unlike canAccessQuranAttendance) —
+     * this table has no employee_id, it is scoped to the class/teacher.
+     */
+    public function canAccessQuranTeacherAttendance(User $user, QuranTeacherAttendance $attendance): bool
+    {
+        if (! $this->restrictsQuranTeacher($user) && ! $this->scopesQuranByBranch($user)) {
+            return true;
+        }
+
+        return ($this->restrictsQuranTeacher($user) && $this->teacherId($user) === $attendance->teacher_id)
+            || ($this->scopesQuranByBranch($user) && $this->quranClassIsInBranch($user, $attendance->class_id));
     }
 
     public function canAccessQuranProgress(User $user, QuranProgress $progress): bool
@@ -474,6 +495,36 @@ class RoleDataAccessService
                 $conditions[] = static fn (Builder $scope): Builder => $scope->whereHas(
                     'employee',
                     fn (Builder $employee) => $employee->where('employees.department_id', $departmentId),
+                );
+            }
+        }
+
+        $this->applyAnyCondition($query, $conditions, $requiresScope);
+    }
+
+    private function applyQuranTeacherAttendanceScope(Builder $query, User $user): void
+    {
+        $conditions = [];
+        $requiresScope = false;
+        $table = $query->getModel()->getTable();
+
+        if ($this->restrictsQuranTeacher($user)) {
+            $requiresScope = true;
+            $teacherId = $this->teacherId($user);
+
+            if ($teacherId !== null) {
+                $conditions[] = static fn (Builder $scope): Builder => $scope->where($table.'.teacher_id', $teacherId);
+            }
+        }
+
+        if ($this->scopesQuranByBranch($user)) {
+            $requiresScope = true;
+            $branchId = $this->branchId($user);
+
+            if ($branchId !== null) {
+                $conditions[] = static fn (Builder $scope): Builder => $scope->whereHas(
+                    'quranClass',
+                    fn (Builder $quranClass) => $quranClass->where('quran_classes.branch_id', $branchId),
                 );
             }
         }

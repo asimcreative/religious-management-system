@@ -16,6 +16,8 @@ return [
     'salah_attendance_description' => 'Prayer attendance, by prayer, jamaat, leader, location, department or time.',
     'quran_attendance' => 'Quran Attendance',
     'quran_attendance_description' => 'Class attendance, by qari, class, location, department or time.',
+    'quran_teacher_attendance' => 'Teacher Attendance',
+    'quran_teacher_attendance_description' => 'Days each qari did not hold class, by class, location or time.',
     'quran_progress' => 'Quran Progress',
     'quran_progress_description' => 'How far each student has reached, by qari, department, status or location.',
 
@@ -95,6 +97,8 @@ return [
     'measure_completed' => 'Completed',
     'measure_not_started' => 'Not started',
     'measure_completed_rate' => 'Completed %',
+    'measure_teacher_absent_days' => 'Absent Days',
+    'measure_classes_affected' => 'Classes Affected',
 
     'status_present' => 'Present',
     'status_absent' => 'Absent',

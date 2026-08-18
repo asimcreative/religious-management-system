@@ -26,6 +26,7 @@ class QuranAttendanceService extends BaseService
         QuranAttendanceRepositoryInterface $repository,
         private readonly AttendanceLockService $attendanceLockService,
         private readonly AuditLogService $auditLogService,
+        private readonly QuranTeacherAttendanceService $teacherAttendanceService,
     ) {
         parent::__construct($repository);
         $this->attendanceRepository = $repository;
@@ -88,7 +89,10 @@ class QuranAttendanceService extends BaseService
         int $companyId,
         User $actor,
         array $attendanceData,
-        array $remarksData = []
+        array $remarksData = [],
+        bool $teacherAbsent = false,
+        ?int $teacherAbsenceReasonId = null,
+        ?string $teacherAbsenceRemarks = null,
     ): void {
         if (! $this->isDateAllowed($date, $companyId)) {
             throw ValidationException::withMessages([
@@ -96,7 +100,17 @@ class QuranAttendanceService extends BaseService
             ]);
         }
 
-        DB::transaction(function () use ($classId, $date, $companyId, $actor, $attendanceData, $remarksData): void {
+        DB::transaction(function () use (
+            $classId,
+            $date,
+            $companyId,
+            $actor,
+            $attendanceData,
+            $remarksData,
+            $teacherAbsent,
+            $teacherAbsenceReasonId,
+            $teacherAbsenceRemarks,
+        ): void {
             $class = QuranClass::query()->lockForUpdate()->findOrFail($classId);
 
             if ((int) $class->company_id !== $companyId) {
@@ -121,6 +135,20 @@ class QuranAttendanceService extends BaseService
                 ->pluck('employees.id')
                 ->map(static fn ($id): int => (int) $id)
                 ->all();
+
+            if ($teacherAbsent) {
+                if ($class->teacher_id === null) {
+                    throw ValidationException::withMessages([
+                        'teacher_absent' => __('quran_attendance.no_teacher_assigned'),
+                    ]);
+                }
+
+                // The class did not happen: no submitted per-student reason
+                // survives, regardless of what the payload said. This also
+                // closes the gap where a stale/tampered payload could mark a
+                // student absent on a no-class day.
+                $attendanceData = array_fill_keys(array_keys($attendanceData), null);
+            }
 
             $this->validateAttendancePayload($attendanceData, $remarksData, $memberIds, $companyId);
 
@@ -147,8 +175,24 @@ class QuranAttendanceService extends BaseService
                     'teacher_id' => $class->teacher_id,
                     'employee_id' => (int) $employeeId,
                     'attendance_reason_id' => $reasonId ?: null,
+                    'class_held' => ! $teacherAbsent,
                     'remarks' => $remarksData[$employeeId] ?? null,
                 ]);
+            }
+
+            if ($teacherAbsent) {
+                $this->validateTeacherAbsenceReason($teacherAbsenceReasonId, $companyId);
+
+                $this->teacherAttendanceService->markAbsent(
+                    $class,
+                    $date,
+                    $companyId,
+                    (int) $teacherAbsenceReasonId,
+                    $teacherAbsenceRemarks,
+                    $actor,
+                );
+            } else {
+                $this->teacherAttendanceService->clearAbsence($class, $date, $companyId);
             }
 
             if ($lockOverride) {
@@ -216,6 +260,26 @@ class QuranAttendanceService extends BaseService
         if ($validReasonIds !== $reasonIds) {
             throw ValidationException::withMessages([
                 'attendance' => 'The selected attendance reason is invalid.',
+            ]);
+        }
+    }
+
+    /**
+     * Defense-in-depth behind the Form Request's required_if rule — the
+     * service must not trust the controller layer alone, consistent with how
+     * validateAttendancePayload() already re-validates reason IDs server-side.
+     */
+    private function validateTeacherAbsenceReason(?int $reasonId, int $companyId): void
+    {
+        $valid = $reasonId !== null && AttendanceReason::query()
+            ->where('company_id', $companyId)
+            ->where('status', Status::Active->value)
+            ->whereKey($reasonId)
+            ->exists();
+
+        if (! $valid) {
+            throw ValidationException::withMessages([
+                'teacher_absence_reason_id' => 'The selected teacher absence reason is invalid.',
             ]);
         }
     }

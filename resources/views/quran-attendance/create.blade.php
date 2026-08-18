@@ -105,6 +105,48 @@
                     </span>
                 </x-slot:actions>
 
+                {{-- Teacher/qari absence — no student is marked absent when the class itself didn't happen --}}
+                <div class="alert alert-light border teacher-absence-toggle no-print" id="teacherAbsenceBlock">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               name="teacher_absent" id="teacher_absent" value="1"
+                               data-teacher-absent-toggle
+                               @checked($existingTeacherAttendance)
+                               @disabled(! $selectedClass->teacher_id)>
+                        <label class="form-check-label fw-semibold" for="teacher_absent">
+                            {{ __('quran_attendance.teacher_absent_label') }}
+                        </label>
+                    </div>
+                    <p class="text-subtle fs-sm mb-3">{{ __('quran_attendance.teacher_absent_help') }}</p>
+
+                    @if (! $selectedClass->teacher_id)
+                        <div class="alert alert-warning py-2 mb-0">{{ __('quran_attendance.no_teacher_assigned') }}</div>
+                    @else
+                        <div class="row g-3" data-teacher-absent-fields @unless($existingTeacherAttendance) hidden @endunless>
+                            <div class="col-12 col-md-6">
+                                <label for="teacher_absence_reason_id" class="form-label">
+                                    {{ __('quran_attendance.teacher_absence_reason') }}<span class="req" aria-hidden="true">*</span>
+                                </label>
+                                <select name="teacher_absence_reason_id" id="teacher_absence_reason_id"
+                                        class="form-select" data-teacher-absent-required>
+                                    <option value="">{{ __('quran_attendance.select_reason') }}</option>
+                                    @foreach ($reasons as $reason)
+                                        <option value="{{ $reason->id }}" @selected($existingTeacherAttendance?->attendance_reason_id == $reason->id)>
+                                            {{ $reason->reason_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="teacher_absence_remarks" class="form-label">{{ __('quran_attendance.remarks') }}</label>
+                                <input type="text" name="teacher_absence_remarks" id="teacher_absence_remarks"
+                                       class="form-control" maxlength="500"
+                                       value="{{ $existingTeacherAttendance?->remarks }}">
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
                 {{-- Live tally + bulk setter --}}
                 <div class="attendance-summary no-print">
                     <span class="attendance-summary__item">

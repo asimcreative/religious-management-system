@@ -59,9 +59,14 @@ class QuranAttendanceAnalytics extends AbstractAnalyticsDefinition
         return self::TABLE;
     }
 
+    /**
+     * A day the class was not held is not an attendance event — present or
+     * absent — so it is excluded here rather than folded into either measure.
+     * Teacher-side absence is its own dataset (QuranTeacherAttendanceAnalytics).
+     */
     public function query(): Builder
     {
-        return QuranAttendance::query();
+        return QuranAttendance::query()->where('class_held', true);
     }
 
     public function defaultDimension(): string

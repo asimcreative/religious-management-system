@@ -16,6 +16,7 @@ return [
     'employee_report' => 'ملازمین کی رپورٹ',
     'teacher_report' => 'اساتذہ کی رپورٹ',
     'quran_attendance_report' => 'قرآن حاضری رپورٹ',
+    'quran_teacher_attendance_report' => 'استاد حاضری رپورٹ',
     'quran_progress_report' => 'قرآن ترقی رپورٹ',
     'salah_attendance_report' => 'نماز حاضری رپورٹ',
     'dashboard_summary' => 'ڈیش بورڈ خلاصہ',
@@ -70,6 +71,10 @@ return [
     'absent' => 'غیر حاضر',
     'attendance_rate' => 'حاضری کی شرح',
     'prayer_wise_breakdown' => 'نماز وار تفصیل',
+    'teacher_absent_days' => 'استاد کی غیر حاضری کے دن',
+    'teachers_affected' => 'متاثرہ اساتذہ',
+    'absences_by_teacher_month' => 'استاد اور مہینے کے حساب سے غیر حاضری',
+    'month' => 'مہینہ',
 
     // Quran Progress
     'employee' => 'ملازم',
@@ -106,6 +111,7 @@ return [
     'employee_report_desc' => 'شاخ، شعبہ اور حالت کے فلٹرز کے ساتھ ملازمین کی فہرست۔',
     'teacher_report_desc' => 'متعین کلاسوں اور شاخوں کے ساتھ اساتذہ کی فہرست۔',
     'quran_attendance_report_desc' => 'تاریخ اور کلاس فلٹرز کے ساتھ قرآن کلاس حاضری۔',
+    'quran_teacher_attendance_report_desc' => 'ہر قاری کتنے دن غیر حاضر رہا، کلاس اور مہینے کے حساب سے۔',
     'quran_progress_report_desc' => 'شعبہ اور حالت فلٹرز کے ساتھ طلبہ کی قرآنی ترقی۔',
     'salah_attendance_report_desc' => 'جماعت اور نماز فلٹرز کے ساتھ نماز حاضری۔',
     'dashboard_summary_desc' => 'نظام کے مجموعی اعداد و شمار۔',

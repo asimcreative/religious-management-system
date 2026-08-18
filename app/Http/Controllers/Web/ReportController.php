@@ -106,6 +106,31 @@ class ReportController extends Controller
         ]);
     }
 
+    // ── Teacher Attendance Report ─────────────────────────────────
+
+    public function quranTeacherAttendance(Request $request): View
+    {
+        $this->authorize('report.quran');
+
+        $filters = $request->only(['class_id', 'teacher_id', 'date_from', 'date_to']);
+        $attendance = $this->service->teacherAttendanceReport($filters, $this->perPage($request, 50));
+        $monthly = $this->service->teacherAttendanceMonthlySummary($filters);
+
+        $classes = QuranClass::orderBy('class_name')->pluck('class_name', 'id');
+        $teachers = Teacher::with('employee')
+            ->orderBy('teacher_code')
+            ->get()
+            ->mapWithKeys(fn (Teacher $t) => [$t->id => $t->getEmployeeName()]);
+
+        return view('reports.quran-teacher-attendance', [
+            'attendance' => $attendance,
+            'monthly' => $monthly,
+            'classes' => $classes,
+            'teachers' => $teachers,
+            'filters' => $filters,
+        ]);
+    }
+
     // ── Quran Progress Report ─────────────────────────────────────
 
     public function quranProgress(Request $request): View
@@ -199,6 +224,13 @@ class ReportController extends Controller
         $this->authorize('report.quran');
 
         return $this->exportReport($request, 'quran-attendance');
+    }
+
+    public function exportQuranTeacherAttendance(Request $request): BinaryFileResponse|Response
+    {
+        $this->authorize('report.quran');
+
+        return $this->exportReport($request, 'quran-teacher-attendance');
     }
 
     public function exportSalahAttendance(Request $request): BinaryFileResponse|Response

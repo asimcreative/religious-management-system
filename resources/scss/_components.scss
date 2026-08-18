@@ -1502,6 +1502,15 @@ td > .empty-state { padding-block: 2.5rem; }
     tbody > tr.is-absent:hover > * { background-color: var(--rams-danger-soft); }
 }
 
+// Suspended when the teacher/qari is marked absent — the per-student grid is
+// inert (server ignores it), dimmed here so that's visually obvious too.
+.attendance-sheet--suspended {
+    tbody {
+        opacity: .55;
+        pointer-events: none;
+    }
+}
+
 // Wide grids (member × prayer) keep the person column pinned while the
 // prayer columns scroll horizontally — otherwise a row loses its identity.
 .table-pinned {

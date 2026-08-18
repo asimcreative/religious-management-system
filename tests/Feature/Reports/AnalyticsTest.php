@@ -4,6 +4,7 @@ namespace Tests\Feature\Reports;
 
 use App\Analytics\Definitions\QuranAttendanceAnalytics;
 use App\Analytics\Definitions\QuranProgressAnalytics;
+use App\Analytics\Definitions\QuranTeacherAttendanceAnalytics;
 use App\Analytics\Definitions\SalahAttendanceAnalytics;
 use App\Models\AttendanceReason;
 use App\Models\Branch;
@@ -15,6 +16,7 @@ use App\Models\Prayer;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
 use App\Models\QuranProgress;
+use App\Models\QuranTeacherAttendance;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
 use App\Models\User;
@@ -410,6 +412,79 @@ class AnalyticsTest extends TestCase
 
         $this->assertSame('Qari Abdullah', $result->rows[0]->label);
         $this->assertSame(100.0, $result->rows[0]->measures['rate']);
+    }
+
+    public function test_quran_attendance_excludes_days_the_class_was_not_held(): void
+    {
+        // Regression guard for the class_held gotcha: a not-held day has a
+        // NULL attendance_reason_id just like a present day, so it must be
+        // filtered at the query level rather than leaking into "present".
+        $teacher = Teacher::factory()->create(['company_id' => $this->user->company_id]);
+        $class = QuranClass::factory()->create([
+            'company_id' => $this->user->company_id,
+            'teacher_id' => $teacher->id,
+        ]);
+
+        QuranAttendance::factory()->create([
+            'company_id' => $this->user->company_id,
+            'class_id' => $class->id,
+            'teacher_id' => $teacher->id,
+            'employee_id' => $this->employee->id,
+            'attendance_date' => '2026-08-03',
+            'attendance_reason_id' => null,
+            'class_held' => true,
+        ]);
+        QuranAttendance::factory()->create([
+            'company_id' => $this->user->company_id,
+            'class_id' => $class->id,
+            'teacher_id' => $teacher->id,
+            'employee_id' => $this->employee->id,
+            'attendance_date' => '2026-08-04',
+            'attendance_reason_id' => null,
+            'class_held' => false,
+        ]);
+
+        $this->actingAs($this->user);
+        $result = $this->analyse(app(QuranAttendanceAnalytics::class), [], 'teacher');
+
+        $this->assertSame(1.0, $result->totals['records'], 'The not-held day must not count as a record at all.');
+    }
+
+    public function test_quran_teacher_attendance_counts_absent_days_and_classes_affected(): void
+    {
+        $teacherEmployee = Employee::factory()->create([
+            'company_id' => $this->user->company_id,
+            'employee_name' => 'Qari Bilal',
+        ]);
+        $teacher = Teacher::factory()->create([
+            'company_id' => $this->user->company_id,
+            'employee_id' => $teacherEmployee->id,
+        ]);
+        $classA = QuranClass::factory()->create(['company_id' => $this->user->company_id, 'teacher_id' => $teacher->id]);
+        $classB = QuranClass::factory()->create(['company_id' => $this->user->company_id, 'teacher_id' => $teacher->id]);
+        $reason = AttendanceReason::factory()->create(['company_id' => $this->user->company_id]);
+
+        QuranTeacherAttendance::factory()->create([
+            'company_id' => $this->user->company_id,
+            'class_id' => $classA->id,
+            'teacher_id' => $teacher->id,
+            'attendance_reason_id' => $reason->id,
+            'attendance_date' => '2026-08-03',
+        ]);
+        QuranTeacherAttendance::factory()->create([
+            'company_id' => $this->user->company_id,
+            'class_id' => $classB->id,
+            'teacher_id' => $teacher->id,
+            'attendance_reason_id' => $reason->id,
+            'attendance_date' => '2026-08-04',
+        ]);
+
+        $this->actingAs($this->user);
+        $result = $this->analyse(app(QuranTeacherAttendanceAnalytics::class), [], 'teacher');
+
+        $this->assertSame('Qari Bilal', $result->rows[0]->label);
+        $this->assertSame(2.0, $result->rows[0]->measures['absent_days']);
+        $this->assertSame(2.0, $result->rows[0]->measures['classes_affected']);
     }
 
     public function test_quran_progress_bands_completion_and_keeps_a_hundred_per_cent_separate(): void

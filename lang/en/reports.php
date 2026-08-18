@@ -16,6 +16,7 @@ return [
     'employee_report' => 'Employee Report',
     'teacher_report' => 'Teacher Report',
     'quran_attendance_report' => 'Quran Attendance Report',
+    'quran_teacher_attendance_report' => 'Teacher Attendance Report',
     'quran_progress_report' => 'Quran Progress Report',
     'salah_attendance_report' => 'Salah Attendance Report',
     'dashboard_summary' => 'Dashboard Summary',
@@ -70,6 +71,10 @@ return [
     'absent' => 'Absent',
     'attendance_rate' => 'Attendance Rate',
     'prayer_wise_breakdown' => 'Prayer-wise Breakdown',
+    'teacher_absent_days' => 'Teacher Absent Days',
+    'teachers_affected' => 'Teachers Affected',
+    'absences_by_teacher_month' => 'Absences by Teacher & Month',
+    'month' => 'Month',
 
     // Quran Progress
     'employee' => 'Employee',
@@ -106,6 +111,7 @@ return [
     'employee_report_desc' => 'Employee list with branch, department, and status filters.',
     'teacher_report_desc' => 'Teacher list with assigned classes and branches.',
     'quran_attendance_report_desc' => 'Quran class attendance with date and class filters.',
+    'quran_teacher_attendance_report_desc' => 'How many days each qari was absent, by class and month.',
     'quran_progress_report_desc' => 'Student Quran progress with department and status filters.',
     'salah_attendance_report_desc' => 'Salah prayer attendance with Jamaat and prayer filters.',
     'dashboard_summary_desc' => 'Overall system statistics and metrics.',
