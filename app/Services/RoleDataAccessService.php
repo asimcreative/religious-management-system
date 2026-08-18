@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Jamaat;
+use App\Models\JamaatTaleem;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
 use App\Models\QuranProgress;
@@ -93,6 +94,12 @@ class RoleDataAccessService
 
         if ($model instanceof SalahAttendance) {
             $this->applySalahAttendanceScope($query, $user);
+
+            return;
+        }
+
+        if ($model instanceof JamaatTaleem) {
+            $this->applyJamaatTaleemScope($query, $user);
         }
     }
 
@@ -241,6 +248,22 @@ class RoleDataAccessService
                 && in_array($attendance->jamaat_id, $this->allowedJamaatIds($user) ?? [], true))
             || ($this->scopesSalahByBranch($user) && $this->jamaatIsInBranch($user, $attendance->jamaat_id))
             || ($this->scopesSalahByDepartment($user) && $this->employeeIsInDepartment($user, $attendance->employee_id));
+    }
+
+    /**
+     * No per-employee self-restriction or department scoping here (unlike
+     * canAccessSalahAttendance) — this table has no employee_id, it is
+     * scoped to the jamaat.
+     */
+    public function canAccessJamaatTaleem(User $user, JamaatTaleem $taleem): bool
+    {
+        if (! $this->restrictsJamaatLeader($user) && ! $this->scopesSalahByBranch($user)) {
+            return true;
+        }
+
+        return ($this->restrictsJamaatLeader($user)
+                && in_array($taleem->jamaat_id, $this->allowedJamaatIds($user) ?? [], true))
+            || ($this->scopesSalahByBranch($user) && $this->jamaatIsInBranch($user, $taleem->jamaat_id));
     }
 
     /**
@@ -657,6 +680,36 @@ class RoleDataAccessService
                 $conditions[] = static fn (Builder $scope): Builder => $scope->whereHas(
                     'employee',
                     fn (Builder $employee) => $employee->where('employees.department_id', $departmentId),
+                );
+            }
+        }
+
+        $this->applyAnyCondition($query, $conditions, $requiresScope);
+    }
+
+    private function applyJamaatTaleemScope(Builder $query, User $user): void
+    {
+        $conditions = [];
+        $requiresScope = false;
+        $table = $query->getModel()->getTable();
+
+        if ($this->restrictsJamaatLeader($user)) {
+            $requiresScope = true;
+            $allowedJamaatIds = $this->allowedJamaatIds($user);
+
+            if ($allowedJamaatIds !== []) {
+                $conditions[] = static fn (Builder $scope): Builder => $scope->whereIn($table.'.jamaat_id', $allowedJamaatIds ?? []);
+            }
+        }
+
+        if ($this->scopesSalahByBranch($user)) {
+            $requiresScope = true;
+            $branchId = $this->branchId($user);
+
+            if ($branchId !== null) {
+                $conditions[] = static fn (Builder $scope): Builder => $scope->whereHas(
+                    'jamaat',
+                    fn (Builder $jamaat) => $jamaat->where('jamaats.branch_id', $branchId),
                 );
             }
         }

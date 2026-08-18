@@ -58,4 +58,9 @@ class AttendanceReason extends Model
     {
         return $this->hasMany(QuranTeacherAttendance::class);
     }
+
+    public function jamaatTaleems(): HasMany
+    {
+        return $this->hasMany(JamaatTaleem::class);
+    }
 }

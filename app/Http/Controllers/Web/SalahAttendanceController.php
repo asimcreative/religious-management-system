@@ -4,16 +4,17 @@ namespace App\Http\Controllers\Web;
 
 use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SalahAttendance\StoreSalahAttendanceRequest;
 use App\Models\AttendanceReason;
 use App\Models\Jamaat;
 use App\Models\Prayer;
 use App\Models\SalahAttendance;
 use App\Models\User;
 use App\Services\AttendanceLockService;
+use App\Services\JamaatTaleemService;
 use App\Services\SalahAttendanceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SalahAttendanceController extends Controller
@@ -21,6 +22,7 @@ class SalahAttendanceController extends Controller
     public function __construct(
         private readonly SalahAttendanceService $service,
         private readonly AttendanceLockService $attendanceLockService,
+        private readonly JamaatTaleemService $taleemService,
     ) {}
 
     /**
@@ -66,6 +68,7 @@ class SalahAttendanceController extends Controller
 
         $members = collect();
         $existingAttendance = collect();
+        $existingTaleem = null;
         $reasons = AttendanceReason::active()->orderBy('reason_name')->get();
         $selectedJamaat = null;
         $dateAllowed = true;
@@ -81,6 +84,7 @@ class SalahAttendanceController extends Controller
                     (int) $selectedJamaatId,
                     $selectedDate,
                 );
+                $existingTaleem = $this->taleemService->getForJamaatDate((int) $selectedJamaatId, $selectedDate);
                 $dateAllowed = $this->service->isDateAllowed($selectedDate, $companyId);
                 $attendanceLocked = $this->attendanceLockService->isLocked($companyId, $selectedDate);
                 $attendanceReadOnly = $attendanceLocked && ! $user->can('salah.attendance.lock');
@@ -95,6 +99,7 @@ class SalahAttendanceController extends Controller
             'selectedJamaat',
             'members',
             'existingAttendance',
+            'existingTaleem',
             'reasons',
             'dateAllowed',
             'attendanceReadOnly',
@@ -105,32 +110,12 @@ class SalahAttendanceController extends Controller
     /**
      * Save attendance for all prayers in one submission.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreSalahAttendanceRequest $request): RedirectResponse
     {
         /** @var User $user */
         $user = $request->user();
         $companyId = (int) $user->company_id;
-
-        $validated = $request->validate([
-            'jamaat_id' => [
-                'required',
-                Rule::exists('jamaats', 'id')
-                    ->where('company_id', $companyId)
-                    ->whereNull('deleted_at'),
-            ],
-            'date' => ['required', 'date'],
-            'attendance' => ['required', 'array'],
-            'attendance.*' => ['required', 'array'],
-            'attendance.*.*' => [
-                'nullable',
-                Rule::exists('attendance_reasons', 'id')
-                    ->where('company_id', $companyId)
-                    ->where('status', 1)
-                    ->whereNull('deleted_at'),
-            ],
-            'remarks' => ['nullable', 'array'],
-            'remarks.*' => ['nullable', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         // Authorize before any further processing: replacing an existing day's
         // attendance is an update, otherwise it is a create.
@@ -156,7 +141,10 @@ class SalahAttendanceController extends Controller
             $companyId,
             $user,
             $validated['attendance'],
-            $validated['remarks'] ?? []
+            $validated['remarks'] ?? [],
+            (bool) ($validated['taleem_held'] ?? true),
+            $validated['taleem_reason_id'] ?? null,
+            $validated['taleem_remarks'] ?? null,
         );
 
         return redirect()

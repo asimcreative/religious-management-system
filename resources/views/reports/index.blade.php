@@ -29,6 +29,8 @@
          'title' => __('reports.quran_progress_report'), 'desc' => __('reports.quran_progress_report_desc')],
         ['permission' => 'report.salah', 'route' => 'reports.salah-attendance', 'icon' => 'bi-calendar-check', 'tone' => 'primary',
          'title' => __('reports.salah_attendance_report'), 'desc' => __('reports.salah_attendance_report_desc')],
+        ['permission' => 'report.salah', 'route' => 'reports.jamaat-taleem', 'icon' => 'bi-book', 'tone' => 'accent',
+         'title' => __('reports.jamaat_taleem_report'), 'desc' => __('reports.jamaat_taleem_report_desc')],
     ];
 
     // A tile may accept any one of several permissions — the analysis screen

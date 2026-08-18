@@ -106,6 +106,47 @@
                     </span>
                 </x-slot:actions>
 
+                {{-- Taleem — independent of prayer attendance, one record per jamaat per day --}}
+                <div class="alert alert-light border taleem-toggle no-print" id="taleemBlock">
+                    <div class="form-check form-switch">
+                        {{-- Unchecked checkboxes submit nothing, so a hidden "0" ahead of it
+                             guarantees taleem_held is always present in the request; the
+                             checkbox's own "1" wins when it is checked. --}}
+                        <input type="hidden" name="taleem_held" value="0">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               name="taleem_held" id="taleem_held" value="1"
+                               data-taleem-toggle
+                               @checked(! $existingTaleem || $existingTaleem->held)>
+                        <label class="form-check-label fw-semibold" for="taleem_held">
+                            {{ __('salah_attendance.taleem_held_label') }}
+                        </label>
+                    </div>
+                    <p class="text-subtle fs-sm mb-0" data-taleem-help>{{ __('salah_attendance.taleem_held_help') }}</p>
+
+                    <div class="row g-3 mt-1" data-taleem-fields @unless($existingTaleem && ! $existingTaleem->held) hidden @endunless>
+                        <div class="col-12 col-md-6">
+                            <label for="taleem_reason_id" class="form-label">
+                                {{ __('salah_attendance.taleem_reason') }}<span class="req" aria-hidden="true">*</span>
+                            </label>
+                            <select name="taleem_reason_id" id="taleem_reason_id"
+                                    class="form-select" data-taleem-required>
+                                <option value="">{{ __('salah_attendance.taleem_select_reason') }}</option>
+                                @foreach ($reasons as $reason)
+                                    <option value="{{ $reason->id }}" @selected($existingTaleem?->attendance_reason_id == $reason->id)>
+                                        {{ $reason->reason_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="taleem_remarks" class="form-label">{{ __('salah_attendance.remarks') }}</label>
+                            <input type="text" name="taleem_remarks" id="taleem_remarks"
+                                   class="form-control" maxlength="500"
+                                   value="{{ $existingTaleem?->remarks }}">
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Bulk setter: marking a whole prayer at once is the common case --}}
                 <div class="attendance-summary no-print">
                     <span class="attendance-summary__item">

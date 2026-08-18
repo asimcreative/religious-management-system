@@ -731,6 +731,27 @@ function initTeacherAbsenceToggle() {
     });
 }
 
+// Opposite polarity from the teacher-absence toggle: checked is the normal,
+// default state here ("Taleem held"), so the reason field appears when the
+// user *un*checks it, not when they check it. No grid to suspend — Taleem is
+// independent of prayer attendance.
+function initTaleemToggle() {
+    document.querySelectorAll('[data-taleem-toggle]').forEach((toggle) => {
+        const fieldsBlock = document.querySelector('[data-taleem-fields]');
+        const requiredFields = [...document.querySelectorAll('[data-taleem-required]')];
+
+        const sync = () => {
+            const held = toggle.checked;
+
+            fieldsBlock?.toggleAttribute('hidden', held);
+            requiredFields.forEach((field) => field.toggleAttribute('required', !held));
+        };
+
+        toggle.addEventListener('change', sync);
+        sync();
+    });
+}
+
 /* ───────────────────────────────────────────────────────────────────────────
  * 8d. Shell-owned form triggers
  *
@@ -828,6 +849,7 @@ function boot() {
     initDynamicBulkApply();
     initAttendanceTally();
     initTeacherAbsenceToggle();
+    initTaleemToggle();
     initShellForms();
     initAutoDismiss();
     initTooltips();

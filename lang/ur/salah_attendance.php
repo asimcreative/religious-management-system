@@ -22,6 +22,12 @@ return [
     'all_prayers' => 'تمام نمازیں',
     'apply' => 'لاگو کریں',
     'save_hint' => 'جن کے لیے کوئی وجہ منتخب نہیں، وہ حاضر شمار ہوں گے۔',
+
+    // تعلیم
+    'taleem_held_label' => 'آج تعلیم ہوئی',
+    'taleem_held_help' => 'اگر آج تعلیم نہیں ہوئی تو نشان ہٹا کر وجہ بتائیں — یہ اوپر کی نماز حاضری سے الگ ہے۔',
+    'taleem_reason' => 'تعلیم نہ ہونے کی وجہ',
+    'taleem_select_reason' => '-- وجہ منتخب کریں --',
     'date_not_allowed_title' => 'تاریخ اجازت شدہ مدت سے باہر ہے',
     'attendance_locked_title' => 'حاضری مقفل ہے',
     'attendance_history' => 'حاضری کی تاریخ',

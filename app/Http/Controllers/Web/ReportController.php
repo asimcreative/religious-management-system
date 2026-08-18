@@ -188,6 +188,26 @@ class ReportController extends Controller
         ]);
     }
 
+    // ── Jamaat Taleem Report ───────────────────────────────────────
+
+    public function jamaatTaleem(Request $request): View
+    {
+        $this->authorize('report.salah');
+
+        $filters = $request->only(['jamaat_id', 'date_from', 'date_to']);
+        $taleem = $this->service->jamaatTaleemReport($filters, $this->perPage($request, 50));
+        $summary = $this->service->jamaatTaleemSummary($filters);
+
+        $jamaats = Jamaat::orderBy('jamaat_name')->pluck('jamaat_name', 'id');
+
+        return view('reports.jamaat-taleem', [
+            'taleem' => $taleem,
+            'summary' => $summary,
+            'jamaats' => $jamaats,
+            'filters' => $filters,
+        ]);
+    }
+
     // ── Dashboard Summary Report ──────────────────────────────────
 
     public function dashboard(): View
@@ -238,6 +258,13 @@ class ReportController extends Controller
         $this->authorize('report.salah');
 
         return $this->exportReport($request, 'salah-attendance');
+    }
+
+    public function exportJamaatTaleem(Request $request): BinaryFileResponse|Response
+    {
+        $this->authorize('report.salah');
+
+        return $this->exportReport($request, 'jamaat-taleem');
     }
 
     /**

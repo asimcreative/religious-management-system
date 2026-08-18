@@ -127,6 +127,7 @@ Route::middleware([
         Route::get('quran-teacher-attendance', [ReportController::class, 'quranTeacherAttendance'])->name('quran-teacher-attendance');
         Route::get('quran-progress', [ReportController::class, 'quranProgress'])->name('quran-progress');
         Route::get('salah-attendance', [ReportController::class, 'salahAttendance'])->name('salah-attendance');
+        Route::get('jamaat-taleem', [ReportController::class, 'jamaatTaleem'])->name('jamaat-taleem');
         Route::get('dashboard', [ReportController::class, 'dashboard'])->name('dashboard');
 
         // ── Analysis ────────────────────────────────────────────
@@ -144,6 +145,7 @@ Route::middleware([
         Route::get('export/quran-attendance', [ReportController::class, 'exportQuranAttendance'])->name('export.quran-attendance');
         Route::get('export/quran-teacher-attendance', [ReportController::class, 'exportQuranTeacherAttendance'])->name('export.quran-teacher-attendance');
         Route::get('export/salah-attendance', [ReportController::class, 'exportSalahAttendance'])->name('export.salah-attendance');
+        Route::get('export/jamaat-taleem', [ReportController::class, 'exportJamaatTaleem'])->name('export.jamaat-taleem');
     });
 
     // ── Notifications ────────────────────────────────────────────

@@ -19,6 +19,7 @@ return [
     'quran_teacher_attendance_report' => 'استاد حاضری رپورٹ',
     'quran_progress_report' => 'قرآن ترقی رپورٹ',
     'salah_attendance_report' => 'نماز حاضری رپورٹ',
+    'jamaat_taleem_report' => 'جماعت تعلیم رپورٹ',
     'dashboard_summary' => 'ڈیش بورڈ خلاصہ',
 
     // Common
@@ -88,10 +89,17 @@ return [
     'date' => 'تاریخ',
     'class' => 'کلاس',
     'jamaat' => 'جماعت',
+    'leader' => 'امام',
     'prayer' => 'نماز',
     'attendance_status' => 'حاضری کی حالت',
     'reason' => 'وجہ',
     'remarks' => 'ملاحظات',
+
+    // Jamaat Taleem
+    'taleem_held' => 'تعلیم ہوئی',
+    'taleem_not_held' => 'تعلیم نہیں ہوئی',
+    'taleem_rate' => 'تعلیم کی شرح',
+    'taleem_status' => 'حالت',
 
     // Dashboard Summary
     'total_employees' => 'کل ملازمین',
@@ -114,5 +122,6 @@ return [
     'quran_teacher_attendance_report_desc' => 'ہر قاری کتنے دن غیر حاضر رہا، کلاس اور مہینے کے حساب سے۔',
     'quran_progress_report_desc' => 'شعبہ اور حالت فلٹرز کے ساتھ طلبہ کی قرآنی ترقی۔',
     'salah_attendance_report_desc' => 'جماعت اور نماز فلٹرز کے ساتھ نماز حاضری۔',
+    'jamaat_taleem_report_desc' => 'ہر جماعت میں تعلیم کس دن ہوئی، اور نہ ہونے کی صورت میں وجہ کیا رہی۔',
     'dashboard_summary_desc' => 'نظام کے مجموعی اعداد و شمار۔',
 ];
