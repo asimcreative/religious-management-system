@@ -11,7 +11,7 @@ return [
     'empty_title' => 'No jamaats yet',
     'empty_text' => 'Create a jamaat to group members and start recording Salah attendance.',
     'jamaat_number_help' => 'Must be unique within your organisation.',
-    'leadership_hint' => 'A leader is required; a vice leader is optional but recommended.',
+    'leadership_hint' => 'A leader is required; a vice leader is optional but recommended. Only employees not already committed to another jamaat are listed.',
     'about_title' => 'How jamaats work',
     'about_point_1' => 'Each jamaat belongs to one branch.',
     'about_point_2' => 'Members are added separately once the jamaat is saved.',
@@ -73,6 +73,11 @@ return [
     'created_at' => 'Created At',
     'updated_at' => 'Updated At',
     'no_active_members' => 'No active members in this Jamaat.',
+
+    // Leadership eligibility
+    'leadership_conflict_member' => 'This employee is already an active member of :jamaat and cannot lead or deputise for another jamaat.',
+    'leadership_conflict_leader' => 'This employee is already the leader of :jamaat and cannot also lead or deputise for another jamaat.',
+    'leadership_conflict_vice_leader' => 'This employee is already the vice leader of :jamaat and cannot also lead or deputise for another jamaat.',
 
     // Members
     'members' => 'Members',

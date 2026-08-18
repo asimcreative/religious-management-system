@@ -328,6 +328,57 @@ class ModuleImportRulesTest extends TestCase
         $this->assertSame(0, Jamaat::query()->count());
     }
 
+    public function test_a_jamaat_import_row_naming_a_leader_committed_to_another_jamaat_is_rejected(): void
+    {
+        $user = $this->createUserWithCompany();
+        $this->actingAs($user);
+
+        $branch = Branch::factory()->create(['company_id' => $user->company_id, 'branch_name' => 'Main Branch']);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id, 'employee_code' => 'EMP-0001']);
+        Jamaat::factory()->create([
+            'company_id' => $user->company_id,
+            'branch_id' => $branch->id,
+            'jamaat_number' => 'J-EXISTING',
+            'leader_id' => $employee->id,
+        ]);
+
+        $analysis = $this->analyse('jamaats', [
+            ['Jamaat Number', 'Jamaat Name', 'Branch', 'Leader', 'Vice Leader', 'Status'],
+            ['J-02', 'Al-Isha', 'Main Branch', 'EMP-0001', '', 'Active'],
+        ], $user);
+
+        $this->assertSame(1, $analysis->invalidRows);
+        $this->assertSame(1, Jamaat::query()->count(), 'Only the pre-existing jamaat, the rejected row must not be created.');
+    }
+
+    /**
+     * Re-importing an unchanged export of an existing jamaat must not flag
+     * its own leader as "committed elsewhere" — the row's jamaat_number is
+     * how it is told "elsewhere" excludes itself (see Jamaat::leadershipConflictFor()).
+     */
+    public function test_a_jamaat_import_row_does_not_conflict_with_its_own_existing_leader(): void
+    {
+        $user = $this->createUserWithCompany();
+        $this->actingAs($user);
+
+        $branch = Branch::factory()->create(['company_id' => $user->company_id, 'branch_name' => 'Main Branch']);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id, 'employee_code' => 'EMP-0001']);
+        Jamaat::factory()->create([
+            'company_id' => $user->company_id,
+            'branch_id' => $branch->id,
+            'jamaat_number' => 'J-01',
+            'jamaat_name' => 'Al-Fajr',
+            'leader_id' => $employee->id,
+        ]);
+
+        $analysis = $this->analyse('jamaats', [
+            ['Jamaat Number', 'Jamaat Name', 'Branch', 'Leader', 'Vice Leader', 'Status'],
+            ['J-01', 'Al-Fajr', 'Main Branch', 'EMP-0001', '', 'Active'],
+        ], $user);
+
+        $this->assertSame(0, $analysis->invalidRows);
+    }
+
     public function test_a_class_cannot_end_before_it_starts(): void
     {
         $user = $this->createUserWithCompany();

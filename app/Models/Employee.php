@@ -111,6 +111,16 @@ class Employee extends Model
             ->withPivot(['is_active', 'joined_at', 'left_at']);
     }
 
+    public function ledJamaats(): HasMany
+    {
+        return $this->hasMany(Jamaat::class, 'leader_id');
+    }
+
+    public function viceLedJamaats(): HasMany
+    {
+        return $this->hasMany(Jamaat::class, 'vice_leader_id');
+    }
+
     public function quranProgress(): HasOne
     {
         return $this->hasOne(QuranProgress::class);
@@ -177,6 +187,39 @@ class Employee extends Model
     public function scopeWithoutActiveQuranClass(Builder $query): Builder
     {
         return $query->whereDoesntHave('activeQuranClass');
+    }
+
+    /**
+     * Employees eligible to be offered as a jamaat's Leader or Vice Leader.
+     *
+     * Unlike scopeWithoutActiveJamaat() (which excludes an employee from
+     * every jamaat, including their own, because that screen is about
+     * joining), this one is jamaat-aware: pass the jamaat being created or
+     * edited so its own active members — and its own current leader/vice
+     * leader — stay selectable, while commitments to every *other* jamaat
+     * still disqualify.
+     *
+     * @param  Builder<Employee>  $query
+     * @return Builder<Employee>
+     */
+    public function scopeEligibleForJamaatLeadership(Builder $query, ?int $exceptJamaatId = null): Builder
+    {
+        return $query
+            ->whereDoesntHave('activeJamaat', function (Builder $q) use ($exceptJamaatId) {
+                if ($exceptJamaatId !== null) {
+                    $q->where('jamaats.id', '!=', $exceptJamaatId);
+                }
+            })
+            ->whereDoesntHave('ledJamaats', function (Builder $q) use ($exceptJamaatId) {
+                if ($exceptJamaatId !== null) {
+                    $q->where('id', '!=', $exceptJamaatId);
+                }
+            })
+            ->whereDoesntHave('viceLedJamaats', function (Builder $q) use ($exceptJamaatId) {
+                if ($exceptJamaatId !== null) {
+                    $q->where('id', '!=', $exceptJamaatId);
+                }
+            });
     }
 
     public function isActive(): bool

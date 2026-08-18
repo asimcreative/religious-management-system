@@ -99,7 +99,16 @@ class JamaatDefinition extends AbstractResourceDefinition
 
     /**
      * The same person cannot lead and deputise for one jamaat — the same rule
-     * StoreJamaatRequest applies with "different:leader_id".
+     * StoreJamaatRequest applies with "different:leader_id". Nor can either
+     * seat go to someone already an active member, leader or vice leader of
+     * a *different* jamaat — the same rule StoreJamaatRequest/UpdateJamaatRequest
+     * apply via Jamaat::leadershipConflictFor().
+     *
+     * Excludes by this row's own jamaat_number rather than an id: an import
+     * row has no id for a jamaat that doesn't exist yet (create), and even
+     * for an update the row-validation pass here runs before the id of the
+     * matched existing record is threaded through — the natural key is the
+     * only "which jamaat is this row itself" the row can name.
      *
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $context
@@ -114,7 +123,22 @@ class JamaatDefinition extends AbstractResourceDefinition
             return [__('data_transfer.errors.invalid', ['column' => __('jamaats.vice_leader')])];
         }
 
-        return [];
+        $jamaatNumber = $attributes['jamaat_number'] ?? null;
+        $errors = [];
+
+        foreach (['leader_id' => $leader, 'vice_leader_id' => $viceLeader] as $column => $employeeId) {
+            if ($employeeId === null || ! is_numeric($employeeId)) {
+                continue;
+            }
+
+            $conflict = Jamaat::leadershipConflictFor((int) $employeeId, exceptJamaatNumber: $jamaatNumber);
+
+            if ($conflict !== null) {
+                $errors[] = __("jamaats.leadership_conflict_{$conflict['role']}", ['jamaat' => $conflict['jamaat']]);
+            }
+        }
+
+        return $errors;
     }
 
     /** @return array<int, string> */

@@ -68,7 +68,7 @@ class JamaatController extends Controller
 
         return view('jamaats.edit', array_merge(
             ['jamaat' => $jamaat],
-            $this->formData()
+            $this->formData($jamaat->id)
         ));
     }
 
@@ -111,10 +111,11 @@ class JamaatController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function formData(): array
+    private function formData(?int $exceptJamaatId = null): array
     {
         return [
             'employees' => Employee::active()
+                ->eligibleForJamaatLeadership($exceptJamaatId)
                 ->orderBy('employee_name')
                 ->get(['id', 'employee_code', 'employee_name']),
             'branches' => Branch::active()->orderBy('branch_name')->pluck('branch_name', 'id'),
