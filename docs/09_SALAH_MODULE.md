@@ -404,6 +404,14 @@ Company Admin may edit attendance according to Company Settings.
 
 ---
 
+Rule 11
+
+An employee already an active member, leader, or vice leader of one jamaat cannot be made Leader or Vice Leader of a different jamaat.
+
+They remain eligible for the jamaat they are already committed to — see [Leadership Eligibility](features/membership/README.md#leadership-eligibility-jamaat-only).
+
+---
+
 # Future Features
 
 GPS Based Attendance

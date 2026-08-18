@@ -62,3 +62,43 @@ class rules, and company isolation in both directions.
 
 `tests/Playwright/membership.spec.ts` — reads the rendered dropdown on one group's page and asserts
 that no member of another group appears in it.
+
+## Leadership eligibility (Jamaat only)
+
+*Issue [#17](https://github.com/asimcreative/religious-management-system/issues/17)*
+
+A leadership-specific variant of the same idea, for Jamaat's Leader/Vice Leader fields: an employee
+already committed to a jamaat — as an active member, its leader, or its vice leader — must not be
+offered for a *different* jamaat's leadership. Unlike `scopeWithoutActiveJamaat()` above, this one
+is **jamaat-aware**: the jamaat being created or edited stays open to its own members and its own
+current leadership, since there is nothing to protect them from.
+
+`Jamaat::leadershipConflictFor(int $employeeId, ?int $exceptJamaatId, ?string $exceptJamaatNumber)`
+is the single source of truth — it checks active membership *and* leader/vice-leader seats held on
+any other jamaat, and returns which one and in what role, so the caller can name it in the error.
+Two ways to say "except this one":
+
+- `$exceptJamaatId` — the web form's `create()`/`edit()`/`store()`/`update()` know the record (or
+  `null` for `create`, since a brand new jamaat cannot have any members or leadership of its own
+  yet — any commitment anywhere disqualifies).
+- `$exceptJamaatNumber` — the CSV import path only ever has the row's own natural key at
+  `validateRow()` time, not an id (a create row has none yet; an update row's matched-existing-id
+  is not threaded into the row-validation context by the shared import engine). Re-importing an
+  unchanged export of an existing jamaat must not flag its own leader against itself, so the
+  exclusion is keyed on `jamaat_number` there instead.
+
+| Path | Guard |
+| --- | --- |
+| `Employee::scopeEligibleForJamaatLeadership()` | Leader/Vice Leader dropdown options (`JamaatController::formData()`) |
+| `StoreJamaatRequest` / `UpdateJamaatRequest` | `leader_id`/`vice_leader_id` validation (defense-in-depth behind the dropdown) |
+| `JamaatDefinition::validateRow()` | Bulk import |
+
+### Tests
+
+`tests/Feature/Salah/JamaatTest.php` — dropdown exclusion/inclusion on both create and edit, store
+and update validation (rejecting a leader committed elsewhere, allowing a jamaat's own member to be
+promoted to its leader, allowing the current leader to be kept unchanged).
+
+`tests/Feature/DataTransfer/ModuleImportRulesTest.php` — an import row naming a leader committed to
+another jamaat is rejected, and re-importing a jamaat's own unchanged row does not conflict with
+itself.

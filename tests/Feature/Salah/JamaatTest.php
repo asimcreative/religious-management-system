@@ -216,6 +216,162 @@ class JamaatTest extends TestCase
         $this->assertNotSoftDeleted('jamaats', ['id' => $jamaat->id]);
     }
 
+    // ── Leadership eligibility ───────────────────────────────────────────
+    //
+    // An employee already committed to a jamaat — as an active member, its
+    // leader, or its vice leader — must not be offered as Leader/Vice Leader
+    // for a *different* jamaat, but stays fully eligible for the one they are
+    // already committed to.
+
+    public function test_leader_dropdown_excludes_an_employee_active_in_another_jamaat(): void
+    {
+        $user = $this->admin();
+        $other = $this->makeJamaat($user);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $other->members()->attach($employee->id, ['is_active' => true, 'joined_at' => now()]);
+
+        $this->actingAs($user)
+            ->get(route('jamaats.create'))
+            ->assertOk()
+            ->assertViewHas('employees', fn ($employees) => ! $employees->contains('id', $employee->id));
+    }
+
+    public function test_leader_dropdown_excludes_an_employee_who_leads_another_jamaat(): void
+    {
+        $user = $this->admin();
+        $other = $this->makeJamaat($user); // its own leader_id is a fresh employee
+
+        $this->actingAs($user)
+            ->get(route('jamaats.create'))
+            ->assertOk()
+            ->assertViewHas('employees', fn ($employees) => ! $employees->contains('id', $other->leader_id));
+    }
+
+    public function test_edit_dropdown_includes_the_jamaats_own_active_member(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $jamaat->members()->attach($employee->id, ['is_active' => true, 'joined_at' => now()]);
+
+        $this->actingAs($user)
+            ->get(route('jamaats.edit', $jamaat))
+            ->assertOk()
+            ->assertViewHas('employees', fn ($employees) => $employees->contains('id', $employee->id));
+    }
+
+    public function test_edit_dropdown_keeps_the_jamaats_own_current_leader_selectable(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+
+        $this->actingAs($user)
+            ->get(route('jamaats.edit', $jamaat))
+            ->assertOk()
+            ->assertViewHas('employees', fn ($employees) => $employees->contains('id', $jamaat->leader_id));
+    }
+
+    public function test_edit_dropdown_still_excludes_an_employee_committed_to_a_different_jamaat(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+        $other = $this->makeJamaat($user);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $other->members()->attach($employee->id, ['is_active' => true, 'joined_at' => now()]);
+
+        $this->actingAs($user)
+            ->get(route('jamaats.edit', $jamaat))
+            ->assertOk()
+            ->assertViewHas('employees', fn ($employees) => ! $employees->contains('id', $employee->id));
+    }
+
+    public function test_store_rejects_a_leader_who_is_an_active_member_of_another_jamaat(): void
+    {
+        $user = $this->admin();
+        $other = $this->makeJamaat($user);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $other->members()->attach($employee->id, ['is_active' => true, 'joined_at' => now()]);
+
+        $payload = $this->validPayload($user);
+        $payload['leader_id'] = $employee->id;
+
+        $this->actingAs($user)
+            ->post(route('jamaats.store'), $payload)
+            ->assertSessionHasErrors('leader_id');
+    }
+
+    public function test_store_rejects_a_leader_who_already_leads_another_jamaat(): void
+    {
+        $user = $this->admin();
+        $other = $this->makeJamaat($user);
+
+        $payload = $this->validPayload($user);
+        $payload['leader_id'] = $other->leader_id;
+
+        $this->actingAs($user)
+            ->post(route('jamaats.store'), $payload)
+            ->assertSessionHasErrors('leader_id');
+    }
+
+    public function test_store_rejects_a_vice_leader_committed_elsewhere(): void
+    {
+        $user = $this->admin();
+        $other = $this->makeJamaat($user);
+
+        $payload = $this->validPayload($user);
+        $payload['vice_leader_id'] = $other->leader_id;
+
+        $this->actingAs($user)
+            ->post(route('jamaats.store'), $payload)
+            ->assertSessionHasErrors('vice_leader_id');
+    }
+
+    public function test_update_allows_keeping_the_same_leader_unchanged(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+
+        $payload = $this->validPayload($user);
+        $payload['leader_id'] = $jamaat->leader_id;
+
+        $this->actingAs($user)
+            ->put(route('jamaats.update', $jamaat), $payload)
+            ->assertSessionDoesntHaveErrors('leader_id')
+            ->assertRedirect();
+    }
+
+    public function test_update_allows_promoting_the_jamaats_own_member_to_leader(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $jamaat->members()->attach($employee->id, ['is_active' => true, 'joined_at' => now()]);
+
+        $payload = $this->validPayload($user);
+        $payload['leader_id'] = $employee->id;
+
+        $this->actingAs($user)
+            ->put(route('jamaats.update', $jamaat), $payload)
+            ->assertSessionDoesntHaveErrors('leader_id')
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('jamaats', ['id' => $jamaat->id, 'leader_id' => $employee->id]);
+    }
+
+    public function test_update_rejects_switching_leader_to_someone_committed_elsewhere(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+        $other = $this->makeJamaat($user);
+
+        $payload = $this->validPayload($user);
+        $payload['leader_id'] = $other->leader_id;
+
+        $this->actingAs($user)
+            ->put(route('jamaats.update', $jamaat), $payload)
+            ->assertSessionHasErrors('leader_id');
+    }
+
     // ── Members ───────────────────────────────────────────────────────────
 
     public function test_add_member_to_jamaat(): void
