@@ -31,11 +31,16 @@
     // Mobile: off-canvas by default. inset-inline-start already flips to the
     // right edge under dir="rtl"; the hide transform is a physical axis and
     // has to be told to slide off the same edge, or it slides toward the
-    // content instead of off-screen.
-    transform: translateX(-100%);
+    // content instead of off-screen. Scoped to below `lg` — a bare `[dir="rtl"]
+    // &` selector outscopes the lg-breakpoint `transform: none` reset below
+    // (two selectors beats one), which pinned the sidebar off-screen at every
+    // width, desktop included.
+    @include media-breakpoint-down(lg) {
+        transform: translateX(-100%);
 
-    [dir="rtl"] & {
-        transform: translateX(100%);
+        [dir="rtl"] & {
+            transform: translateX(100%);
+        }
     }
 
     @include media-breakpoint-up(lg) {
