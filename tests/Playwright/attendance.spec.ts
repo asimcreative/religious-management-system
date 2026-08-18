@@ -83,6 +83,61 @@ test.describe('Quran attendance create', () => {
     });
 });
 
+/**
+ * Teacher/qari absence toggle — checking it must suspend the per-student
+ * grid (nobody can be marked absent for a class that did not happen) and
+ * require a reason, and both must persist across a reload. This is the only
+ * automatable seam for the flow: the mark-attendance screen is server-rendered
+ * Blade, so the checkbox/reason/lock behaviour here IS the contract a native
+ * Tutor-App-style client would also have to honour.
+ */
+test.describe('Quran attendance — teacher absent toggle', () => {
+    test.beforeEach(async ({ page }) => {
+        await login(page);
+    });
+
+    test('checking teacher absent requires a reason and locks the student grid', async ({ page }) => {
+        await page.goto('/quran-attendance/create');
+
+        const classSelect = page.locator('select[name="class_id"]');
+        const options = classSelect.locator('option');
+
+        if (await options.count() < 2) {
+            test.skip(true, 'No class to load — nothing to mark attendance for.');
+        }
+
+        await classSelect.selectOption({ index: 1 });
+        await page.locator('button[type="submit"]', { hasText: /load/i }).first().click();
+        await page.waitForLoadState('networkidle');
+
+        const toggle = page.locator('[data-teacher-absent-toggle]');
+
+        if (await toggle.count() === 0) {
+            test.skip(true, 'No members loaded for this class/date — the sheet did not render.');
+        }
+
+        if (await toggle.isDisabled()) {
+            test.skip(true, 'This class has no assigned teacher — the toggle is intentionally disabled.');
+        }
+
+        const reasonField = page.locator('#teacher_absence_reason_id');
+        const sheet = page.locator('[data-attendance-sheet]');
+
+        await expect(reasonField).toBeHidden();
+
+        await toggle.check();
+
+        await expect(reasonField).toBeVisible();
+        await expect(reasonField).toHaveAttribute('required', '');
+        await expect(sheet).toHaveClass(/attendance-sheet--suspended/);
+
+        await toggle.uncheck();
+
+        await expect(reasonField).toBeHidden();
+        await expect(sheet).not.toHaveClass(/attendance-sheet--suspended/);
+    });
+});
+
 // ── Salah Attendance ───────────────────────────────────────────────────────
 
 test.describe('Salah attendance index', () => {

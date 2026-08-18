@@ -16,6 +16,7 @@ use App\DataTransfer\Definitions\QuranClassMemberDefinition;
 use App\DataTransfer\Definitions\QuranDepartmentDefinition;
 use App\DataTransfer\Definitions\QuranProgressDefinition;
 use App\DataTransfer\Definitions\QuranStatusDefinition;
+use App\DataTransfer\Definitions\QuranTeacherAttendanceDefinition;
 use App\DataTransfer\Definitions\SalahAttendanceDefinition;
 use App\DataTransfer\Definitions\TeacherDefinition;
 use App\DataTransfer\Definitions\UserDefinition;
@@ -64,6 +65,7 @@ return [
         // Export only — records that must not be created from a file.
         NotificationDefinition::class,
         CompanyDefinition::class,
+        QuranTeacherAttendanceDefinition::class,
     ],
 
     /*

@@ -696,6 +696,41 @@ function initAttendanceTally() {
     });
 }
 
+// Suspends the per-student grid when the teacher/qari is marked absent — the
+// class didn't happen, so no per-student pick is meaningful. Fields stay in
+// the DOM and submittable (inert, not disabled) so the roster-match
+// validation on the server still sees every active member's id.
+function initTeacherAbsenceToggle() {
+    document.querySelectorAll('[data-teacher-absent-toggle]').forEach((toggle) => {
+        const fieldsBlock = document.querySelector('[data-teacher-absent-fields]');
+        const requiredFields = [...document.querySelectorAll('[data-teacher-absent-required]')];
+        const sheet = document.querySelector('[data-attendance-sheet]');
+        const tbody = sheet?.querySelector('tbody');
+        const statusFields = sheet ? [...sheet.querySelectorAll('[data-attendance-field]')] : [];
+
+        const sync = () => {
+            const absent = toggle.checked;
+
+            fieldsBlock?.toggleAttribute('hidden', !absent);
+            requiredFields.forEach((field) => field.toggleAttribute('required', absent));
+
+            sheet?.classList.toggle('attendance-sheet--suspended', absent);
+            if (absent) {
+                tbody?.setAttribute('inert', '');
+                statusFields.forEach((field) => {
+                    field.value = '';
+                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            } else {
+                tbody?.removeAttribute('inert');
+            }
+        };
+
+        toggle.addEventListener('change', sync);
+        sync();
+    });
+}
+
 /* ───────────────────────────────────────────────────────────────────────────
  * 8d. Shell-owned form triggers
  *
@@ -792,6 +827,7 @@ function boot() {
     initBulkApply();
     initDynamicBulkApply();
     initAttendanceTally();
+    initTeacherAbsenceToggle();
     initShellForms();
     initAutoDismiss();
     initTooltips();

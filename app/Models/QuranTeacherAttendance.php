@@ -4,47 +4,34 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\RestrictsRoleDataAccess;
-use Database\Factories\QuranAttendanceFactory;
+use Database\Factories\QuranTeacherAttendanceFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 
-class QuranAttendance extends Model
+class QuranTeacherAttendance extends Model
 {
-    /** @use HasFactory<QuranAttendanceFactory> */
+    /** @use HasFactory<QuranTeacherAttendanceFactory> */
     use BelongsToCompany, HasFactory, RestrictsRoleDataAccess;
 
-    protected $table = 'quran_attendance';
-
-    /**
-     * Mirrors the migration's column default so a freshly created instance
-     * reads as held immediately, without needing a round-trip to the DB —
-     * callers that create a row without passing class_held (i.e. every path
-     * except the teacher-absence flow) still get correct isPresent() results
-     * right away.
-     */
-    protected $attributes = [
-        'class_held' => true,
-    ];
+    protected $table = 'quran_teacher_attendance';
 
     protected $fillable = [
         'company_id',
         'attendance_date',
         'class_id',
         'teacher_id',
-        'employee_id',
         'attendance_reason_id',
-        'class_held',
         'remarks',
+        'created_by',
     ];
 
     protected function casts(): array
     {
         return [
             'attendance_date' => 'date',
-            'class_held' => 'boolean',
         ];
     }
 
@@ -74,11 +61,6 @@ class QuranAttendance extends Model
         return $this->belongsTo(Teacher::class);
     }
 
-    public function employee(): BelongsTo
-    {
-        return $this->belongsTo(Employee::class);
-    }
-
     public function attendanceReason(): BelongsTo
     {
         return $this->belongsTo(AttendanceReason::class);
@@ -101,25 +83,8 @@ class QuranAttendance extends Model
         return $query->where('class_id', $classId);
     }
 
-    public function scopeForEmployee(Builder $query, int $employeeId): Builder
+    public function scopeForTeacher(Builder $query, int $teacherId): Builder
     {
-        return $query->where('employee_id', $employeeId);
-    }
-
-    public function scopeHeld(Builder $query): Builder
-    {
-        return $query->where('class_held', true);
-    }
-
-    // ── Helpers ─────────────────────────────────────────────────────
-
-    public function isClassHeld(): bool
-    {
-        return (bool) $this->class_held;
-    }
-
-    public function isPresent(): bool
-    {
-        return $this->class_held && $this->attendance_reason_id === null;
+        return $query->where('teacher_id', $teacherId);
     }
 }

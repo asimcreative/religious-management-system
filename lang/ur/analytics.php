@@ -16,6 +16,8 @@ return [
     'salah_attendance_description' => 'نماز کی حاضری — نماز، جماعت، امام، مقام، شعبے یا وقت کے حساب سے۔',
     'quran_attendance' => 'قرآن کی حاضری',
     'quran_attendance_description' => 'کلاس کی حاضری — قاری، کلاس، مقام، شعبے یا وقت کے حساب سے۔',
+    'quran_teacher_attendance' => 'استاد کی حاضری',
+    'quran_teacher_attendance_description' => 'ہر قاری کتنے دن کلاس نہیں لے سکا — کلاس، مقام یا وقت کے حساب سے۔',
     'quran_progress' => 'قرآن کی پیشرفت',
     'quran_progress_description' => 'ہر طالبِ علم کہاں تک پہنچا — قاری، شعبے، حیثیت یا مقام کے حساب سے۔',
 
@@ -95,6 +97,8 @@ return [
     'measure_completed' => 'مکمل',
     'measure_not_started' => 'شروع نہیں ہوا',
     'measure_completed_rate' => 'مکمل %',
+    'measure_teacher_absent_days' => 'غیر حاضری کے دن',
+    'measure_classes_affected' => 'متاثرہ کلاسیں',
 
     'status_present' => 'حاضر',
     'status_absent' => 'غیر حاضر',

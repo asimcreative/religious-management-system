@@ -198,6 +198,8 @@ Present
 
 Absent
 
+Class Not Held (system-set — see Scenario 4; not a student-selectable reason, the same shared Attendance Reasons pool remains the only configurable list)
+
 Office Leave
 
 Sick Leave
@@ -245,6 +247,20 @@ Employee joins late.
 Future Feature
 
 Late Attendance.
+
+---
+
+Scenario 4
+
+Teacher/Qari is absent and does not hold the class that day.
+
+Result
+
+No student is marked absent for that date — every student gets a "Class Not Held" record instead, distinct from both Present and Absent.
+
+The teacher's own absence is recorded separately (see [Teacher Attendance Tracking](features/teacher-attendance-tracking/README.md)), with a mandatory reason from the same Attendance Reasons pool.
+
+Marking teacher-absent and marking students absent are mutually exclusive for one class on one day.
 
 ---
 
@@ -555,6 +571,14 @@ Activity Log
 Audit Log
 
 History Record
+
+---
+
+Rule 11
+
+Teacher/qari absence is tracked in its own table (quran_teacher_attendance), separate from student attendance (quran_attendance).
+
+Marking a teacher absent never counts a student as absent for that date — see Scenario 4 above and [Teacher Attendance Tracking](features/teacher-attendance-tracking/README.md).
 
 ---
 

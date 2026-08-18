@@ -15,6 +15,7 @@ use App\Models\QuranDepartment;
 use App\Models\QuranProgress;
 use App\Models\QuranProgressHistory;
 use App\Models\QuranStatus;
+use App\Models\QuranTeacherAttendance;
 use App\Models\SalahAttendance;
 use App\Models\Setting;
 use App\Models\Teacher;
@@ -91,6 +92,7 @@ class AppServiceProvider extends ServiceProvider
             QuranProgress::class,
             QuranProgressHistory::class,
             QuranStatus::class,
+            QuranTeacherAttendance::class,
             SalahAttendance::class,
             Setting::class,
             Teacher::class,

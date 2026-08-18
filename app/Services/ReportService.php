@@ -7,9 +7,11 @@ use App\Models\Jamaat;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
 use App\Models\QuranProgress;
+use App\Models\QuranTeacherAttendance;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Support\Analytics\DateExpression;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -87,6 +89,7 @@ class ReportService
     public function quranAttendanceSummary(array $filters): array
     {
         $query = QuranAttendance::query()
+            ->where('class_held', true)
             ->when($filters['class_id'] ?? null, fn (Builder $q, $v) => $q->where('class_id', $v))
             ->when($filters['teacher_id'] ?? null, fn (Builder $q, $v) => $q->where('teacher_id', $v))
             ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '>=', $v))
@@ -102,6 +105,47 @@ class ReportService
             'absent' => $absent,
             'percentage' => $total > 0 ? round(($present / $total) * 100, 1) : 0,
         ];
+    }
+
+    // ── Teacher Attendance Report ──────────────────────────────────
+
+    public function teacherAttendanceReport(array $filters, int $perPage = 50): LengthAwarePaginator
+    {
+        return QuranTeacherAttendance::query()
+            ->with(['quranClass', 'teacher.employee', 'attendanceReason'])
+            ->when($filters['class_id'] ?? null, fn (Builder $q, $v) => $q->where('class_id', $v))
+            ->when($filters['teacher_id'] ?? null, fn (Builder $q, $v) => $q->where('teacher_id', $v))
+            ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '<=', $v))
+            ->latest('attendance_date')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Absence days per teacher per month — the "jab chahe" pivot: how many
+     * days each qari did not hold class, sliceable by any date range.
+     *
+     * @return Collection<int, object{teacher_id: int, employee_name: string, month: string, absent_days: int}>
+     */
+    public function teacherAttendanceMonthlySummary(array $filters): Collection
+    {
+        return QuranTeacherAttendance::query()
+            ->join('teachers', 'quran_teacher_attendance.teacher_id', '=', 'teachers.id')
+            ->join('employees', 'teachers.employee_id', '=', 'employees.id')
+            ->when($filters['class_id'] ?? null, fn (Builder $q, $v) => $q->where('quran_teacher_attendance.class_id', $v))
+            ->when($filters['teacher_id'] ?? null, fn (Builder $q, $v) => $q->where('quran_teacher_attendance.teacher_id', $v))
+            ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->where('quran_teacher_attendance.attendance_date', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->where('quran_teacher_attendance.attendance_date', '<=', $v))
+            ->selectRaw(
+                'teachers.id as teacher_id, employees.employee_name, '
+                .DateExpression::month('quran_teacher_attendance.attendance_date').' as month, '
+                .'COUNT(*) as absent_days'
+            )
+            ->groupBy('teachers.id', 'employees.employee_name')
+            ->groupByRaw(DateExpression::month('quran_teacher_attendance.attendance_date'))
+            ->orderByDesc('month')
+            ->orderBy('employees.employee_name')
+            ->get();
     }
 
     // ── Salah Attendance Report ───────────────────────────────────

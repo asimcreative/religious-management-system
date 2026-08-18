@@ -23,6 +23,8 @@
          'title' => __('reports.teacher_report'), 'desc' => __('reports.teacher_report_desc')],
         ['permission' => 'report.quran', 'route' => 'reports.quran-attendance', 'icon' => 'bi-journal-check', 'tone' => 'success',
          'title' => __('reports.quran_attendance_report'), 'desc' => __('reports.quran_attendance_report_desc')],
+        ['permission' => 'report.quran', 'route' => 'reports.quran-teacher-attendance', 'icon' => 'bi-person-x', 'tone' => 'danger',
+         'title' => __('reports.quran_teacher_attendance_report'), 'desc' => __('reports.quran_teacher_attendance_report_desc')],
         ['permission' => 'report.quran', 'route' => 'reports.quran-progress', 'icon' => 'bi-graph-up-arrow', 'tone' => 'warning',
          'title' => __('reports.quran_progress_report'), 'desc' => __('reports.quran_progress_report_desc')],
         ['permission' => 'report.salah', 'route' => 'reports.salah-attendance', 'icon' => 'bi-calendar-check', 'tone' => 'primary',

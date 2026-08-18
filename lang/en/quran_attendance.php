@@ -50,6 +50,14 @@ return [
     'select_class' => '-- Select Class --',
     'optional_remarks' => 'Optional remarks...',
 
+    // Teacher/qari absence
+    'teacher_absent_label' => 'Teacher/Qari was absent today',
+    'teacher_absent_help' => 'When checked, no student is marked absent for this class today — only the teacher\'s own absence is recorded.',
+    'teacher_absence_reason' => 'Reason for teacher absence',
+    'select_reason' => '-- Select Reason --',
+    'no_teacher_assigned' => 'This class has no assigned teacher, so a teacher absence cannot be recorded.',
+    'class_not_held' => 'Class Not Held',
+
     // Messages
     'saved' => 'Attendance saved successfully.',
     'date_not_allowed' => 'This date is outside the allowed backdating window.',

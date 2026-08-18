@@ -131,8 +131,8 @@ class DashboardService
 
             $today = Carbon::now(TimezoneHelper::getCompanyTimezone($this->companyId()))->toDateString();
 
-            $total = QuranAttendance::where('attendance_date', $today)->count();
-            $present = QuranAttendance::where('attendance_date', $today)->whereNull('attendance_reason_id')->count();
+            $total = QuranAttendance::where('attendance_date', $today)->where('class_held', true)->count();
+            $present = QuranAttendance::where('attendance_date', $today)->where('class_held', true)->whereNull('attendance_reason_id')->count();
             $absent = $total - $present;
 
             return [
@@ -250,7 +250,7 @@ class DashboardService
             }
 
             if ($canQuran) {
-                foreach ($this->dailyAttendance(QuranAttendance::query(), $start, $end) as $date => $row) {
+                foreach ($this->dailyAttendance(QuranAttendance::query()->where('class_held', true), $start, $end) as $date => $row) {
                     if (isset($days[$date])) {
                         $days[$date]['quran'] = $row;
                     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\QuranAttendance\StoreQuranAttendanceRequest;
 use App\Models\AttendanceReason;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
@@ -11,9 +12,9 @@ use App\Models\Teacher;
 use App\Models\User;
 use App\Services\AttendanceLockService;
 use App\Services\QuranAttendanceService;
+use App\Services\QuranTeacherAttendanceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class QuranAttendanceController extends Controller
@@ -21,6 +22,7 @@ class QuranAttendanceController extends Controller
     public function __construct(
         private readonly QuranAttendanceService $service,
         private readonly AttendanceLockService $attendanceLockService,
+        private readonly QuranTeacherAttendanceService $teacherAttendanceService,
     ) {}
 
     /**
@@ -70,6 +72,7 @@ class QuranAttendanceController extends Controller
 
         $members = collect();
         $existingAttendance = collect();
+        $existingTeacherAttendance = null;
         $reasons = AttendanceReason::active()->orderBy('reason_name')->get();
         $selectedClass = null;
         $dateAllowed = true;
@@ -83,6 +86,8 @@ class QuranAttendanceController extends Controller
                 $members = $selectedClass->activeMembers()->orderBy('employee_name')->get();
                 $existingAttendance = $this->service->getForClassDate((int) $selectedClassId, $selectedDate)
                     ->keyBy('employee_id');
+                $existingTeacherAttendance = $this->teacherAttendanceService
+                    ->getForClassDate((int) $selectedClassId, $selectedDate);
                 $dateAllowed = $this->service->isDateAllowed($selectedDate, $companyId);
                 $attendanceLocked = $this->attendanceLockService->isLocked($companyId, $selectedDate);
                 $attendanceReadOnly = $attendanceLocked && ! $user->can('quran.attendance.lock');
@@ -96,6 +101,7 @@ class QuranAttendanceController extends Controller
             'selectedClass',
             'members',
             'existingAttendance',
+            'existingTeacherAttendance',
             'reasons',
             'dateAllowed',
             'attendanceReadOnly',
@@ -106,32 +112,12 @@ class QuranAttendanceController extends Controller
     /**
      * Save attendance submission.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreQuranAttendanceRequest $request): RedirectResponse
     {
         /** @var User $user */
         $user = $request->user();
         $companyId = (int) $user->company_id;
-
-        $validated = $request->validate([
-            'class_id' => [
-                'required',
-                Rule::exists('quran_classes', 'id')
-                    ->where('company_id', $companyId)
-                    ->whereNull('deleted_at'),
-            ],
-            'date' => ['required', 'date'],
-            'attendance' => ['required', 'array'],
-            'attendance.*' => [
-                'nullable',
-                'integer',
-                Rule::exists('attendance_reasons', 'id')
-                    ->where('company_id', $companyId)
-                    ->where('status', 1)
-                    ->whereNull('deleted_at'),
-            ],
-            'remarks' => ['nullable', 'array'],
-            'remarks.*' => ['nullable', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         // Validate date is within allowed backdate window
         if (! $this->service->isDateAllowed($validated['date'], $companyId)) {
@@ -157,7 +143,10 @@ class QuranAttendanceController extends Controller
             $companyId,
             $user,
             $validated['attendance'],
-            $validated['remarks'] ?? []
+            $validated['remarks'] ?? [],
+            (bool) ($validated['teacher_absent'] ?? false),
+            $validated['teacher_absence_reason_id'] ?? null,
+            $validated['teacher_absence_remarks'] ?? null,
         );
 
         return redirect()

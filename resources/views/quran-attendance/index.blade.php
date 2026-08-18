@@ -113,7 +113,12 @@
                     </td>
 
                     <td data-label="{{ __('quran_attendance.status') }}">
-                        @if ($record->attendanceReason)
+                        @if (! $record->class_held)
+                            <span class="badge-soft badge-soft-info">
+                                <i class="bi bi-calendar-x" aria-hidden="true"></i>
+                                {{ __('quran_attendance.class_not_held') }}
+                            </span>
+                        @elseif ($record->attendanceReason)
                             {{-- The reason colour is configured in Master Data; it tints the
                                  pill while text stays on a readable neutral surface. --}}
                             <span class="badge-soft"
