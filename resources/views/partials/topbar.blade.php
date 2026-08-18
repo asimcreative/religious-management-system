@@ -83,16 +83,16 @@
                 aria-label="{{ __('ui.account_menu') }}">
             <x-avatar :name="$user?->name" />
             <span class="rams-userchip__meta">
-                <strong class="truncate">{{ $user?->name }}</strong>
-                <span class="truncate">{{ $user?->email }}</span>
+                <strong class="truncate" dir="ltr">{{ $user?->name }}</strong>
+                <span class="truncate" dir="ltr">{{ $user?->email }}</span>
             </span>
             <i class="bi bi-chevron-down fs-xs text-soft d-none d-md-inline" aria-hidden="true"></i>
         </button>
 
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu--wide">
             <li class="px-2 pt-1 pb-2 border-bottom border-subtle mb-1">
-                <div class="fw-semibold fs-md truncate">{{ $user?->name }}</div>
-                <div class="fs-xs text-soft truncate">{{ $user?->email }}</div>
+                <div class="fw-semibold fs-md truncate" dir="ltr">{{ $user?->name }}</div>
+                <div class="fs-xs text-soft truncate" dir="ltr">{{ $user?->email }}</div>
             </li>
 
             <li>

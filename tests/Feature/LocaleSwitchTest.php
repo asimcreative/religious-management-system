@@ -93,6 +93,28 @@ class LocaleSwitchTest extends TestCase
             ->assertSee('dir="ltr"', false);
     }
 
+    /**
+     * A person's name and email are identity strings, not translated content
+     * — CSS text-overflow: ellipsis clips from the *line-end* of whatever
+     * direction the containing block has, not from the end of the text's own
+     * script, so under dir="rtl" the account menu was silently dropping the
+     * front of the name ("Demo Admin" showed as "Admin") and email
+     * ("admin@demo.test" showed as "@demo.test") with no visible ellipsis —
+     * it read as data loss, not truncation. Pinning dir="ltr" on the name and
+     * email keeps them a stable, correctly-ordered unit regardless of the
+     * page's own direction, same as every other RTL-aware product does for
+     * usernames/emails.
+     */
+    public function test_account_name_and_email_stay_left_to_right_even_in_urdu(): void
+    {
+        $user = $this->createUserWithCompany(['employee.view']);
+        $user->update(['language' => 'ur', 'name' => 'Demo Admin', 'email' => 'admin@demo.test']);
+
+        $response = $this->actingAs($user)->get(route('dashboard'))->assertOk();
+
+        $response->assertSeeInOrder(['dir="ltr">Demo Admin', 'dir="ltr">admin@demo.test'], false);
+    }
+
     public function test_switcher_is_offered_before_sign_in(): void
     {
         $this->get(route('login'))
