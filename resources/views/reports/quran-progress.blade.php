@@ -52,7 +52,8 @@
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
                 <input type="search" name="search" id="search" class="form-control form-control-sm"
-                       placeholder="{{ __('reports.search_placeholder') }}" value="{{ $filters['search'] ?? '' }}">
+                       placeholder="{{ __('reports.search_placeholder') }}" value="{{ $filters['search'] ?? '' }}"
+                       data-searchable-select-freeform data-employee-options="{{ json_encode($employeeOptions) }}">
             </div>
         </div>
 
@@ -78,7 +79,7 @@
 
         <div class="field field--md">
             <label for="teacher_id" class="form-label">{{ __('reports.teacher') }}</label>
-            <select name="teacher_id" id="teacher_id" class="form-select form-select-sm">
+            <select name="teacher_id" id="teacher_id" class="form-select form-select-sm" data-searchable-select>
                 <option value="">{{ __('reports.all_teachers') }}</option>
                 @foreach ($teachers as $id => $name)
                     <option value="{{ $id }}" @selected(($filters['teacher_id'] ?? '') == $id)>{{ $name }}</option>

@@ -43,6 +43,7 @@ class EmployeeController extends Controller
         $designations = Designation::orderBy('designation_name')->pluck('designation_name', 'id');
         $quranDepartments = QuranDepartment::orderBy('display_order')->pluck('department_name', 'id');
         $quranStatuses = QuranStatus::orderBy('display_order')->pluck('status_name', 'id');
+        $employeeOptions = Employee::searchOptions();
 
         return view('employees.index', compact(
             'employees',
@@ -51,6 +52,7 @@ class EmployeeController extends Controller
             'designations',
             'quranDepartments',
             'quranStatuses',
+            'employeeOptions',
         ));
     }
 

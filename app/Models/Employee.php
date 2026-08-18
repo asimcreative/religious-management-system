@@ -222,6 +222,27 @@ class Employee extends Model
             });
     }
 
+    /**
+     * Every employee this company has recorded, name + code only — feeds the
+     * searchable employee filter on reports and list pages as suggestions.
+     * Deliberately unscoped by status: a search box must still find someone
+     * whose record is currently inactive. This only changes what a filter
+     * suggests while typing, never what a submitted value matches against.
+     *
+     * @return array<int, array{value: string, text: string}>
+     */
+    public static function searchOptions(): array
+    {
+        return static::orderBy('employee_name')
+            ->get(['employee_code', 'employee_name'])
+            ->map(fn (self $employee): array => [
+                'value' => $employee->employee_name,
+                'text' => "{$employee->employee_name} ({$employee->employee_code})",
+            ])
+            ->values()
+            ->all();
+    }
+
     public function isActive(): bool
     {
         return $this->employment_status === Status::Active;

@@ -278,6 +278,8 @@ Multi Select
 
 Searchable Dropdown
 
+Implemented via Tom Select (no jQuery — see `docs/features/searchable-select/README.md`). Used on every employee/teacher picker and every employee-name filter across Reports and Report Analysis.
+
 File Upload
 
 Image Upload

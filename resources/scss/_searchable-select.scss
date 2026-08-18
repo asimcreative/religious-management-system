@@ -1,0 +1,81 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RAMS — Searchable select (Tom Select) retune
+//
+// Employee/teacher pickers use Tom Select so a long roster becomes
+// type-to-filter instead of a scroll-to-find <select> — see ui.js,
+// initSearchableSelect(). Tom Select copies the original <select>'s classes
+// onto its own wrapper, so a `class="form-select"` element already inherits
+// most of RAMS's existing .form-select styling (surface colour, border,
+// focus-visible chevron) with no extra work here.
+//
+// What's left hardcodes Bootstrap's default blue/grey instead of a token —
+// this file re-points those specific rules at RAMS's own design tokens so the
+// widget matches the brand and both themes without duplicating the vendor
+// theme's layout/positioning rules.
+// ─────────────────────────────────────────────────────────────────────────────
+
+.ts-wrapper.focus .ts-control,
+.ts-wrapper.focus.form-select,
+.ts-wrapper.focus.form-control {
+    border-color: var(--rams-primary) !important;
+    box-shadow: var(--rams-ring) !important;
+}
+
+.ts-control,
+.ts-dropdown,
+.ts-control input {
+    color: var(--rams-text);
+}
+
+.ts-control input::placeholder { color: var(--rams-text-subtle); }
+
+.ts-dropdown {
+    background: var(--rams-surface);
+    border-color: var(--rams-border);
+    box-shadow: var(--rams-shadow-md);
+    border-radius: var(--rams-radius);
+}
+
+.ts-dropdown .optgroup-header {
+    color: var(--rams-text-muted);
+    background: var(--rams-surface);
+}
+
+.ts-dropdown .active {
+    background-color: var(--rams-primary-soft);
+    color: var(--rams-primary-text);
+}
+
+.ts-dropdown .no-results,
+.ts-dropdown .create {
+    color: var(--rams-text-muted);
+}
+
+.ts-dropdown [data-selectable] .highlight {
+    background: var(--rams-primary-soft-2);
+    color: inherit;
+}
+
+.ts-wrapper.multi .ts-control > div {
+    background: var(--rams-surface-3);
+    color: var(--rams-text);
+    border-radius: var(--rams-radius-sm);
+}
+
+.ts-wrapper.multi .ts-control > div.active {
+    background: var(--rams-primary);
+    color: var(--rams-text-inverse);
+}
+
+.ts-wrapper.disabled .ts-control {
+    background-color: var(--rams-surface-3) !important;
+    color: var(--rams-text-muted);
+}
+
+// The dropdown_input plugin's in-panel search box — otherwise inherits
+// Bootstrap's plain grey border regardless of theme.
+.plugin-dropdown_input .dropdown-input {
+    border-color: var(--rams-border);
+    color: var(--rams-text);
+    background: var(--rams-surface);
+}

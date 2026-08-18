@@ -50,7 +50,8 @@
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
                 <input type="search" name="search" id="search" class="form-control form-control-sm"
-                       placeholder="{{ __('quran_progress.search_placeholder') }}" value="{{ request('search') }}">
+                       placeholder="{{ __('quran_progress.search_placeholder') }}" value="{{ request('search') }}"
+                       data-searchable-select-freeform data-employee-options="{{ json_encode($employeeOptions) }}">
             </div>
         </div>
 
@@ -76,7 +77,7 @@
 
         <div class="field field--md">
             <label for="filter_teacher" class="form-label">{{ __('quran_progress.teacher') }}</label>
-            <select name="teacher_id" id="filter_teacher" class="form-select form-select-sm">
+            <select name="teacher_id" id="filter_teacher" class="form-select form-select-sm" data-searchable-select>
                 <option value="">{{ __('quran_progress.all_teachers') }}</option>
                 @foreach ($teachers as $id => $name)
                     <option value="{{ $id }}" @selected(request('teacher_id') == $id)>{{ $name }}</option>

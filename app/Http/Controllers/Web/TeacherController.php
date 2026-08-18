@@ -30,8 +30,9 @@ class TeacherController extends Controller
         );
 
         $branches = Branch::orderBy('branch_name')->pluck('branch_name', 'id');
+        $employeeOptions = Employee::searchOptions();
 
-        return view('teachers.index', compact('teachers', 'branches'));
+        return view('teachers.index', compact('teachers', 'branches', 'employeeOptions'));
     }
 
     public function create(): View
