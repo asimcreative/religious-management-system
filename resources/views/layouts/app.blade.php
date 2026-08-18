@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      dir="{{ \App\Http\Middleware\SetLocale::direction() }}"
       data-bs-theme="light"
       data-confirm-title="{{ __('ui.confirm_action') }}"
       data-confirm-accept="{{ __('ui.confirm') }}"

@@ -28,8 +28,15 @@
     transition: width var(--rams-speed) var(--rams-ease),
                 transform var(--rams-speed) var(--rams-ease);
 
-    // Mobile: off-canvas by default
+    // Mobile: off-canvas by default. inset-inline-start already flips to the
+    // right edge under dir="rtl"; the hide transform is a physical axis and
+    // has to be told to slide off the same edge, or it slides toward the
+    // content instead of off-screen.
     transform: translateX(-100%);
+
+    [dir="rtl"] & {
+        transform: translateX(100%);
+    }
 
     @include media-breakpoint-up(lg) {
         transform: none;
