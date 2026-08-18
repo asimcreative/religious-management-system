@@ -1139,6 +1139,21 @@ td > .empty-state { padding-block: 2.5rem; }
 }
 
 // ── Dropdowns ────────────────────────────────────────────────────────────────
+//
+// Bootstrap only right-aligns .dropdown-menu-end via a [data-bs-popper]-gated
+// rule, i.e. only while Popper is actively positioning the menu. The account
+// menu opts out of Popper (data-bs-display="static", to avoid its reflow
+// jank), so without this it falls back to the browser's default static
+// position for an absolutely positioned element — which happened to land
+// acceptably in LTR but hangs off the wrong edge and clips under dir="rtl".
+// Logical properties so it is correct in both directions unconditionally, and
+// harmless for any Popper-managed dropdown: Popper's own inline styles always
+// win over a class rule.
+.dropdown-menu-end {
+    inset-inline-end: 0;
+    inset-inline-start: auto;
+}
+
 .dropdown-menu {
     background: var(--rams-surface);
     border-color: var(--rams-border);
