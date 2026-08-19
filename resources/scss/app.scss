@@ -57,11 +57,20 @@
 // ── 5. Icons ─────────────────────────────────────────────────────────────────
 @import "~bootstrap-icons/font/bootstrap-icons.css";
 
+// ── 5b. Tom Select (searchable dropdowns) ────────────────────────────────────
+// Bootstrap-5 theme: it reuses .form-select/.form-control styling by putting
+// that class on its own wrapper, so most of RAMS's existing input styling
+// applies to it for free — see _searchable-select.scss for the handful of
+// rules (focus ring, dropdown panel, highlighted option) that still hardcode
+// Bootstrap's default blue/grey instead of an overridable token.
+@import "~tom-select/dist/css/tom-select.bootstrap5.css";
+
 // ── 6. RAMS design system ────────────────────────────────────────────────────
 @import "tokens";
 @import "base";
 @import "layout";
 @import "components";
+@import "searchable-select";
 @import "data-transfer";
 @import "utilities";
 

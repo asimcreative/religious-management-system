@@ -67,6 +67,7 @@
                                        :label="__('quran_classes.select_employee')"
                                        :placeholder="__('quran_classes.select_employee')"
                                        :help="__('quran_classes.add_member_help')"
+                                       data-searchable-select
                                        required>
                             @foreach ($availableEmployees as $employee)
                                 <option value="{{ $employee->id }}" @selected((int) old('employee_id') === $employee->id)>

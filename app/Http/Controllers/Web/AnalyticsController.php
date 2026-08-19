@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Exports\AnalyticsExport;
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Services\AnalyticsService;
 use App\Support\Analytics\AbstractAnalyticsDefinition;
 use App\Support\Analytics\AnalyticsRegistry;
@@ -62,6 +63,9 @@ class AnalyticsController extends Controller
             // with layouts.app only, so a child view cannot see it.
             'companyName' => $request->user()?->company?->company_name,
             'generatedAt' => Carbon::now(),
+            // Only datasets built on DescribesEmployees carry an "employee"
+            // filter — skip the query on the ones that don't.
+            'employeeOptions' => isset($dataset->filters()['employee']) ? Employee::searchOptions() : [],
         ]);
     }
 

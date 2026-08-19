@@ -46,6 +46,7 @@
                                    :selected="$teacher?->employee_id"
                                    :placeholder="__('teachers.select')"
                                    :help="__('teachers.select_employee_help')"
+                                   data-searchable-select
                                    required>
                         @if ($teacher?->employee)
                             <option value="{{ $teacher->employee_id }}"

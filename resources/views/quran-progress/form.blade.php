@@ -55,6 +55,7 @@
                                            :label="__('quran_progress.employee')"
                                            :selected="$selectedEmployeeId ?? null"
                                            :placeholder="__('quran_progress.select_employee')"
+                                           data-searchable-select
                                            required>
                                 @foreach ($employees as $employee)
                                     <option value="{{ $employee->id }}"
@@ -72,6 +73,7 @@
                                        :selected="$quranProgress?->teacher_id"
                                        :placeholder="__('quran_progress.select')"
                                        :options="$teachers"
+                                       data-searchable-select
                                        required />
                     </div>
 

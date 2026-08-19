@@ -70,7 +70,7 @@
 
         <div class="field field--md">
             <label for="filter_teacher" class="form-label">{{ __('quran_classes.teacher') }}</label>
-            <select name="teacher_id" id="filter_teacher" class="form-select form-select-sm">
+            <select name="teacher_id" id="filter_teacher" class="form-select form-select-sm" data-searchable-select>
                 <option value="">{{ __('quran_classes.all_teachers') }}</option>
                 @foreach ($teachers as $id => $name)
                     <option value="{{ $id }}" @selected(request('teacher_id') == $id)>{{ $name }}</option>

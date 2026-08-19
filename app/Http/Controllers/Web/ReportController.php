@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Designation;
+use App\Models\Employee;
 use App\Models\Jamaat;
 use App\Models\Prayer;
 use App\Models\QuranClass;
@@ -62,6 +63,7 @@ class ReportController extends Controller
             'departments' => Department::orderBy('department_name')->pluck('department_name', 'id'),
             'designations' => Designation::orderBy('designation_name')->pluck('designation_name', 'id'),
             'filters' => $filters,
+            'employeeOptions' => Employee::searchOptions(),
         ]);
     }
 
@@ -78,6 +80,7 @@ class ReportController extends Controller
             'teachers' => $teachers,
             'branches' => Branch::orderBy('branch_name')->pluck('branch_name', 'id'),
             'filters' => $filters,
+            'employeeOptions' => Employee::searchOptions(),
         ]);
     }
 
@@ -103,6 +106,7 @@ class ReportController extends Controller
             'classes' => $classes,
             'teachers' => $teachers,
             'filters' => $filters,
+            'employeeOptions' => Employee::searchOptions(),
         ]);
     }
 
@@ -153,6 +157,7 @@ class ReportController extends Controller
             'quranStatuses' => $quranStatuses,
             'teachers' => $teachers,
             'filters' => $filters,
+            'employeeOptions' => Employee::searchOptions(),
         ]);
     }
 
@@ -185,6 +190,7 @@ class ReportController extends Controller
             'jamaats' => $jamaats,
             'prayers' => $prayers,
             'filters' => $filters,
+            'employeeOptions' => Employee::searchOptions(),
         ]);
     }
 

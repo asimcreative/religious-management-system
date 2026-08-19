@@ -152,7 +152,11 @@
                                id="f-{{ $filter->key }}"
                                class="form-control form-control-sm"
                                value="{{ $filters[$filter->key] ?? '' }}"
-                               @if ($filter->placeholder) placeholder="{{ $filter->placeholder }}" @endif>
+                               @if ($filter->placeholder) placeholder="{{ $filter->placeholder }}" @endif
+                               @if ($filter->key === 'employee')
+                                   data-searchable-select-freeform
+                                   data-employee-options="{{ json_encode($employeeOptions) }}"
+                               @endif>
                     @endif
                 </div>
             @endforeach

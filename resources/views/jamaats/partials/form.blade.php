@@ -49,6 +49,7 @@
                                    :label="__('jamaats.leader')"
                                    :selected="$jamaat?->leader_id"
                                    :placeholder="__('jamaats.select')"
+                                   data-searchable-select
                                    required>
                         @foreach ($employees as $employee)
                             <option value="{{ $employee->id }}"
@@ -64,6 +65,7 @@
                                    :label="__('jamaats.vice_leader')"
                                    :selected="$jamaat?->vice_leader_id"
                                    :placeholder="__('jamaats.select')"
+                                   data-searchable-select
                                    optional>
                         @foreach ($employees as $employee)
                             <option value="{{ $employee->id }}"

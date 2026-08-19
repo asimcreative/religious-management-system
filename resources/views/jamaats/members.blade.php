@@ -33,6 +33,7 @@
                                    :label="__('jamaats.employee')"
                                    :placeholder="__('jamaats.select_employee')"
                                    :help="__('jamaats.add_member_help')"
+                                   data-searchable-select
                                    required>
                         @foreach ($availableEmployees as $employee)
                             <option value="{{ $employee->id }}" @selected((int) old('employee_id') === $employee->id)>

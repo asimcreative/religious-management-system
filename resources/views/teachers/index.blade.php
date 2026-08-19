@@ -51,7 +51,8 @@
             <div class="input-icon">
                 <i class="bi bi-search" aria-hidden="true"></i>
                 <input type="search" name="search" id="search" class="form-control form-control-sm"
-                       placeholder="{{ __('teachers.search_placeholder') }}" value="{{ request('search') }}">
+                       placeholder="{{ __('teachers.search_placeholder') }}" value="{{ request('search') }}"
+                       data-searchable-select-freeform data-employee-options="{{ json_encode($employeeOptions) }}">
             </div>
         </div>
 

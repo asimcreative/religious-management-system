@@ -36,8 +36,9 @@ class QuranProgressController extends Controller
             ->orderBy('teacher_code')
             ->get()
             ->mapWithKeys(fn (Teacher $t) => [$t->id => $t->getEmployeeName()]);
+        $employeeOptions = Employee::searchOptions();
 
-        return view('quran-progress.index', compact('progress', 'quranDepartments', 'quranStatuses', 'teachers'));
+        return view('quran-progress.index', compact('progress', 'quranDepartments', 'quranStatuses', 'teachers', 'employeeOptions'));
     }
 
     public function show(QuranProgress $quranProgress): View

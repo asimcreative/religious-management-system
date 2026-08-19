@@ -17,7 +17,10 @@
  *   9.  Auto-dismiss   — timed alerts
  *   10. Tooltips       — Bootstrap tooltip bootstrapping
  *   11. Form guard     — warn before leaving a dirty form
+ *   12. Searchable select — Tom Select over employee/teacher pickers
  */
+
+import TomSelect from 'tom-select/popular';
 
 const STORAGE = {
     theme: 'rams.theme',
@@ -811,6 +814,62 @@ function initFormGuard() {
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
+ * 12. Searchable select
+ *
+ * Enhances an ordinary <select> — already fully populated and permission-
+ * scoped server-side — into a type-to-filter picker. No new endpoint, no
+ * change to what gets submitted: the underlying <select> is what posts, Tom
+ * Select only changes how it is browsed. Matches on whatever text each
+ * <option> carries, which is always "name (code)" for employee/teacher
+ * pickers — one box searches both.
+ *
+ * `data-searchable-select-freeform` marks the handful of report search boxes
+ * that used to be a plain <input name="search">: the server still runs the
+ * exact same LIKE query it always did, so typing something that matches no
+ * employee must still submit as free text instead of being rejected — that is
+ * what `create` here allows.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+function initSearchableSelect() {
+    document.querySelectorAll('[data-searchable-select], [data-searchable-select-freeform]').forEach((select) => {
+        if (select.tomselect) return;
+
+        const freeform = select.hasAttribute('data-searchable-select-freeform');
+        const settings = {
+            plugins: ['dropdown_input'],
+            maxOptions: 100,
+            dropdownParent: 'body',
+            create: freeform,
+            createOnBlur: freeform,
+            persist: false,
+        };
+
+        // A plain <select> already carries its own <option>s. A freeform
+        // input has none — its suggestions travel in a JSON attribute
+        // instead, and the field keeps posting whatever text ends up in it
+        // (picked or typed) under its original name either way.
+        if (freeform && select.dataset.employeeOptions) {
+            let options = [];
+            try {
+                options = JSON.parse(select.dataset.employeeOptions);
+            } catch {
+                options = [];
+            }
+
+            Object.assign(settings, {
+                options,
+                valueField: 'value',
+                labelField: 'text',
+                searchField: ['text'],
+                maxItems: 1,
+            });
+        }
+
+        new TomSelect(select, settings);
+    });
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
  * Boot
  * ─────────────────────────────────────────────────────────────────────────── */
 
@@ -832,6 +891,7 @@ function boot() {
     initAutoDismiss();
     initTooltips();
     initFormGuard();
+    initSearchableSelect();
 }
 
 if (document.readyState === 'loading') {
