@@ -22,6 +22,13 @@ return [
     'all_prayers' => 'All prayers',
     'apply' => 'Apply',
     'save_hint' => 'Anyone left without a reason is recorded as present.',
+
+    // Taleem
+    'taleem_held_label' => 'Taleem was held today',
+    'taleem_held_help' => 'Uncheck if Taleem did not happen today, and give a reason — this is separate from prayer attendance above.',
+    'taleem_reason' => 'Reason Taleem was not held',
+    'taleem_select_reason' => '-- Select Reason --',
+
     'date_not_allowed_title' => 'Date outside the allowed window',
     'attendance_locked_title' => 'Attendance is locked',
     'attendance_history' => 'Attendance History',

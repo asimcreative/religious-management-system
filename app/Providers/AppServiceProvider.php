@@ -8,6 +8,7 @@ use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
 use App\Models\Jamaat;
+use App\Models\JamaatTaleem;
 use App\Models\Language;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
@@ -85,6 +86,7 @@ class AppServiceProvider extends ServiceProvider
             Designation::class,
             Employee::class,
             Jamaat::class,
+            JamaatTaleem::class,
             Language::class,
             QuranAttendance::class,
             QuranClass::class,

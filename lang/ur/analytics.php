@@ -14,6 +14,8 @@ return [
     // ── Datasets ────────────────────────────────────────────────────
     'salah_attendance' => 'نماز کی حاضری',
     'salah_attendance_description' => 'نماز کی حاضری — نماز، جماعت، امام، مقام، شعبے یا وقت کے حساب سے۔',
+    'jamaat_taleem' => 'جماعت تعلیم',
+    'jamaat_taleem_description' => 'ہر جماعت میں تعلیم کس دن ہوئی — جماعت، مقام، امام، وجہ یا وقت کے حساب سے۔',
     'quran_attendance' => 'قرآن کی حاضری',
     'quran_attendance_description' => 'کلاس کی حاضری — قاری، کلاس، مقام، شعبے یا وقت کے حساب سے۔',
     'quran_teacher_attendance' => 'استاد کی حاضری',
@@ -99,10 +101,13 @@ return [
     'measure_completed_rate' => 'مکمل %',
     'measure_teacher_absent_days' => 'غیر حاضری کے دن',
     'measure_classes_affected' => 'متاثرہ کلاسیں',
+    'measure_taleem_held' => 'تعلیم ہوئی',
+    'measure_taleem_not_held' => 'تعلیم نہیں ہوئی',
 
     'status_present' => 'حاضر',
     'status_absent' => 'غیر حاضر',
     'present_no_reason' => 'حاضر (کوئی وجہ درج نہیں)',
+    'taleem_held_no_reason' => 'تعلیم ہوئی',
 
     // ── States ──────────────────────────────────────────────────────
     'empty_title' => 'دکھانے کو کچھ نہیں',

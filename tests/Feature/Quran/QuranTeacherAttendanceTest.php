@@ -108,6 +108,45 @@ class QuranTeacherAttendanceTest extends TestCase
         ]);
     }
 
+    /**
+     * Regression guard: markAbsent() used to search via a raw
+     * where($attributes) that never passed attendance_date through the date
+     * cast, while its create half did — re-marking the same class+date
+     * absent a second time with a different reason hit the unique
+     * constraint trying to insert a duplicate row instead of updating.
+     */
+    public function test_remarking_teacher_absent_same_date_updates_the_same_row_rather_than_duplicating(): void
+    {
+        $user = $this->admin();
+        $class = $this->makeClass($user);
+        $employee = $this->addActiveMember($class, $user);
+        $firstReason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $secondReason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $date = $this->attendanceDate();
+
+        $this->actingAs($user)->post(route('quran-attendance.store'), [
+            'date' => $date,
+            'class_id' => $class->id,
+            'attendance' => [$employee->id => null],
+            'teacher_absent' => '1',
+            'teacher_absence_reason_id' => $firstReason->id,
+        ])->assertRedirect();
+
+        $this->actingAs($user)->post(route('quran-attendance.store'), [
+            'date' => $date,
+            'class_id' => $class->id,
+            'attendance' => [$employee->id => null],
+            'teacher_absent' => '1',
+            'teacher_absence_reason_id' => $secondReason->id,
+        ])->assertRedirect();
+
+        $this->assertDatabaseCount('quran_teacher_attendance', 1);
+        $this->assertDatabaseHas('quran_teacher_attendance', [
+            'class_id' => $class->id,
+            'attendance_reason_id' => $secondReason->id,
+        ]);
+    }
+
     public function test_marking_teacher_absent_sets_class_held_false_and_null_reason_on_every_student_row(): void
     {
         $user = $this->admin();

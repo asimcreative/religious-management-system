@@ -26,6 +26,7 @@ class SalahAttendanceService extends BaseService
         SalahAttendanceRepositoryInterface $repository,
         private readonly AttendanceLockService $attendanceLockService,
         private readonly AuditLogService $auditLogService,
+        private readonly JamaatTaleemService $taleemService,
     ) {
         parent::__construct($repository);
         $this->attendanceRepository = $repository;
@@ -99,7 +100,10 @@ class SalahAttendanceService extends BaseService
         int $companyId,
         User $actor,
         array $attendanceData,
-        array $remarksData = []
+        array $remarksData = [],
+        bool $taleemHeld = true,
+        ?int $taleemReasonId = null,
+        ?string $taleemRemarks = null,
     ): void {
         if (! $this->isDateAllowed($date, $companyId)) {
             throw ValidationException::withMessages([
@@ -107,7 +111,17 @@ class SalahAttendanceService extends BaseService
             ]);
         }
 
-        DB::transaction(function () use ($jamaatId, $date, $companyId, $actor, $attendanceData, $remarksData): void {
+        DB::transaction(function () use (
+            $jamaatId,
+            $date,
+            $companyId,
+            $actor,
+            $attendanceData,
+            $remarksData,
+            $taleemHeld,
+            $taleemReasonId,
+            $taleemRemarks,
+        ): void {
             $jamaat = Jamaat::query()->lockForUpdate()->findOrFail($jamaatId);
 
             if ((int) $jamaat->company_id !== $companyId) {
@@ -177,6 +191,22 @@ class SalahAttendanceService extends BaseService
                 }
             }
 
+            // Whether Taleem was held is independent of prayer attendance —
+            // it does not affect who is marked present or absent above.
+            if (! $taleemHeld) {
+                $this->validateTaleemReason($taleemReasonId, $companyId);
+            }
+
+            $this->taleemService->saveForJamaatDate(
+                $jamaat,
+                $date,
+                $companyId,
+                $taleemHeld,
+                $taleemReasonId,
+                $taleemRemarks,
+                $actor,
+            );
+
             if ($lockOverride) {
                 $this->auditLogService->logAttendanceLockOverride(
                     $actor,
@@ -188,6 +218,26 @@ class SalahAttendanceService extends BaseService
                 );
             }
         });
+    }
+
+    /**
+     * Defense-in-depth behind the Form Request's required_if rule — the
+     * service must not trust the controller layer alone, consistent with how
+     * validateAttendancePayload() already re-validates reason IDs server-side.
+     */
+    private function validateTaleemReason(?int $reasonId, int $companyId): void
+    {
+        $valid = $reasonId !== null && AttendanceReason::query()
+            ->where('company_id', $companyId)
+            ->where('status', Status::Active->value)
+            ->whereKey($reasonId)
+            ->exists();
+
+        if (! $valid) {
+            throw ValidationException::withMessages([
+                'taleem_reason_id' => 'The selected Taleem reason is invalid.',
+            ]);
+        }
     }
 
     /**

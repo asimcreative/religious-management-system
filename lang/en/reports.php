@@ -19,6 +19,7 @@ return [
     'quran_teacher_attendance_report' => 'Teacher Attendance Report',
     'quran_progress_report' => 'Quran Progress Report',
     'salah_attendance_report' => 'Salah Attendance Report',
+    'jamaat_taleem_report' => 'Jamaat Taleem Report',
     'dashboard_summary' => 'Dashboard Summary',
 
     // Common
@@ -88,10 +89,17 @@ return [
     'date' => 'Date',
     'class' => 'Class',
     'jamaat' => 'Jamaat',
+    'leader' => 'Leader',
     'prayer' => 'Prayer',
     'attendance_status' => 'Attendance Status',
     'reason' => 'Reason',
     'remarks' => 'Remarks',
+
+    // Jamaat Taleem
+    'taleem_held' => 'Taleem Held',
+    'taleem_not_held' => 'Taleem Not Held',
+    'taleem_rate' => 'Taleem Rate',
+    'taleem_status' => 'Status',
 
     // Dashboard Summary
     'total_employees' => 'Total Employees',
@@ -114,5 +122,6 @@ return [
     'quran_teacher_attendance_report_desc' => 'How many days each qari was absent, by class and month.',
     'quran_progress_report_desc' => 'Student Quran progress with department and status filters.',
     'salah_attendance_report_desc' => 'Salah prayer attendance with Jamaat and prayer filters.',
+    'jamaat_taleem_report_desc' => 'Which days each jamaat held Taleem, and why not when it did not.',
     'dashboard_summary_desc' => 'Overall system statistics and metrics.',
 ];

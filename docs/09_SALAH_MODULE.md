@@ -276,6 +276,8 @@ Yearly Report
 
 Attendance Trend Report
 
+Jamaat Taleem Report
+
 ---
 
 # Search Filters
@@ -409,6 +411,14 @@ Rule 11
 An employee already an active member, leader, or vice leader of one jamaat cannot be made Leader or Vice Leader of a different jamaat.
 
 They remain eligible for the jamaat they are already committed to — see [Leadership Eligibility](features/membership/README.md#leadership-eligibility-jamaat-only).
+
+---
+
+Rule 12
+
+Every jamaat records whether Taleem was held on each day it submits Salah attendance for — one record per jamaat per day, independent of and unaffected by prayer attendance.
+
+A reason is mandatory whenever Taleem was not held. See [Jamaat Taleem Tracking](features/jamaat-taleem/README.md).
 
 ---
 

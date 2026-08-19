@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Employee;
 use App\Models\Jamaat;
+use App\Models\JamaatTaleem;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
 use App\Models\QuranProgress;
@@ -215,6 +216,41 @@ class ReportService
             ->orderBy('prayers.prayer_order')
             ->toBase()
             ->get();
+    }
+
+    // ── Jamaat Taleem Report ───────────────────────────────────────
+
+    public function jamaatTaleemReport(array $filters, int $perPage = 50): LengthAwarePaginator
+    {
+        return JamaatTaleem::query()
+            ->with(['jamaat', 'leader', 'attendanceReason'])
+            ->when($filters['jamaat_id'] ?? null, fn (Builder $q, $v) => $q->where('jamaat_id', $v))
+            ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '<=', $v))
+            ->latest('attendance_date')
+            ->paginate($perPage);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function jamaatTaleemSummary(array $filters): array
+    {
+        $query = JamaatTaleem::query()
+            ->when($filters['jamaat_id'] ?? null, fn (Builder $q, $v) => $q->where('jamaat_id', $v))
+            ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '<=', $v));
+
+        $total = (clone $query)->count();
+        $held = (clone $query)->where('held', true)->count();
+        $notHeld = $total - $held;
+
+        return [
+            'total' => $total,
+            'held' => $held,
+            'not_held' => $notHeld,
+            'percentage' => $total > 0 ? round(($held / $total) * 100, 1) : 0,
+        ];
     }
 
     // ── Quran Progress Report ─────────────────────────────────────

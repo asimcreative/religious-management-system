@@ -1,5 +1,6 @@
 <?php
 
+use App\Analytics\Definitions\JamaatTaleemAnalytics;
 use App\Analytics\Definitions\QuranAttendanceAnalytics;
 use App\Analytics\Definitions\QuranProgressAnalytics;
 use App\Analytics\Definitions\QuranTeacherAttendanceAnalytics;
@@ -25,6 +26,7 @@ return [
 
     'datasets' => [
         'salah-attendance' => SalahAttendanceAnalytics::class,
+        'jamaat-taleem' => JamaatTaleemAnalytics::class,
         'quran-attendance' => QuranAttendanceAnalytics::class,
         'quran-teacher-attendance' => QuranTeacherAttendanceAnalytics::class,
         'quran-progress' => QuranProgressAnalytics::class,

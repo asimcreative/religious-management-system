@@ -8,6 +8,7 @@ use App\DataTransfer\Definitions\DesignationDefinition;
 use App\DataTransfer\Definitions\EmployeeDefinition;
 use App\DataTransfer\Definitions\JamaatDefinition;
 use App\DataTransfer\Definitions\JamaatMemberDefinition;
+use App\DataTransfer\Definitions\JamaatTaleemDefinition;
 use App\DataTransfer\Definitions\LanguageDefinition;
 use App\DataTransfer\Definitions\NotificationDefinition;
 use App\DataTransfer\Definitions\QuranAttendanceDefinition;
@@ -66,6 +67,7 @@ return [
         NotificationDefinition::class,
         CompanyDefinition::class,
         QuranTeacherAttendanceDefinition::class,
+        JamaatTaleemDefinition::class,
     ],
 
     /*

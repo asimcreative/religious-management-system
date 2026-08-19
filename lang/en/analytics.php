@@ -14,6 +14,8 @@ return [
     // ── Datasets ────────────────────────────────────────────────────
     'salah_attendance' => 'Salah Attendance',
     'salah_attendance_description' => 'Prayer attendance, by prayer, jamaat, leader, location, department or time.',
+    'jamaat_taleem' => 'Jamaat Taleem',
+    'jamaat_taleem_description' => 'Which days each jamaat held Taleem, by jamaat, location, leader, reason or time.',
     'quran_attendance' => 'Quran Attendance',
     'quran_attendance_description' => 'Class attendance, by qari, class, location, department or time.',
     'quran_teacher_attendance' => 'Teacher Attendance',
@@ -99,10 +101,13 @@ return [
     'measure_completed_rate' => 'Completed %',
     'measure_teacher_absent_days' => 'Absent Days',
     'measure_classes_affected' => 'Classes Affected',
+    'measure_taleem_held' => 'Taleem Held',
+    'measure_taleem_not_held' => 'Taleem Not Held',
 
     'status_present' => 'Present',
     'status_absent' => 'Absent',
     'present_no_reason' => 'Present (no reason recorded)',
+    'taleem_held_no_reason' => 'Taleem held',
 
     // ── States ──────────────────────────────────────────────────────
     'empty_title' => 'Nothing to show',

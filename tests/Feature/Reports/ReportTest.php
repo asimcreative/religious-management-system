@@ -4,6 +4,8 @@ namespace Tests\Feature\Reports;
 
 use App\Models\Company;
 use App\Models\Employee;
+use App\Models\Jamaat;
+use App\Models\JamaatTaleem;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
 use App\Models\QuranTeacherAttendance;
@@ -206,6 +208,45 @@ class ReportTest extends TestCase
         $this->assertSame(1, SalahAttendance::count());
     }
 
+    // ── Jamaat Taleem Report ────────────────────────────────────────────────
+
+    public function test_jamaat_taleem_report_requires_permission(): void
+    {
+        $user = $this->createUserWithCompany(['report.dashboard']); // no report.salah
+        $this->actingAs($user)
+            ->get(route('reports.jamaat-taleem'))
+            ->assertForbidden();
+    }
+
+    public function test_jamaat_taleem_report_accessible(): void
+    {
+        $user = $this->reportAdmin();
+
+        $this->actingAs($user)
+            ->get(route('reports.jamaat-taleem'))
+            ->assertOk();
+    }
+
+    public function test_jamaat_taleem_report_scoped_to_company(): void
+    {
+        $userA = $this->reportAdmin();
+        $jamaatA = Jamaat::factory()->create(['company_id' => $userA->company_id]);
+        JamaatTaleem::factory()->create([
+            'company_id' => $userA->company_id,
+            'jamaat_id' => $jamaatA->id,
+        ]);
+
+        $companyB = Company::factory()->create();
+        $jamaatB = Jamaat::factory()->create(['company_id' => $companyB->id]);
+        JamaatTaleem::factory()->create([
+            'company_id' => $companyB->id,
+            'jamaat_id' => $jamaatB->id,
+        ]);
+
+        $this->actingAs($userA);
+        $this->assertSame(1, JamaatTaleem::count());
+    }
+
     // ── Excel Export ──────────────────────────────────────────────────────
 
     public function test_employee_excel_export_requires_export_permission(): void
@@ -265,6 +306,16 @@ class ReportTest extends TestCase
 
         $response = $this->actingAs($user)
             ->get(route('reports.export.quran-teacher-attendance'));
+
+        $response->assertOk();
+    }
+
+    public function test_jamaat_taleem_export_returns_download(): void
+    {
+        $user = $this->reportAdmin();
+
+        $response = $this->actingAs($user)
+            ->get(route('reports.export.jamaat-taleem'));
 
         $response->assertOk();
     }
