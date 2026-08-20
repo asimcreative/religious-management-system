@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\QuranAttendanceReason;
+namespace App\Http\Requests\AttendanceReason;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateQuranAttendanceReasonRequest extends FormRequest
+class StoreAttendanceReasonRequest extends FormRequest
 {
     public function authorize(): bool
     {

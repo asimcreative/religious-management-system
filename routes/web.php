@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AttendanceReasonType;
 use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
@@ -14,14 +15,13 @@ use App\Http\Controllers\Web\ImpersonationController;
 use App\Http\Controllers\Web\JamaatController;
 use App\Http\Controllers\Web\JamaatMemberController;
 use App\Http\Controllers\Web\LocaleController;
+use App\Http\Controllers\Web\Masters\AttendanceReasonController;
 use App\Http\Controllers\Web\Masters\BranchController;
 use App\Http\Controllers\Web\Masters\DepartmentController;
 use App\Http\Controllers\Web\Masters\DesignationController;
 use App\Http\Controllers\Web\Masters\LanguageController;
-use App\Http\Controllers\Web\Masters\QuranAttendanceReasonController;
 use App\Http\Controllers\Web\Masters\QuranDepartmentController;
 use App\Http\Controllers\Web\Masters\QuranStatusController;
-use App\Http\Controllers\Web\Masters\SalahAttendanceReasonController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\QuranAttendanceController;
 use App\Http\Controllers\Web\QuranClassController;
@@ -210,11 +210,26 @@ Route::middleware([
         Route::resource('designations', DesignationController::class)->except('show');
         Route::post('designations/{designation}/restore', [DesignationController::class, 'restore'])->name('designations.restore')->withTrashed();
 
-        Route::resource('salah-attendance-reasons', SalahAttendanceReasonController::class)->except('show');
-        Route::post('salah-attendance-reasons/{salah_attendance_reason}/restore', [SalahAttendanceReasonController::class, 'restore'])->name('salah-attendance-reasons.restore')->withTrashed();
+        // One page, tab-switched by {type} (Salah/Quran/Taleem) — each list is
+        // fully independent underneath, but shares one controller/route-set/
+        // view-set. See docs/features/attendance-reasons/README.md.
+        Route::prefix('attendance-reasons')->name('attendance-reasons.')->group(function () {
+            // Zero-param names for ResourceDefinitionContract::indexRoute() — every
+            // "back to list" link in the DataTransfer preview/result/saved-filter
+            // views calls route($name) with no extra parameters. Distinct 3-segment
+            // URIs so they can never collide with the 2-segment {type} wildcard below.
+            Route::get('go/salah', fn () => redirect()->route('masters.attendance-reasons.index', ['type' => AttendanceReasonType::Salah]))->name('salah.index');
+            Route::get('go/quran', fn () => redirect()->route('masters.attendance-reasons.index', ['type' => AttendanceReasonType::Quran]))->name('quran.index');
+            Route::get('go/taleem', fn () => redirect()->route('masters.attendance-reasons.index', ['type' => AttendanceReasonType::Taleem]))->name('taleem.index');
 
-        Route::resource('quran-attendance-reasons', QuranAttendanceReasonController::class)->except('show');
-        Route::post('quran-attendance-reasons/{quran_attendance_reason}/restore', [QuranAttendanceReasonController::class, 'restore'])->name('quran-attendance-reasons.restore')->withTrashed();
+            Route::get('{type}', [AttendanceReasonController::class, 'index'])->name('index');
+            Route::get('{type}/create', [AttendanceReasonController::class, 'create'])->name('create');
+            Route::post('{type}', [AttendanceReasonController::class, 'store'])->name('store');
+            Route::get('{type}/{attendance_reason}/edit', [AttendanceReasonController::class, 'edit'])->name('edit');
+            Route::put('{type}/{attendance_reason}', [AttendanceReasonController::class, 'update'])->name('update');
+            Route::delete('{type}/{attendance_reason}', [AttendanceReasonController::class, 'destroy'])->name('destroy');
+            Route::post('{type}/{attendance_reason}/restore', [AttendanceReasonController::class, 'restore'])->name('restore')->withTrashed();
+        });
 
         Route::resource('quran-departments', QuranDepartmentController::class)->except('show');
         Route::post('quran-departments/{quran_department}/restore', [QuranDepartmentController::class, 'restore'])->name('quran-departments.restore')->withTrashed();

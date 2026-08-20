@@ -55,6 +55,7 @@ class UiSmokeTest extends TestCase
         $designation = Designation::factory()->create(['company_id' => $companyId]);
         $salahReason = AttendanceReason::factory()->salah()->create(['company_id' => $companyId]);
         $quranReason = AttendanceReason::factory()->quran()->create(['company_id' => $companyId]);
+        $taleemReason = AttendanceReason::factory()->taleem()->create(['company_id' => $companyId]);
         $quranDepartment = QuranDepartment::factory()->create(['company_id' => $companyId]);
         $quranStatus = QuranStatus::factory()->create(['company_id' => $companyId]);
         $language = Language::factory()->create(['company_id' => $companyId]);
@@ -153,12 +154,15 @@ class UiSmokeTest extends TestCase
             route('masters.designations.index'),
             route('masters.designations.create'),
             route('masters.designations.edit', $designation),
-            route('masters.salah-attendance-reasons.index'),
-            route('masters.salah-attendance-reasons.create'),
-            route('masters.salah-attendance-reasons.edit', $salahReason),
-            route('masters.quran-attendance-reasons.index'),
-            route('masters.quran-attendance-reasons.create'),
-            route('masters.quran-attendance-reasons.edit', $quranReason),
+            route('masters.attendance-reasons.index', ['type' => 'salah']),
+            route('masters.attendance-reasons.create', ['type' => 'salah']),
+            route('masters.attendance-reasons.edit', ['type' => 'salah', 'attendance_reason' => $salahReason]),
+            route('masters.attendance-reasons.index', ['type' => 'quran']),
+            route('masters.attendance-reasons.create', ['type' => 'quran']),
+            route('masters.attendance-reasons.edit', ['type' => 'quran', 'attendance_reason' => $quranReason]),
+            route('masters.attendance-reasons.index', ['type' => 'taleem']),
+            route('masters.attendance-reasons.create', ['type' => 'taleem']),
+            route('masters.attendance-reasons.edit', ['type' => 'taleem', 'attendance_reason' => $taleemReason]),
             route('masters.quran-departments.index'),
             route('masters.quran-departments.create'),
             route('masters.quran-departments.edit', $quranDepartment),

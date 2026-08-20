@@ -71,6 +71,7 @@ class SalahAttendanceController extends Controller
         $existingAttendance = collect();
         $existingTaleem = null;
         $reasons = AttendanceReason::active()->ofType(AttendanceReasonType::Salah)->orderBy('reason_name')->get();
+        $taleemReasons = AttendanceReason::active()->ofType(AttendanceReasonType::Taleem)->orderBy('reason_name')->get();
         $selectedJamaat = null;
         $dateAllowed = true;
         $attendanceReadOnly = false;
@@ -102,6 +103,7 @@ class SalahAttendanceController extends Controller
             'existingAttendance',
             'existingTaleem',
             'reasons',
+            'taleemReasons',
             'dateAllowed',
             'attendanceReadOnly',
             'maxDate',

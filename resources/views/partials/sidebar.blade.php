@@ -71,8 +71,7 @@
                 ['permission' => 'branch.manage', 'route' => 'masters.branches.index', 'active' => 'masters.branches.*', 'icon' => 'bi-building', 'label' => __('masters.branches')],
                 ['permission' => 'department.manage', 'route' => 'masters.departments.index', 'active' => 'masters.departments.*', 'icon' => 'bi-diagram-3', 'label' => __('masters.departments')],
                 ['permission' => 'designation.manage', 'route' => 'masters.designations.index', 'active' => 'masters.designations.*', 'icon' => 'bi-award', 'label' => __('masters.designations')],
-                ['permission' => 'attendance_reason.manage', 'route' => 'masters.salah-attendance-reasons.index', 'active' => 'masters.salah-attendance-reasons.*', 'icon' => 'bi-chat-left-text', 'label' => __('masters.salah_attendance_reasons')],
-                ['permission' => 'attendance_reason.manage', 'route' => 'masters.quran-attendance-reasons.index', 'active' => 'masters.quran-attendance-reasons.*', 'icon' => 'bi-chat-square-text', 'label' => __('masters.quran_attendance_reasons')],
+                ['permission' => 'attendance_reason.manage', 'route' => 'masters.attendance-reasons.index', 'params' => ['type' => 'salah'], 'active' => 'masters.attendance-reasons.*', 'icon' => 'bi-chat-left-text', 'label' => __('masters.attendance_reasons')],
                 ['permission' => 'quran_department.manage', 'route' => 'masters.quran-departments.index', 'active' => 'masters.quran-departments.*', 'icon' => 'bi-bookmarks', 'label' => __('masters.quran_departments')],
                 ['permission' => 'quran_status.manage', 'route' => 'masters.quran-statuses.index', 'active' => 'masters.quran-statuses.*', 'icon' => 'bi-patch-check', 'label' => __('masters.quran_statuses')],
                 ['permission' => 'language.manage', 'route' => 'masters.languages.index', 'active' => 'masters.languages.*', 'icon' => 'bi-translate', 'label' => __('masters.languages')],
@@ -140,7 +139,7 @@
                 @foreach ($visible as $item)
                     @php($isActive = request()->routeIs($item['active']))
 
-                    <a href="{{ route($item['route']) }}"
+                    <a href="{{ route($item['route'], $item['params'] ?? []) }}"
                        class="rams-sidebar__link {{ $isActive ? 'is-active' : '' }}"
                        data-rail-tip="{{ $item['label'] }}"
                        @if ($isActive) aria-current="page" @endif>

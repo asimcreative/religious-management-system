@@ -8,6 +8,7 @@ use App\Enums\Status;
 use App\Helpers\TimezoneHelper;
 use App\Models\AttendanceReason;
 use App\Models\Jamaat;
+use App\Models\JamaatTaleem;
 use App\Models\SalahAttendance;
 use App\Models\Setting;
 use App\Models\User;
@@ -57,17 +58,18 @@ class SalahAttendanceService extends BaseService
      */
     private function attachTaleem(LengthAwarePaginator $paginated, array $filters): void
     {
-        $items = $paginated->getCollection();
-
-        if ($items->isEmpty()) {
+        if ($paginated->isEmpty()) {
             return;
         }
 
         $taleemByKey = $this->taleemService->getForFilters($filters)
-            ->keyBy(fn ($taleem) => $taleem->attendance_date->format('Y-m-d').'|'.$taleem->jamaat_id);
+            ->keyBy(fn (JamaatTaleem $taleem): string => $taleem->attendance_date->format('Y-m-d').'|'.$taleem->jamaat_id);
 
-        $items->transform(function (array $row) use ($taleemByKey) {
-            $row['taleem'] = $taleemByKey->get($row['date']->format('Y-m-d').'|'.$row['jamaat']?->id);
+        $paginated->through(function (array $row) use ($taleemByKey): array {
+            $date = $row['date'];
+            $jamaat = $row['jamaat'];
+
+            $row['taleem'] = $taleemByKey->get($date->format('Y-m-d').'|'.$jamaat?->id);
 
             return $row;
         });
@@ -260,7 +262,7 @@ class SalahAttendanceService extends BaseService
     {
         $valid = $reasonId !== null && AttendanceReason::query()
             ->where('company_id', $companyId)
-            ->where('type', AttendanceReasonType::Salah)
+            ->where('type', AttendanceReasonType::Taleem)
             ->where('status', Status::Active->value)
             ->whereKey($reasonId)
             ->exists();

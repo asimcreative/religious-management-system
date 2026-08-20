@@ -21,8 +21,8 @@
 
 @if ($reasons->isEmpty())
     @include('partials.attendance-reasons-missing', [
-        'manageRoute' => 'masters.quran-attendance-reasons.index',
-        'moduleLabel' => __('masters.quran_attendance_reasons'),
+        'manageRoute' => 'masters.attendance-reasons.quran.index',
+        'moduleLabel' => __('masters.attendance_reason_type_quran'),
     ])
 @endif
 

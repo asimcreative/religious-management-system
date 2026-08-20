@@ -18,12 +18,12 @@ class QuranAttendanceReasonDefinition extends AttendanceReasonDefinitionBase
 
     public function label(): string
     {
-        return __('masters.quran_attendance_reasons');
+        return __('masters.attendance_reason_type_quran');
     }
 
     public function singularLabel(): string
     {
-        return __('masters.quran_attendance_reason');
+        return __('masters.attendance_reason');
     }
 
     public function icon(): string
@@ -33,6 +33,6 @@ class QuranAttendanceReasonDefinition extends AttendanceReasonDefinitionBase
 
     public function indexRoute(): string
     {
-        return 'masters.quran-attendance-reasons.index';
+        return 'masters.attendance-reasons.quran.index';
     }
 }

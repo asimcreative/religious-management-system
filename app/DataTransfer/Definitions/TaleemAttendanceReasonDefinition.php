@@ -4,21 +4,21 @@ namespace App\DataTransfer\Definitions;
 
 use App\Enums\AttendanceReasonType;
 
-class SalahAttendanceReasonDefinition extends AttendanceReasonDefinitionBase
+class TaleemAttendanceReasonDefinition extends AttendanceReasonDefinitionBase
 {
     protected function type(): AttendanceReasonType
     {
-        return AttendanceReasonType::Salah;
+        return AttendanceReasonType::Taleem;
     }
 
     public function key(): string
     {
-        return 'salah-attendance-reasons';
+        return 'taleem-attendance-reasons';
     }
 
     public function label(): string
     {
-        return __('masters.attendance_reason_type_salah');
+        return __('masters.attendance_reason_type_taleem');
     }
 
     public function singularLabel(): string
@@ -28,11 +28,11 @@ class SalahAttendanceReasonDefinition extends AttendanceReasonDefinitionBase
 
     public function icon(): string
     {
-        return 'bi-chat-left-text';
+        return 'bi-journal-text';
     }
 
     public function indexRoute(): string
     {
-        return 'masters.attendance-reasons.salah.index';
+        return 'masters.attendance-reasons.taleem.index';
     }
 }

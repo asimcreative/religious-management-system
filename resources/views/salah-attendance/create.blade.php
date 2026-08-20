@@ -21,8 +21,8 @@
 
 @if ($reasons->isEmpty())
     @include('partials.attendance-reasons-missing', [
-        'manageRoute' => 'masters.salah-attendance-reasons.index',
-        'moduleLabel' => __('masters.salah_attendance_reasons'),
+        'manageRoute' => 'masters.attendance-reasons.salah.index',
+        'moduleLabel' => __('masters.attendance_reason_type_salah'),
     ])
 @endif
 
@@ -127,6 +127,14 @@
                     <p class="text-subtle fs-sm mb-0" data-taleem-help>{{ __('salah_attendance.taleem_held_help') }}</p>
 
                     <div class="row g-3 mt-1" data-taleem-fields @unless($existingTaleem && ! $existingTaleem->held) hidden @endunless>
+                        @if ($taleemReasons->isEmpty())
+                            <div class="col-12">
+                                @include('partials.attendance-reasons-missing', [
+                                    'manageRoute' => 'masters.attendance-reasons.taleem.index',
+                                    'moduleLabel' => __('masters.attendance_reason_type_taleem'),
+                                ])
+                            </div>
+                        @endif
                         <div class="col-12 col-md-6">
                             <label for="taleem_reason_id" class="form-label">
                                 {{ __('salah_attendance.taleem_reason') }}<span class="req" aria-hidden="true">*</span>
@@ -134,7 +142,7 @@
                             <select name="taleem_reason_id" id="taleem_reason_id"
                                     class="form-select" data-taleem-required>
                                 <option value="">{{ __('salah_attendance.taleem_select_reason') }}</option>
-                                @foreach ($reasons as $reason)
+                                @foreach ($taleemReasons as $reason)
                                     <option value="{{ $reason->id }}" @selected($existingTaleem?->attendance_reason_id == $reason->id)>
                                         {{ $reason->reason_name }}
                                     </option>

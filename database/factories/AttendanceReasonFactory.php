@@ -44,4 +44,9 @@ class AttendanceReasonFactory extends Factory
     {
         return $this->state(['type' => AttendanceReasonType::Quran]);
     }
+
+    public function taleem(): static
+    {
+        return $this->state(['type' => AttendanceReasonType::Taleem]);
+    }
 }
