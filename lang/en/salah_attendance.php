@@ -24,8 +24,11 @@ return [
     'save_hint' => 'Anyone left without a reason is recorded as present.',
 
     // Taleem
+    'taleem' => 'Taleem',
     'taleem_held_label' => 'Taleem was held today',
     'taleem_held_help' => 'Uncheck if Taleem did not happen today, and give a reason — this is separate from prayer attendance above.',
+    'taleem_held_short' => 'Held',
+    'taleem_not_held_short' => 'Not held',
     'taleem_reason' => 'Reason Taleem was not held',
     'taleem_select_reason' => '-- Select Reason --',
 

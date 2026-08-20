@@ -92,6 +92,7 @@
                 @foreach ($prayers as $prayer)
                     <th scope="col" class="text-center">{{ $prayer->prayer_name }}</th>
                 @endforeach
+                <th scope="col">{{ __('salah_attendance.taleem') }}</th>
             </tr>
         </thead>
 
@@ -134,10 +135,29 @@
                             @endif
                         </td>
                     @endforeach
+
+                    <td>
+                        @php($taleem = $row['taleem'])
+                        @if ($taleem === null)
+                            <span class="dash" title="{{ __('salah_attendance.not_recorded') }}">—</span>
+                        @elseif ($taleem->held)
+                            <span class="badge-soft badge-soft-success">
+                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                {{ __('salah_attendance.taleem_held_short') }}
+                            </span>
+                        @else
+                            <span class="badge-soft badge-soft--plain"
+                                  style="background-color: {{ $taleem->attendanceReason?->color ?? '#64748B' }}1F;
+                                         color: {{ $taleem->attendanceReason?->color ?? '#64748B' }};"
+                                  @if ($taleem->remarks) title="{{ $taleem->remarks }}" @endif>
+                                {{ $taleem->attendanceReason?->reason_name ?? __('salah_attendance.taleem_not_held_short') }}
+                            </span>
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ 4 + $prayers->count() }}">
+                    <td colspan="{{ 5 + $prayers->count() }}">
                         @if ($activeFilters)
                             <x-empty-state icon="bi-search" :title="__('ui.no_results_title')" :text="__('ui.no_results_text')">
                                 <a href="{{ route('salah-attendance.index') }}" class="btn btn-outline-secondary btn-sm">

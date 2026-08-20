@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\Jamaat;
 use App\Models\JamaatTaleem;
 use App\Models\Prayer;
+use App\Models\SalahAttendance;
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -212,6 +213,74 @@ class JamaatTaleemTest extends TestCase
             ->assertForbidden();
 
         $this->assertDatabaseCount('jamaat_taleem', 0);
+    }
+
+    // ── The attendance history listing shows Taleem status ─────────────────
+
+    public function test_the_attendance_history_listing_shows_taleem_was_held(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+        $prayer = Prayer::factory()->create();
+        $employee = $this->addActiveMember($jamaat, $user);
+
+        $this->actingAs($user)
+            ->post(route('salah-attendance.store'), $this->storePayload($jamaat, $this->attendanceDate(), $employee, $prayer->id))
+            ->assertRedirect();
+
+        $this->actingAs($user)
+            ->get(route('salah-attendance.index'))
+            ->assertOk()
+            ->assertSee(__('salah_attendance.taleem_held_short'));
+    }
+
+    public function test_the_attendance_history_listing_shows_the_taleem_reason_when_not_held(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+        $prayer = Prayer::factory()->create();
+        $employee = $this->addActiveMember($jamaat, $user);
+        $reason = AttendanceReason::factory()->create([
+            'company_id' => $user->company_id,
+            'reason_name' => 'Qari on leave',
+        ]);
+
+        $payload = $this->storePayload($jamaat, $this->attendanceDate(), $employee, $prayer->id);
+        $payload['taleem_held'] = '0';
+        $payload['taleem_reason_id'] = $reason->id;
+
+        $this->actingAs($user)
+            ->post(route('salah-attendance.store'), $payload)
+            ->assertRedirect();
+
+        $this->actingAs($user)
+            ->get(route('salah-attendance.index'))
+            ->assertOk()
+            ->assertSee('Qari on leave')
+            ->assertDontSee(__('salah_attendance.taleem_held_short'));
+    }
+
+    public function test_the_attendance_history_listing_shows_a_dash_when_taleem_was_never_recorded(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+        $employee = $this->addActiveMember($jamaat, $user);
+        $prayer = Prayer::factory()->create();
+
+        SalahAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'jamaat_id' => $jamaat->id,
+            'leader_id' => $jamaat->leader_id,
+            'employee_id' => $employee->id,
+            'prayer_id' => $prayer->id,
+            'attendance_date' => $this->attendanceDate(),
+            'attendance_reason_id' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('salah-attendance.index'))
+            ->assertOk()
+            ->assertSee(__('salah_attendance.not_recorded'));
     }
 
     // ── Company isolation & access control ───────────────────────────────

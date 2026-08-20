@@ -24,8 +24,11 @@ return [
     'save_hint' => 'جن کے لیے کوئی وجہ منتخب نہیں، وہ حاضر شمار ہوں گے۔',
 
     // تعلیم
+    'taleem' => 'تعلیم',
     'taleem_held_label' => 'آج تعلیم ہوئی',
     'taleem_held_help' => 'اگر آج تعلیم نہیں ہوئی تو نشان ہٹا کر وجہ بتائیں — یہ اوپر کی نماز حاضری سے الگ ہے۔',
+    'taleem_held_short' => 'ہوئی',
+    'taleem_not_held_short' => 'نہیں ہوئی',
     'taleem_reason' => 'تعلیم نہ ہونے کی وجہ',
     'taleem_select_reason' => '-- وجہ منتخب کریں --',
     'date_not_allowed_title' => 'تاریخ اجازت شدہ مدت سے باہر ہے',

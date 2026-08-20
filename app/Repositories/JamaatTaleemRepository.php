@@ -6,6 +6,7 @@ use App\Contracts\Repositories\JamaatTaleemRepositoryInterface;
 use App\Models\JamaatTaleem;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class JamaatTaleemRepository extends BaseRepository implements JamaatTaleemRepositoryInterface
 {
@@ -41,5 +42,19 @@ class JamaatTaleemRepository extends BaseRepository implements JamaatTaleemRepos
             ->where('jamaat_id', $jamaatId)
             ->whereDate('attendance_date', $date)
             ->first();
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return Collection<int, JamaatTaleem>
+     */
+    public function getForFilters(array $filters): Collection
+    {
+        return $this->model->newQuery()
+            ->with(['attendanceReason'])
+            ->when($filters['jamaat_id'] ?? null, fn (Builder $q, $v) => $q->where('jamaat_id', $v))
+            ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '<=', $v))
+            ->get();
     }
 }

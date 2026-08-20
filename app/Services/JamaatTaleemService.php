@@ -7,6 +7,7 @@ use App\Models\Jamaat;
 use App\Models\JamaatTaleem;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class JamaatTaleemService extends BaseService
 {
@@ -29,6 +30,15 @@ class JamaatTaleemService extends BaseService
     public function getForJamaatDate(int $jamaatId, string $date): ?JamaatTaleem
     {
         return $this->taleemRepository->getForJamaatDate($jamaatId, $date);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return Collection<int, JamaatTaleem>
+     */
+    public function getForFilters(array $filters): Collection
+    {
+        return $this->taleemRepository->getForFilters($filters);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Repositories\QuranAttendanceRepositoryInterface;
+use App\Enums\AttendanceReasonType;
 use App\Enums\Status;
 use App\Helpers\TimezoneHelper;
 use App\Models\AttendanceReason;
@@ -248,6 +249,7 @@ class QuranAttendanceService extends BaseService
 
         $validReasonIds = AttendanceReason::query()
             ->where('company_id', $companyId)
+            ->where('type', AttendanceReasonType::Quran)
             ->where('status', Status::Active->value)
             ->whereIn('id', $reasonIds)
             ->pluck('id')
@@ -273,6 +275,7 @@ class QuranAttendanceService extends BaseService
     {
         $valid = $reasonId !== null && AttendanceReason::query()
             ->where('company_id', $companyId)
+            ->where('type', AttendanceReasonType::Quran)
             ->where('status', Status::Active->value)
             ->whereKey($reasonId)
             ->exists();
