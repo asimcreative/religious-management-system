@@ -24,6 +24,7 @@ use App\Http\Controllers\Web\Masters\QuranDepartmentController;
 use App\Http\Controllers\Web\Masters\QuranStatusController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\QuranAttendanceController;
+use App\Http\Controllers\Web\QuranClassAdmissionController;
 use App\Http\Controllers\Web\QuranClassController;
 use App\Http\Controllers\Web\QuranClassMemberController;
 use App\Http\Controllers\Web\QuranProgressController;
@@ -96,6 +97,8 @@ Route::middleware([
     Route::get('quran-classes/{quran_class}/members', [QuranClassMemberController::class, 'index'])->name('quran-classes.members.index');
     Route::post('quran-classes/{quran_class}/members', [QuranClassMemberController::class, 'store'])->name('quran-classes.members.store');
     Route::delete('quran-classes/{quran_class}/members/{employee}', [QuranClassMemberController::class, 'destroy'])->name('quran-classes.members.destroy');
+    Route::get('quran-classes/{quran_class}/members/{employee}/admission', [QuranClassAdmissionController::class, 'create'])->name('quran-classes.members.admission.create');
+    Route::post('quran-classes/{quran_class}/members/{employee}/admission', [QuranClassAdmissionController::class, 'store'])->name('quran-classes.members.admission.store');
 
     // ── Quran Attendance ─────────────────────────────────────────
     Route::get('quran-attendance', [QuranAttendanceController::class, 'index'])->name('quran-attendance.index');

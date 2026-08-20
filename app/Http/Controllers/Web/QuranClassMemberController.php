@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\QuranClass;
+use App\Models\QuranClassAdmission;
 use App\Services\QuranClassMemberService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,6 +26,13 @@ class QuranClassMemberController extends Controller
         $quranClass->load(['teacher.employee', 'branch']);
         $activeMembers = $this->service->getActiveMembers($quranClass->id);
 
+        // One query for the whole list rather than one per row: which of these
+        // memberships already has an Admission Form on file.
+        $admittedMemberIds = QuranClassAdmission::query()
+            ->whereIn('quran_class_member_id', $activeMembers->pluck('pivot.id'))
+            ->pluck('quran_class_member_id')
+            ->all();
+
         // An employee belongs to at most one active class, so the ones already
         // in another are no more available than the ones already in this one.
         $availableEmployees = Employee::active()
@@ -32,7 +40,7 @@ class QuranClassMemberController extends Controller
             ->orderBy('employee_name')
             ->get(['id', 'employee_code', 'employee_name']);
 
-        return view('quran-classes.members', compact('quranClass', 'activeMembers', 'availableEmployees'));
+        return view('quran-classes.members', compact('quranClass', 'activeMembers', 'availableEmployees', 'admittedMemberIds'));
     }
 
     public function store(Request $request, QuranClass $quranClass): RedirectResponse
@@ -66,8 +74,11 @@ class QuranClassMemberController extends Controller
                 ->with('error', $e->validator->errors()->first('employee_id'));
         }
 
+        // The member is already added at this point — the Admission Form is an
+        // optional follow-up step, not a gate. "Skip for now" on that screen
+        // returns here without ever undoing the add.
         return redirect()
-            ->route('quran-classes.members.index', $quranClass)
+            ->route('quran-classes.members.admission.create', [$quranClass, $validated['employee_id']])
             ->with('success', __('quran_classes.member_added'));
     }
 

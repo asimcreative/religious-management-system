@@ -12,6 +12,7 @@ use App\Models\JamaatTaleem;
 use App\Models\Language;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
+use App\Models\QuranClassAdmission;
 use App\Models\QuranDepartment;
 use App\Models\QuranProgress;
 use App\Models\QuranProgressHistory;
@@ -90,6 +91,7 @@ class AppServiceProvider extends ServiceProvider
             Language::class,
             QuranAttendance::class,
             QuranClass::class,
+            QuranClassAdmission::class,
             QuranDepartment::class,
             QuranProgress::class,
             QuranProgressHistory::class,
