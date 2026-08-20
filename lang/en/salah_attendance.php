@@ -45,7 +45,8 @@ return [
     'attendance_status' => 'Attendance Status',
     'reason' => 'Reason',
     'remarks' => 'Remarks',
-    'present' => 'Present',
+    'present' => 'Prayed',
+    'absent' => 'Not Prayed',
     'actions' => 'Actions',
     'leader' => 'Marked By',
 
