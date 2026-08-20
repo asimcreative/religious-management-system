@@ -25,6 +25,9 @@ final class Measure
      * @param  (Closure(array<string, float|int|null>): (float|int|null))|null  $compute
      *                                                                                    Row maths, for derived measures.
      */
+    /**
+     * @param  list<string>  $joins  Join names this measure's expression needs.
+     */
     private function __construct(
         public readonly string $key,
         public readonly string $label,
@@ -32,16 +35,21 @@ final class Measure
         public readonly ?Closure $compute,
         public readonly MeasureFormat $format,
         public readonly bool $primary,
+        public readonly array $joins,
     ) {}
 
+    /**
+     * @param  list<string>  $joins
+     */
     public static function aggregate(
         string $key,
         string $label,
         string $expression,
         MeasureFormat $format = MeasureFormat::Integer,
         bool $primary = false,
+        array $joins = [],
     ): self {
-        return new self($key, $label, $expression, null, $format, $primary);
+        return new self($key, $label, $expression, null, $format, $primary, $joins);
     }
 
     /**
@@ -54,7 +62,7 @@ final class Measure
         MeasureFormat $format = MeasureFormat::Percent,
         bool $primary = false,
     ): self {
-        return new self($key, $label, null, $compute, $format, $primary);
+        return new self($key, $label, null, $compute, $format, $primary, []);
     }
 
     public function isDerived(): bool

@@ -56,6 +56,7 @@ class AnalyticsService
             : null;
 
         $active = $this->activeFilters($definition, $filters);
+        $measures = $definition->measures();
 
         $query = $definition->query();
         $plan = new JoinPlan($definition->joins());
@@ -70,13 +71,15 @@ class AnalyticsService
             $plan->need($definition->filters()[$key]->joins);
         }
 
+        foreach ($measures as $measure) {
+            $plan->need($measure->joins);
+        }
+
         $plan->applyTo($query);
 
         foreach ($active as $key => $value) {
             ($definition->filters()[$key]->apply)($query, $value);
         }
-
-        $measures = $definition->measures();
 
         $this->select($query, $dimension, $secondary, $measures);
         $this->group($query, $dimension, $secondary);

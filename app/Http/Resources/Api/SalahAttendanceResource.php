@@ -21,6 +21,7 @@ class SalahAttendanceResource extends JsonResource
             'id' => $this->resource->id,
             'attendance_date' => $this->resource->getRawOriginal('attendance_date'),
             'is_present' => $this->resource->isPresent(),
+            'is_absent' => $this->resource->isAbsent(),
             'remarks' => $this->resource->remarks,
             'prayer' => $this->whenLoaded('prayer', function () {
                 /** @var Prayer $prayer */

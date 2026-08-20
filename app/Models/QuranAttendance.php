@@ -122,4 +122,18 @@ class QuranAttendance extends Model
     {
         return $this->class_held && $this->attendance_reason_id === null;
     }
+
+    /**
+     * Whether this record should count against the person. A reason existing
+     * is not the same thing — an admin can configure a reason with
+     * counts_as_absent = false precisely so it doesn't count as an absence.
+     * No explicit class_held gate needed: when a teacher is marked absent
+     * every student row's attendance_reason_id is forced null before
+     * class_held = false is set (see QuranAttendanceService::saveAttendance),
+     * so a not-held day already evaluates false here by construction.
+     */
+    public function isAbsent(): bool
+    {
+        return $this->attendance_reason_id !== null && ($this->attendanceReason?->counts_as_absent ?? false);
+    }
 }

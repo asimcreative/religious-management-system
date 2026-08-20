@@ -107,4 +107,15 @@ class SalahAttendance extends Model
     {
         return $this->attendance_reason_id === null;
     }
+
+    /**
+     * Whether this record should count against the person. A reason existing
+     * is not the same thing — an admin can configure a reason (e.g. "On
+     * Leave", or a custom one) with counts_as_absent = false precisely so it
+     * doesn't count as an absence.
+     */
+    public function isAbsent(): bool
+    {
+        return $this->attendance_reason_id !== null && ($this->attendanceReason?->counts_as_absent ?? false);
+    }
 }

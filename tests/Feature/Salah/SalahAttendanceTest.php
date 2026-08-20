@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Salah;
 
+use App\Http\Resources\Api\SalahAttendanceResource;
 use App\Models\AttendanceReason;
 use App\Models\Branch;
 use App\Models\Company;
@@ -10,6 +11,7 @@ use App\Models\Jamaat;
 use App\Models\Prayer;
 use App\Models\SalahAttendance;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 /**
@@ -195,6 +197,57 @@ class SalahAttendanceTest extends TestCase
         ]);
 
         $this->assertFalse($attendance->isPresent());
+    }
+
+    public function test_is_absent_is_false_for_a_null_reason(): void
+    {
+        $attendance = SalahAttendance::factory()->make(['attendance_reason_id' => null]);
+
+        $this->assertFalse($attendance->isAbsent());
+    }
+
+    public function test_is_absent_is_false_for_a_reason_that_does_not_count_as_absent(): void
+    {
+        $user = $this->admin();
+        $reason = AttendanceReason::factory()->leave()->create(['company_id' => $user->company_id]);
+        $attendance = SalahAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'attendance_reason_id' => $reason->id,
+        ]);
+
+        $this->assertFalse($attendance->isAbsent());
+    }
+
+    public function test_is_absent_is_true_for_a_reason_that_counts_as_absent(): void
+    {
+        $user = $this->admin();
+        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $attendance = SalahAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'attendance_reason_id' => $reason->id,
+        ]);
+
+        $this->assertTrue($attendance->isAbsent());
+    }
+
+    /**
+     * is_present must never be repurposed — mobile apps already consume it —
+     * so a corrected classification is added as a new field, is_absent,
+     * rather than changing what is_present means.
+     */
+    public function test_api_resource_keeps_is_present_unchanged_and_adds_is_absent(): void
+    {
+        $user = $this->admin();
+        $reason = AttendanceReason::factory()->leave()->create(['company_id' => $user->company_id]);
+        $attendance = SalahAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'attendance_reason_id' => $reason->id,
+        ]);
+
+        $data = (new SalahAttendanceResource($attendance))->toArray(Request::create('/'));
+
+        $this->assertFalse($data['is_present']);
+        $this->assertFalse($data['is_absent']);
     }
 
     /** Five prayers can be recorded for the same date and jamaat. */

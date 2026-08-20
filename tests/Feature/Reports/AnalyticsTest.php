@@ -146,7 +146,7 @@ class AnalyticsTest extends TestCase
 
     // ── The arithmetic ─────────────────────────────────────────────
 
-    public function test_present_and_absent_are_counted_by_whether_a_reason_was_recorded(): void
+    public function test_present_and_absent_are_counted_by_whether_the_reason_counts_as_absent(): void
     {
         $reason = AttendanceReason::factory()->create(['company_id' => $this->user->company_id]);
 
@@ -163,6 +163,82 @@ class AnalyticsTest extends TestCase
         $this->assertSame(2.0, $row->measures['present']);
         $this->assertSame(1.0, $row->measures['absent']);
         $this->assertSame(66.7, $row->measures['rate']);
+    }
+
+    public function test_a_salah_reason_that_does_not_count_as_absent_is_counted_as_present(): void
+    {
+        // "On Leave", "Late", or a custom reason like "Prayed" — a reason
+        // existing is not the same as it counting against the person. Only
+        // counts_as_absent decides that, not whether a reason was recorded.
+        $notAbsent = AttendanceReason::factory()->leave()->create(['company_id' => $this->user->company_id]);
+
+        $this->salah();
+        $this->salah(['attendance_date' => '2026-08-04', 'attendance_reason_id' => $notAbsent->id]);
+
+        $this->actingAs($this->user);
+        $result = $this->analyse(app(SalahAttendanceAnalytics::class), [], 'prayer');
+
+        $row = $result->rows[0];
+
+        $this->assertSame(2.0, $row->measures['records']);
+        $this->assertSame(2.0, $row->measures['present']);
+        $this->assertSame(0.0, $row->measures['absent']);
+    }
+
+    public function test_a_quran_reason_that_does_not_count_as_absent_is_counted_as_present(): void
+    {
+        $teacher = Teacher::factory()->create(['company_id' => $this->user->company_id]);
+        $class = QuranClass::factory()->create([
+            'company_id' => $this->user->company_id,
+            'teacher_id' => $teacher->id,
+        ]);
+        $notAbsent = AttendanceReason::factory()->leave()->create(['company_id' => $this->user->company_id]);
+
+        QuranAttendance::factory()->create([
+            'company_id' => $this->user->company_id,
+            'class_id' => $class->id,
+            'teacher_id' => $teacher->id,
+            'employee_id' => $this->employee->id,
+            'attendance_date' => '2026-08-03',
+            'attendance_reason_id' => null,
+            'class_held' => true,
+        ]);
+        QuranAttendance::factory()->create([
+            'company_id' => $this->user->company_id,
+            'class_id' => $class->id,
+            'teacher_id' => $teacher->id,
+            'employee_id' => $this->employee->id,
+            'attendance_date' => '2026-08-04',
+            'attendance_reason_id' => $notAbsent->id,
+            'class_held' => true,
+        ]);
+
+        $this->actingAs($this->user);
+        $result = $this->analyse(app(QuranAttendanceAnalytics::class), [], 'teacher');
+
+        $row = $result->rows[0];
+
+        $this->assertSame(2.0, $row->measures['records']);
+        $this->assertSame(2.0, $row->measures['present']);
+        $this->assertSame(0.0, $row->measures['absent']);
+    }
+
+    public function test_the_status_dimension_groups_by_counts_as_absent_not_by_whether_a_reason_exists(): void
+    {
+        $absentReason = AttendanceReason::factory()->create(['company_id' => $this->user->company_id]);
+        $notAbsentReason = AttendanceReason::factory()->leave()->create(['company_id' => $this->user->company_id]);
+
+        $this->salah(['attendance_date' => '2026-08-03']);
+        $this->salah(['attendance_date' => '2026-08-04', 'attendance_reason_id' => $notAbsentReason->id]);
+        $this->salah(['attendance_date' => '2026-08-05', 'attendance_reason_id' => $absentReason->id]);
+
+        $this->actingAs($this->user);
+        $result = $this->analyse(app(SalahAttendanceAnalytics::class), [], 'status');
+
+        $byLabel = collect($result->rows)->keyBy('label');
+
+        $this->assertSame(2.0, $byLabel[__('analytics.status_present')]->measures['records']);
+        $this->assertSame(1.0, $byLabel[__('analytics.status_absent')]->measures['records']);
     }
 
     public function test_the_total_rate_is_derived_from_the_totals_not_averaged_from_the_rows(): void

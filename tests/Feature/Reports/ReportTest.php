@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Reports;
 
+use App\Models\AttendanceReason;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\Jamaat;
@@ -13,6 +14,7 @@ use App\Models\QuranTeacherAttendance;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Services\ReportService;
 use Tests\TestCase;
 
 /**
@@ -263,6 +265,78 @@ class ReportTest extends TestCase
             ->get(route('reports.salah-attendance', ['prayer_id' => $fajr->id]))
             ->assertOk()
             ->assertSeeText('Total Records: 1');
+    }
+
+    /**
+     * A reason existing is not the same as it counting against the person —
+     * only counts_as_absent decides that. Regression guard for the bug where
+     * every summary/report screen counted any recorded reason as an absence.
+     */
+    public function test_salah_attendance_summary_excludes_a_reason_that_does_not_count_as_absent(): void
+    {
+        $user = $this->reportAdmin();
+        $absentReason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $notAbsentReason = AttendanceReason::factory()->leave()->create(['company_id' => $user->company_id]);
+
+        SalahAttendance::factory()->create(['company_id' => $user->company_id, 'attendance_reason_id' => null]);
+        SalahAttendance::factory()->create(['company_id' => $user->company_id, 'attendance_reason_id' => $notAbsentReason->id]);
+        SalahAttendance::factory()->create(['company_id' => $user->company_id, 'attendance_reason_id' => $absentReason->id]);
+
+        $this->actingAs($user);
+        $summary = app(ReportService::class)->salahAttendanceSummary([]);
+
+        $this->assertSame(3, $summary['total']);
+        $this->assertSame(2, $summary['present']);
+        $this->assertSame(1, $summary['absent']);
+    }
+
+    public function test_salah_prayer_wise_summary_excludes_a_reason_that_does_not_count_as_absent(): void
+    {
+        $user = $this->reportAdmin();
+        $prayer = Prayer::factory()->create();
+        $notAbsentReason = AttendanceReason::factory()->leave()->create(['company_id' => $user->company_id]);
+
+        SalahAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'prayer_id' => $prayer->id,
+            'attendance_reason_id' => null,
+        ]);
+        SalahAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'prayer_id' => $prayer->id,
+            'attendance_reason_id' => $notAbsentReason->id,
+        ]);
+
+        $this->actingAs($user);
+        $row = app(ReportService::class)->salahPrayerWiseSummary([], $user->company_id)->first();
+
+        $this->assertSame(2, (int) $row->total);
+        $this->assertSame(2, (int) $row->present);
+        $this->assertSame(0, (int) $row->absent);
+    }
+
+    public function test_quran_attendance_summary_excludes_a_reason_that_does_not_count_as_absent(): void
+    {
+        $user = $this->reportAdmin();
+        $notAbsentReason = AttendanceReason::factory()->leave()->create(['company_id' => $user->company_id]);
+
+        QuranAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'class_held' => true,
+            'attendance_reason_id' => null,
+        ]);
+        QuranAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'class_held' => true,
+            'attendance_reason_id' => $notAbsentReason->id,
+        ]);
+
+        $this->actingAs($user);
+        $summary = app(ReportService::class)->quranAttendanceSummary([]);
+
+        $this->assertSame(2, $summary['total']);
+        $this->assertSame(2, $summary['present']);
+        $this->assertSame(0, $summary['absent']);
     }
 
     // ── Jamaat Taleem Report ────────────────────────────────────────────────

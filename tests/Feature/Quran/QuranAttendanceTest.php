@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Quran;
 
+use App\Http\Resources\Api\QuranAttendanceResource;
 use App\Models\AttendanceReason;
 use App\Models\Branch;
 use App\Models\Company;
@@ -10,6 +11,7 @@ use App\Models\QuranAttendance;
 use App\Models\QuranClass;
 use App\Models\Teacher;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 /**
@@ -187,5 +189,81 @@ class QuranAttendanceTest extends TestCase
         ]);
 
         $this->assertFalse($attendance->isPresent());
+    }
+
+    public function test_is_absent_is_false_for_a_reason_that_does_not_count_as_absent(): void
+    {
+        $user = $this->admin();
+        $class = $this->makeClass($user);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->leave()->create(['company_id' => $user->company_id]);
+
+        $attendance = QuranAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'class_id' => $class->id,
+            'employee_id' => $employee->id,
+            'attendance_reason_id' => $reason->id,
+        ]);
+
+        $this->assertFalse($attendance->isAbsent());
+    }
+
+    public function test_is_absent_is_true_for_a_reason_that_counts_as_absent(): void
+    {
+        $user = $this->admin();
+        $class = $this->makeClass($user);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+
+        $attendance = QuranAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'class_id' => $class->id,
+            'employee_id' => $employee->id,
+            'attendance_reason_id' => $reason->id,
+        ]);
+
+        $this->assertTrue($attendance->isAbsent());
+    }
+
+    public function test_is_absent_is_false_when_class_was_not_held(): void
+    {
+        $user = $this->admin();
+        $class = $this->makeClass($user);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+
+        $attendance = QuranAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'class_id' => $class->id,
+            'employee_id' => $employee->id,
+            'attendance_reason_id' => null,
+            'class_held' => false,
+        ]);
+
+        $this->assertFalse($attendance->isAbsent());
+    }
+
+    /**
+     * is_present must never be repurposed — mobile apps already consume it —
+     * so a corrected classification is added as a new field, is_absent,
+     * rather than changing what is_present means.
+     */
+    public function test_api_resource_keeps_is_present_unchanged_and_adds_is_absent(): void
+    {
+        $user = $this->admin();
+        $class = $this->makeClass($user);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->leave()->create(['company_id' => $user->company_id]);
+
+        $attendance = QuranAttendance::factory()->create([
+            'company_id' => $user->company_id,
+            'class_id' => $class->id,
+            'employee_id' => $employee->id,
+            'attendance_reason_id' => $reason->id,
+        ]);
+
+        $data = (new QuranAttendanceResource($attendance))->toArray(Request::create('/'));
+
+        $this->assertFalse($data['is_present']);
+        $this->assertFalse($data['is_absent']);
     }
 }

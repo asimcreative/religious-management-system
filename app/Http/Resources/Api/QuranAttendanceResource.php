@@ -20,6 +20,7 @@ class QuranAttendanceResource extends JsonResource
             'id' => $this->resource->id,
             'attendance_date' => $this->resource->getRawOriginal('attendance_date'),
             'is_present' => $this->resource->isPresent(),
+            'is_absent' => $this->resource->isAbsent(),
             'remarks' => $this->resource->remarks,
             'quran_class' => $this->whenLoaded('quranClass', function () {
                 /** @var QuranClass $cls */

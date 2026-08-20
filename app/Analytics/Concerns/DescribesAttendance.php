@@ -4,6 +4,7 @@ namespace App\Analytics\Concerns;
 
 use App\Enums\AttendanceReasonType;
 use App\Models\AttendanceReason;
+use App\Support\Analytics\AttendanceExpression;
 use App\Support\Analytics\DateExpression;
 use App\Support\Analytics\Dimension;
 use App\Support\Analytics\Filter;
@@ -58,13 +59,15 @@ trait DescribesAttendance
             Measure::aggregate(
                 key: 'present',
                 label: __('analytics.measure_present'),
-                expression: "SUM(CASE WHEN {$table}.attendance_reason_id IS NULL THEN 1 ELSE 0 END)",
+                expression: 'SUM(1 - ('.AttendanceExpression::absentCase($table).'))',
                 primary: true,
+                joins: ['attendance_reasons'],
             ),
             Measure::aggregate(
                 key: 'absent',
                 label: __('analytics.measure_absent'),
-                expression: "SUM(CASE WHEN {$table}.attendance_reason_id IS NOT NULL THEN 1 ELSE 0 END)",
+                expression: 'SUM('.AttendanceExpression::absentCase($table).')',
+                joins: ['attendance_reasons'],
             ),
             Measure::derived(
                 key: 'rate',
@@ -143,8 +146,9 @@ trait DescribesAttendance
             Dimension::make(
                 key: 'status',
                 label: __('analytics.dim_status'),
-                groupBy: "CASE WHEN {$table}.attendance_reason_id IS NULL THEN 1 ELSE 0 END",
-                labelExpression: "CASE WHEN {$table}.attendance_reason_id IS NULL THEN 1 ELSE 0 END",
+                groupBy: '1 - ('.AttendanceExpression::absentCase($table).')',
+                labelExpression: '1 - ('.AttendanceExpression::absentCase($table).')',
+                joins: ['attendance_reasons'],
                 group: $what,
                 labelUsing: static fn (int|string|null $key): string => (int) $key === 1
                     ? __('analytics.status_present')
@@ -202,8 +206,12 @@ trait DescribesAttendance
                     'absent' => __('analytics.status_absent'),
                 ],
                 apply: fn (Builder $query, string $value) => $value === 'present'
-                    ? $query->whereNull($table.'.attendance_reason_id')
-                    : $query->whereNotNull($table.'.attendance_reason_id'),
+                    ? $query->where(fn (Builder $inner) => $inner
+                        ->whereNull($table.'.attendance_reason_id')
+                        ->orWhere('attendance_reasons.counts_as_absent', false))
+                    : $query->whereNotNull($table.'.attendance_reason_id')
+                        ->where('attendance_reasons.counts_as_absent', true),
+                joins: ['attendance_reasons'],
                 group: $what,
                 width: 'field--sm',
             ),
