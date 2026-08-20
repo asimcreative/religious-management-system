@@ -20,7 +20,10 @@
 </x-page-header>
 
 @if ($reasons->isEmpty())
-    @include('partials.attendance-reasons-missing')
+    @include('partials.attendance-reasons-missing', [
+        'manageRoute' => 'masters.salah-attendance-reasons.index',
+        'moduleLabel' => __('masters.salah_attendance_reasons'),
+    ])
 @endif
 
 {{-- ── Step 1 — choose jamaat and date ─────────────────────────────────── --}}

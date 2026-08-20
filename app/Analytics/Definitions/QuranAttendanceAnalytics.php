@@ -4,6 +4,7 @@ namespace App\Analytics\Definitions;
 
 use App\Analytics\Concerns\DescribesAttendance;
 use App\Analytics\Concerns\DescribesEmployees;
+use App\Enums\AttendanceReasonType;
 use App\Models\Branch;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
@@ -167,7 +168,7 @@ class QuranAttendanceAnalytics extends AbstractAnalyticsDefinition
         $quran = __('analytics.group_quran');
 
         return array_merge(
-            $this->attendanceFilters(self::TABLE),
+            $this->attendanceFilters(self::TABLE, AttendanceReasonType::Quran),
             [
                 Filter::select(
                     key: 'teacher_id',

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AttendanceReasonType;
 use App\Enums\Status;
 use App\Models\AttendanceReason;
 use App\Models\Company;
@@ -16,6 +17,7 @@ class AttendanceReasonFactory extends Factory
     {
         return [
             'company_id' => Company::factory(),
+            'type' => AttendanceReasonType::Salah,
             'reason_name' => fake()->randomElement(['Sick Leave', 'Travel', 'Personal', 'Emergency']),
             'color' => fake()->hexColor(),
             'icon' => 'bi-x-circle',
@@ -31,5 +33,15 @@ class AttendanceReasonFactory extends Factory
             'counts_as_absent' => false,
             'counts_as_leave' => true,
         ]);
+    }
+
+    public function salah(): static
+    {
+        return $this->state(['type' => AttendanceReasonType::Salah]);
+    }
+
+    public function quran(): static
+    {
+        return $this->state(['type' => AttendanceReasonType::Quran]);
     }
 }

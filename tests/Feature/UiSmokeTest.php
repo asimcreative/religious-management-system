@@ -53,7 +53,8 @@ class UiSmokeTest extends TestCase
         $branch = Branch::factory()->create(['company_id' => $companyId]);
         $department = Department::factory()->create(['company_id' => $companyId]);
         $designation = Designation::factory()->create(['company_id' => $companyId]);
-        $reason = AttendanceReason::factory()->create(['company_id' => $companyId]);
+        $salahReason = AttendanceReason::factory()->salah()->create(['company_id' => $companyId]);
+        $quranReason = AttendanceReason::factory()->quran()->create(['company_id' => $companyId]);
         $quranDepartment = QuranDepartment::factory()->create(['company_id' => $companyId]);
         $quranStatus = QuranStatus::factory()->create(['company_id' => $companyId]);
         $language = Language::factory()->create(['company_id' => $companyId]);
@@ -152,9 +153,12 @@ class UiSmokeTest extends TestCase
             route('masters.designations.index'),
             route('masters.designations.create'),
             route('masters.designations.edit', $designation),
-            route('masters.attendance-reasons.index'),
-            route('masters.attendance-reasons.create'),
-            route('masters.attendance-reasons.edit', $reason),
+            route('masters.salah-attendance-reasons.index'),
+            route('masters.salah-attendance-reasons.create'),
+            route('masters.salah-attendance-reasons.edit', $salahReason),
+            route('masters.quran-attendance-reasons.index'),
+            route('masters.quran-attendance-reasons.create'),
+            route('masters.quran-attendance-reasons.edit', $quranReason),
             route('masters.quran-departments.index'),
             route('masters.quran-departments.create'),
             route('masters.quran-departments.edit', $quranDepartment),

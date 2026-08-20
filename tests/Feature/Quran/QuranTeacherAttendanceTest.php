@@ -85,7 +85,7 @@ class QuranTeacherAttendanceTest extends TestCase
         $user = $this->admin();
         $class = $this->makeClass($user);
         $employee = $this->addActiveMember($class, $user);
-        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
         $date = $this->attendanceDate();
 
         $this->actingAs($user)
@@ -120,8 +120,8 @@ class QuranTeacherAttendanceTest extends TestCase
         $user = $this->admin();
         $class = $this->makeClass($user);
         $employee = $this->addActiveMember($class, $user);
-        $firstReason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
-        $secondReason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $firstReason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
+        $secondReason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
         $date = $this->attendanceDate();
 
         $this->actingAs($user)->post(route('quran-attendance.store'), [
@@ -152,8 +152,8 @@ class QuranTeacherAttendanceTest extends TestCase
         $user = $this->admin();
         $class = $this->makeClass($user);
         $employee = $this->addActiveMember($class, $user);
-        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
-        $studentReason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
+        $studentReason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
         $date = $this->attendanceDate();
 
         $this->actingAs($user)
@@ -202,7 +202,7 @@ class QuranTeacherAttendanceTest extends TestCase
         $user = $this->admin();
         $class = $this->makeClass($user, withTeacher: false);
         $employee = $this->addActiveMember($class, $user);
-        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
 
         $this->actingAs($user)
             ->post(route('quran-attendance.store'), [
@@ -222,8 +222,8 @@ class QuranTeacherAttendanceTest extends TestCase
         $user = $this->admin();
         $class = $this->makeClass($user);
         $employee = $this->addActiveMember($class, $user);
-        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
-        $studentReason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
+        $studentReason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
         $date = $this->attendanceDate();
 
         $this->actingAs($user)->post(route('quran-attendance.store'), [
@@ -263,7 +263,7 @@ class QuranTeacherAttendanceTest extends TestCase
         $class = $this->makeClass($user);
         $presentEmployee = $this->addActiveMember($class, $user);
         $notHeldEmployee = $this->addActiveMember($class, $user);
-        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
 
         QuranAttendance::factory()->create([
             'company_id' => $user->company_id,
@@ -369,7 +369,7 @@ class QuranTeacherAttendanceTest extends TestCase
         $user = $this->createUserWithCompany(['quran.attendance.view']);
         $class = $this->makeClass($user);
         $employee = $this->addActiveMember($class, $user);
-        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
 
         $this->actingAs($user)
             ->post(route('quran-attendance.store'), [

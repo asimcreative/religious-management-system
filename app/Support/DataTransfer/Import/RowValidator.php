@@ -108,7 +108,7 @@ class RowValidator
             }
 
             /** @var Builder $query */
-            $query = $modelClass::query();
+            $query = $definition->newQuery();
 
             if ($usesSoftDeletes) {
                 // withTrashed() is a SoftDeletes macro the Builder does not
@@ -293,7 +293,7 @@ class RowValidator
             $storedColumn = $column->uniqueColumn();
 
             /** @var Builder $query */
-            $query = $modelClass::query();
+            $query = $definition->newQuery();
 
             if ($usesSoftDeletes) {
                 // withTrashed() is a SoftDeletes macro the Builder does not

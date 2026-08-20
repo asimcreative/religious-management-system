@@ -2,6 +2,7 @@
 
 namespace App\Analytics\Concerns;
 
+use App\Enums\AttendanceReasonType;
 use App\Models\AttendanceReason;
 use App\Support\Analytics\DateExpression;
 use App\Support\Analytics\Dimension;
@@ -163,7 +164,7 @@ trait DescribesAttendance
     /**
      * @return list<Filter>
      */
-    protected function attendanceFilters(string $table): array
+    protected function attendanceFilters(string $table, AttendanceReasonType $reasonType): array
     {
         $when = __('analytics.group_time');
         $what = __('analytics.group_record');
@@ -209,7 +210,7 @@ trait DescribesAttendance
             Filter::select(
                 key: 'attendance_reason_id',
                 label: __('analytics.dim_reason'),
-                options: static fn (): array => AttendanceReason::query()->orderBy('reason_name')->pluck('reason_name', 'id')->all(),
+                options: static fn (): array => AttendanceReason::query()->ofType($reasonType)->orderBy('reason_name')->pluck('reason_name', 'id')->all(),
                 apply: fn (Builder $query, string $value) => $query->where($table.'.attendance_reason_id', $value),
                 group: $what,
             ),

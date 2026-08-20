@@ -17,16 +17,27 @@ use Illuminate\Support\Facades\DB;
  * service: a migration is a fixed record of what happened at this point in the
  * schema's history, and must keep producing that result even after the service
  * it would have called has moved on.
+ *
+ * The defaults below are inlined rather than read from config('master-data.
+ * attendance_reasons') for the same reason: that config key's shape changed
+ * (2026_08_19_090000_... split it into per-type lists) after this migration
+ * was written, and a fresh install replays every migration from scratch
+ * against today's config. Copying the six original values here keeps this
+ * migration producing the exact rows it always produced, independent of
+ * where the config file goes next.
  */
 return new class extends Migration
 {
     public function up(): void
     {
-        $defaults = config('master-data.attendance_reasons', []);
-
-        if ($defaults === []) {
-            return;
-        }
+        $defaults = [
+            ['reason_name' => 'Absent', 'color' => '#DC3545', 'icon' => 'bi-x-circle', 'counts_as_absent' => true, 'counts_as_leave' => false],
+            ['reason_name' => 'Late', 'color' => '#FD7E14', 'icon' => 'bi-clock', 'counts_as_absent' => false, 'counts_as_leave' => false],
+            ['reason_name' => 'On Leave', 'color' => '#0DCAF0', 'icon' => 'bi-calendar-x', 'counts_as_absent' => false, 'counts_as_leave' => true],
+            ['reason_name' => 'Sick', 'color' => '#6F42C1', 'icon' => 'bi-bandaid', 'counts_as_absent' => false, 'counts_as_leave' => true],
+            ['reason_name' => 'Official Duty', 'color' => '#0D6EFD', 'icon' => 'bi-briefcase', 'counts_as_absent' => false, 'counts_as_leave' => false],
+            ['reason_name' => 'Travelling', 'color' => '#20C997', 'icon' => 'bi-airplane', 'counts_as_absent' => false, 'counts_as_leave' => true],
+        ];
 
         $unconfigured = DB::table('companies')
             ->where('company_code', '!=', Company::PLATFORM_CODE)

@@ -1,20 +1,20 @@
 @extends('layouts.app')
 
-@section('title', __('masters.attendance_reasons'))
+@section('title', __('masters.quran_attendance_reasons'))
 
 @section('breadcrumbs')
     <li class="breadcrumb-item">{{ __('masters.master_data') }}</li>
-    <li class="breadcrumb-item active" aria-current="page">{{ __('masters.attendance_reasons') }}</li>
+    <li class="breadcrumb-item active" aria-current="page">{{ __('masters.quran_attendance_reasons') }}</li>
 @endsection
 
 @section('content')
 @include('masters.partials.index', [
-    'title' => __('masters.attendance_reasons'),
-    'singular' => __('masters.attendance_reason'),
-    'intro' => __('masters.attendance_reasons_intro'),
-    'icon' => 'bi-chat-left-text',
-    'routeBase' => 'masters.attendance-reasons',
-    'transferResource' => 'attendance-reasons',
+    'title' => __('masters.quran_attendance_reasons'),
+    'singular' => __('masters.quran_attendance_reason'),
+    'intro' => __('masters.quran_attendance_reasons_intro'),
+    'icon' => 'bi-chat-square-text',
+    'routeBase' => 'masters.quran-attendance-reasons',
+    'transferResource' => 'quran-attendance-reasons',
     'model' => App\Models\AttendanceReason::class,
     'records' => $reasons,
     'nameFor' => fn ($record) => $record->reason_name,
