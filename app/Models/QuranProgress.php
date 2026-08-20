@@ -28,6 +28,7 @@ class QuranProgress extends Model
         'current_surah',
         'current_sipara',
         'current_page',
+        'field_values',
         'completion_percentage',
         'remarks',
     ];
@@ -37,6 +38,7 @@ class QuranProgress extends Model
         return [
             'current_sipara' => 'integer',
             'current_page' => 'integer',
+            'field_values' => 'array',
             'completion_percentage' => 'decimal:2',
         ];
     }

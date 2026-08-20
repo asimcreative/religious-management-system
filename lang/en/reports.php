@@ -83,6 +83,7 @@ return [
     'quran_department' => 'Quran Department',
     'quran_status' => 'Quran Status',
     'current_lesson' => 'Current Lesson',
+    'progress_snapshot' => 'Progress',
     'completion' => 'Completion',
 
     // Attendance Fields

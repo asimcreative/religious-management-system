@@ -101,7 +101,7 @@
                 <th scope="col">{{ __('reports.teacher') }}</th>
                 <th scope="col">{{ __('reports.quran_department') }}</th>
                 <th scope="col">{{ __('reports.quran_status') }}</th>
-                <th scope="col">{{ __('reports.current_lesson') }}</th>
+                <th scope="col">{{ __('reports.progress_snapshot') }}</th>
                 <th scope="col" style="min-width: 10rem;">{{ __('reports.completion') }}</th>
             </tr>
         </thead>
@@ -128,7 +128,15 @@
                             <span class="dash">—</span>
                         @endif
                     </td>
-                    <td data-label="{{ __('reports.current_lesson') }}">{{ $p->current_lesson ?? '—' }}</td>
+                    <td data-label="{{ __('reports.progress_snapshot') }}">
+                        @php($pSchema = $p->quranDepartment?->progress_fields_schema ?? [])
+                        @if (! empty($pSchema))
+                            @php($pFirstField = $pSchema[0])
+                            {{ $pFirstField['label'] }}: {{ $p->field_values[$pFirstField['key']] ?? '—' }}
+                        @else
+                            {{ $p->current_lesson ?? '—' }}
+                        @endif
+                    </td>
                     <td data-label="{{ __('reports.completion') }}">
                         <div class="d-flex align-items-center gap-2">
                             <span class="progress flex-grow-1 meter-track" role="img" aria-label="{{ number_format($pct, 0) }}%">

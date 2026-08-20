@@ -77,6 +77,7 @@ class QuranProgressService extends BaseService
             'surah' => $progress->current_surah,
             'sipara' => $progress->current_sipara,
             'page' => $progress->current_page,
+            'field_values' => $progress->field_values,
             'percentage' => $progress->completion_percentage,
             'remarks' => $progress->remarks,
         ]);

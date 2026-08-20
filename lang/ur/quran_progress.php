@@ -28,6 +28,7 @@ return [
     'surah' => 'موجودہ سورت',
     'sipara' => 'موجودہ سپارہ',
     'page' => 'موجودہ صفحہ',
+    'progress_snapshot' => 'پیش رفت',
     'completion' => 'تکمیل',
     'remarks' => 'ملاحظات',
     'date' => 'تاریخ',

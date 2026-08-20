@@ -28,6 +28,7 @@ return [
     'surah' => 'Current Surah',
     'sipara' => 'Current Sipara',
     'page' => 'Current Page',
+    'progress_snapshot' => 'Progress',
     'completion' => 'Completion',
     'remarks' => 'Remarks',
     'date' => 'Date',
