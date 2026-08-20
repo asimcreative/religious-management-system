@@ -115,6 +115,7 @@
                         <th scope="col">{{ __('employees.employee_name') }}</th>
                         <th scope="col">{{ __('employees.employee_code') }}</th>
                         <th scope="col">{{ __('quran_classes.joined_at') }}</th>
+                        <th scope="col">{{ __('quran_classes.admission_form') }}</th>
                         @if ($canManage)
                             <th scope="col" class="col-actions"><span class="visually-hidden">{{ __('quran_classes.actions') }}</span></th>
                         @endif
@@ -143,6 +144,19 @@
                                 {{ $member->pivot->joined_at ? \Carbon\Carbon::parse($member->pivot->joined_at)->format('d M Y') : '—' }}
                             </td>
 
+                            <td data-label="{{ __('quran_classes.admission_form') }}">
+                                @if (in_array($member->pivot->id, $admittedMemberIds, true))
+                                    <span class="badge-soft badge-soft-success">{{ __('quran_classes.admission_complete') }}</span>
+                                @else
+                                    <span class="badge-soft badge-soft-warning">{{ __('quran_classes.admission_pending') }}</span>
+                                    @if ($canManage)
+                                        <a href="{{ route('quran-classes.members.admission.create', [$quranClass, $member]) }}" class="fs-xs d-block">
+                                            {{ __('quran_classes.fill_admission_form') }}
+                                        </a>
+                                    @endif
+                                @endif
+                            </td>
+
                             @if ($canManage)
                                 <td class="col-actions" data-label="{{ __('quran_classes.actions') }}">
                                     <x-delete-button
@@ -156,7 +170,7 @@
                         </tr>
                     @empty
                         <tr data-filter-empty>
-                            <td colspan="{{ $canManage ? 5 : 4 }}">
+                            <td colspan="{{ $canManage ? 6 : 5 }}">
                                 <x-empty-state icon="bi-person-plus"
                                                :title="__('quran_classes.no_members')"
                                                :text="__('quran_classes.no_members_text')" />
@@ -166,7 +180,7 @@
 
                     @if ($memberCount > 0)
                         <tr data-filter-empty hidden>
-                            <td colspan="{{ $canManage ? 5 : 4 }}">
+                            <td colspan="{{ $canManage ? 6 : 5 }}">
                                 <x-empty-state size="sm" icon="bi-search" :title="__('ui.no_results_title')" />
                             </td>
                         </tr>

@@ -64,7 +64,7 @@ class QuranClass extends Model
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(Employee::class, 'quran_class_members', 'class_id', 'employee_id')
-            ->withPivot(['is_active', 'joined_at', 'left_at']);
+            ->withPivot(['id', 'is_active', 'joined_at', 'left_at']);
     }
 
     public function activeMembers(): BelongsToMany

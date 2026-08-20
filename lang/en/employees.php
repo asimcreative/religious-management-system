@@ -36,6 +36,8 @@ return [
     'quran_department' => 'Quran Department',
     'quran_status' => 'Quran Status',
     'notes' => 'Notes',
+    'age' => 'Age',
+    'age_years' => ':count years',
 
     // Gender options
     'male' => 'Male',

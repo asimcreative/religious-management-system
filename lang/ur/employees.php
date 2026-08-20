@@ -36,6 +36,8 @@ return [
     'quran_department' => 'قرآن شعبہ',
     'quran_status' => 'قرآن حیثیت',
     'notes' => 'نوٹس',
+    'age' => 'عمر',
+    'age_years' => ':count سال',
 
     // Gender options
     'male' => 'مرد',
