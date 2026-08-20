@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Repositories\SalahAttendanceRepositoryInterface;
+use App\Enums\AttendanceReasonType;
 use App\Enums\Status;
 use App\Helpers\TimezoneHelper;
 use App\Models\AttendanceReason;
@@ -39,7 +40,37 @@ class SalahAttendanceService extends BaseService
 
     public function searchGrouped(?string $search, array $filters = [], int $perPage = 50): LengthAwarePaginator
     {
-        return $this->attendanceRepository->searchGrouped($search, $filters, $perPage);
+        $paginated = $this->attendanceRepository->searchGrouped($search, $filters, $perPage);
+
+        $this->attachTaleem($paginated, $filters);
+
+        return $paginated;
+    }
+
+    /**
+     * Decorates each grouped row with its jamaat's Taleem record for that day,
+     * fetched once for the whole page rather than once per row — every
+     * employee row for the same (jamaat, date) would otherwise repeat an
+     * identical lookup.
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    private function attachTaleem(LengthAwarePaginator $paginated, array $filters): void
+    {
+        $items = $paginated->getCollection();
+
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        $taleemByKey = $this->taleemService->getForFilters($filters)
+            ->keyBy(fn ($taleem) => $taleem->attendance_date->format('Y-m-d').'|'.$taleem->jamaat_id);
+
+        $items->transform(function (array $row) use ($taleemByKey) {
+            $row['taleem'] = $taleemByKey->get($row['date']->format('Y-m-d').'|'.$row['jamaat']?->id);
+
+            return $row;
+        });
     }
 
     /**
@@ -229,6 +260,7 @@ class SalahAttendanceService extends BaseService
     {
         $valid = $reasonId !== null && AttendanceReason::query()
             ->where('company_id', $companyId)
+            ->where('type', AttendanceReasonType::Salah)
             ->where('status', Status::Active->value)
             ->whereKey($reasonId)
             ->exists();
@@ -372,6 +404,7 @@ class SalahAttendanceService extends BaseService
 
         $validReasonIds = AttendanceReason::query()
             ->where('company_id', $companyId)
+            ->where('type', AttendanceReasonType::Salah)
             ->where('status', Status::Active->value)
             ->whereIn('id', $reasonIds)
             ->pluck('id')
