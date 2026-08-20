@@ -5,6 +5,7 @@
 @php
     $pct = (float) $quranProgress->completion_percentage;
     $studentName = $quranProgress->employee?->employee_name ?? '—';
+    $progressSchema = $quranProgress->quranDepartment?->progress_fields_schema ?? [];
 @endphp
 
 @section('breadcrumbs')
@@ -60,16 +61,18 @@
                 </span>
             @endif
 
-            <div class="metric-strip mt-3">
-                <div class="metric-strip__item">
-                    <div class="metric-strip__value">{{ $quranProgress->current_sipara ?? '—' }}</div>
-                    <div class="metric-strip__label">{{ __('quran_progress.sipara') }}</div>
+            @if (empty($progressSchema))
+                <div class="metric-strip mt-3">
+                    <div class="metric-strip__item">
+                        <div class="metric-strip__value">{{ $quranProgress->current_sipara ?? '—' }}</div>
+                        <div class="metric-strip__label">{{ __('quran_progress.sipara') }}</div>
+                    </div>
+                    <div class="metric-strip__item">
+                        <div class="metric-strip__value">{{ $quranProgress->current_page ?? '—' }}</div>
+                        <div class="metric-strip__label">{{ __('quran_progress.page') }}</div>
+                    </div>
                 </div>
-                <div class="metric-strip__item">
-                    <div class="metric-strip__value">{{ $quranProgress->current_page ?? '—' }}</div>
-                    <div class="metric-strip__label">{{ __('quran_progress.page') }}</div>
-                </div>
-            </div>
+            @endif
         </x-card>
     </div>
 
@@ -88,8 +91,14 @@
                     @endif
                 </x-detail-row>
                 <x-detail-row :label="__('quran_progress.department')" :value="$quranProgress->quranDepartment?->department_name" />
-                <x-detail-row :label="__('quran_progress.lesson')" :value="$quranProgress->current_lesson" />
-                <x-detail-row :label="__('quran_progress.surah')" :value="$quranProgress->current_surah" />
+                @if (empty($progressSchema))
+                    <x-detail-row :label="__('quran_progress.lesson')" :value="$quranProgress->current_lesson" />
+                    <x-detail-row :label="__('quran_progress.surah')" :value="$quranProgress->current_surah" />
+                @else
+                    @foreach ($progressSchema as $field)
+                        <x-detail-row :label="$field['label']" :value="$quranProgress->field_values[$field['key']] ?? null" />
+                    @endforeach
+                @endif
                 <x-detail-row :label="__('quran_progress.completion')">
                     <div class="d-flex align-items-center gap-2">
                         <span class="progress flex-grow-1 w-cap-md">
@@ -121,7 +130,7 @@
                         <tr>
                             <th scope="col">{{ __('quran_progress.date') }}</th>
                             <th scope="col">{{ __('quran_progress.department') }}</th>
-                            <th scope="col">{{ __('quran_progress.lesson') }}</th>
+                            <th scope="col">{{ __('quran_progress.progress_snapshot') }}</th>
                             <th scope="col" style="min-width: 9rem;">{{ __('quran_progress.completion') }}</th>
                             <th scope="col">{{ __('quran_progress.updated_by') }}</th>
                         </tr>
@@ -136,8 +145,14 @@
                                 <td data-label="{{ __('quran_progress.department') }}">
                                     {{ $entry->quranDepartment?->department_name ?? '—' }}
                                 </td>
-                                <td data-label="{{ __('quran_progress.lesson') }}">
-                                    {{ $entry->lesson ?? '—' }}
+                                <td data-label="{{ __('quran_progress.progress_snapshot') }}">
+                                    @php($entrySchema = $entry->quranDepartment?->progress_fields_schema ?? [])
+                                    @if (! empty($entrySchema))
+                                        @php($firstField = $entrySchema[0])
+                                        {{ $firstField['label'] }}: {{ $entry->field_values[$firstField['key']] ?? '—' }}
+                                    @else
+                                        {{ $entry->lesson ?? '—' }}
+                                    @endif
                                 </td>
                                 <td data-label="{{ __('quran_progress.completion') }}">
                                     <div class="d-flex align-items-center gap-2">

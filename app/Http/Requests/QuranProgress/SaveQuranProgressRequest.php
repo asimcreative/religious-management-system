@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\QuranProgress;
 
+use App\Models\QuranDepartment;
 use App\Models\QuranProgress;
 use App\Services\RoleDataAccessService;
 use Illuminate\Foundation\Http\FormRequest;
@@ -46,7 +47,7 @@ class SaveQuranProgressRequest extends FormRequest
                 ->where('company_id', $companyId);
         }
 
-        return [
+        $rules = [
             'employee_id' => $employeeRules,
             'teacher_id' => [
                 'required',
@@ -66,7 +67,38 @@ class SaveQuranProgressRequest extends FormRequest
             'current_page' => ['nullable', 'integer', 'min:1', 'max:604'],
             'completion_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
             'remarks' => ['nullable', 'string', 'max:5000'],
+            'field_values' => ['nullable', 'array'],
         ];
+
+        $department = QuranDepartment::query()
+            ->where('company_id', $companyId)
+            ->find($this->input('quran_department_id'));
+
+        foreach ($department?->progress_fields_schema ?? [] as $field) {
+            $rules['field_values.'.$field['key']] = $this->fieldValueRules($field);
+        }
+
+        return $rules;
+    }
+
+    /**
+     * @param  array<string, mixed>  $field
+     * @return array<int, mixed>
+     */
+    private function fieldValueRules(array $field): array
+    {
+        $rules = [($field['required'] ?? false) ? 'required' : 'nullable'];
+
+        return match ($field['type']) {
+            'number' => [
+                ...$rules,
+                'integer',
+                ...(isset($field['min']) ? ['min:'.$field['min']] : []),
+                ...(isset($field['max']) ? ['max:'.$field['max']] : []),
+            ],
+            'select' => [...$rules, Rule::in($field['options'] ?? [])],
+            default => [...$rules, 'string', 'max:5000'],
+        };
     }
 
     /** @return array<int, callable(Validator): void> */

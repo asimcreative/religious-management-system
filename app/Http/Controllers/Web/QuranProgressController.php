@@ -74,6 +74,7 @@ class QuranProgressController extends Controller
     {
         $data = $request->validated();
         $data['company_id'] = $request->user()->company_id;
+        $data['field_values'] = $this->filterFieldValues($data);
 
         $progress = $this->service->createProgress($data);
 
@@ -99,6 +100,7 @@ class QuranProgressController extends Controller
     public function update(SaveQuranProgressRequest $request, QuranProgress $quranProgress): RedirectResponse
     {
         $data = $request->validated();
+        $data['field_values'] = $this->filterFieldValues($data);
 
         $progress = $this->service->updateProgress($quranProgress, $data);
 
@@ -110,6 +112,10 @@ class QuranProgressController extends Controller
     /** @return array<string, mixed> */
     private function formData(): array
     {
+        $departments = QuranDepartment::active()
+            ->orderBy('display_order')
+            ->get(['id', 'department_name', 'progress_fields_schema']);
+
         return [
             'employees' => Employee::active()
                 ->orderBy('employee_name')
@@ -121,8 +127,39 @@ class QuranProgressController extends Controller
                 ->mapWithKeys(fn (Teacher $t) => [
                     $t->id => $t->getEmployeeName().' ('.$t->teacher_code.')',
                 ]),
-            'quranDepartments' => QuranDepartment::active()->orderBy('display_order')->pluck('department_name', 'id'),
+            'quranDepartments' => $departments->pluck('department_name', 'id'),
+            'quranDepartmentSchemas' => $departments->keyBy('id'),
             'quranStatuses' => QuranStatus::active()->orderBy('display_order')->pluck('status_name', 'id'),
         ];
+    }
+
+    /**
+     * Only the submitted quran_department_id's own schema fields can ever be
+     * persisted — field_values itself only carries an `array` rule at the
+     * parent-key level, so validated() includes whatever was submitted
+     * beneath it once that passes. A stale page (department switched after
+     * load with JS disabled) or a tampered request could otherwise smuggle
+     * in keys belonging to a different department's schema.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function filterFieldValues(array $data): array
+    {
+        $department = QuranDepartment::find($data['quran_department_id'] ?? null);
+        $schema = collect($department?->progress_fields_schema ?? [])->keyBy('key');
+        $submitted = $data['field_values'] ?? [];
+
+        $values = [];
+
+        foreach ($schema as $key => $field) {
+            if (! array_key_exists($key, $submitted) || $submitted[$key] === null || $submitted[$key] === '') {
+                continue;
+            }
+
+            $values[$key] = $field['type'] === 'number' ? (int) $submitted[$key] : $submitted[$key];
+        }
+
+        return $values;
     }
 }

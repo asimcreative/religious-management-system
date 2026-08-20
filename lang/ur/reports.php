@@ -83,6 +83,7 @@ return [
     'quran_department' => 'قرآنی شعبہ',
     'quran_status' => 'قرآنی حالت',
     'current_lesson' => 'موجودہ سبق',
+    'progress_snapshot' => 'پیش رفت',
     'completion' => 'تکمیل',
 
     // Attendance Fields

@@ -30,6 +30,7 @@ class QuranProgressHistory extends Model
         'surah',
         'sipara',
         'page',
+        'field_values',
         'percentage',
         'remarks',
     ];
@@ -39,6 +40,7 @@ class QuranProgressHistory extends Model
         return [
             'sipara' => 'integer',
             'page' => 'integer',
+            'field_values' => 'array',
             'percentage' => 'decimal:2',
         ];
     }

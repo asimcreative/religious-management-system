@@ -83,6 +83,7 @@
                                        :selected="$quranProgress?->quran_department_id"
                                        :placeholder="__('quran_progress.select')"
                                        :options="$quranDepartments"
+                                       data-quran-department-select
                                        required />
                     </div>
 
@@ -100,7 +101,7 @@
             <x-card :title="__('quran_progress.current_position')" icon="bi-bookmark">
                 <p class="fs-sm text-soft mt-n1 mb-3">{{ __('quran_progress.position_hint') }}</p>
 
-                <div class="row">
+                <div class="row" data-department-fields="legacy">
                     <div class="col-6 col-md-3">
                         <x-form.input name="current_lesson"
                                       :label="__('quran_progress.lesson')"
@@ -133,7 +134,55 @@
                                       inputmode="numeric"
                                       optional />
                     </div>
+                </div>
 
+                @foreach ($quranDepartmentSchemas as $dept)
+                    @continue(empty($dept->progress_fields_schema))
+                    <div class="row" data-department-fields="{{ $dept->id }}" hidden>
+                        @foreach ($dept->progress_fields_schema as $field)
+                            @php($fv = $quranProgress?->field_values[$field['key']] ?? null)
+                            @php($fieldRequired = $field['required'] ?? false)
+                            <div class="col-6 col-md-3">
+                                @switch($field['type'])
+                                    @case('number')
+                                        <x-form.input name="field_values[{{ $field['key'] }}]"
+                                                      type="number"
+                                                      :label="$field['label']"
+                                                      :value="$fv"
+                                                      :min="$field['min'] ?? null"
+                                                      :max="$field['max'] ?? null"
+                                                      step="1"
+                                                      inputmode="numeric"
+                                                      :required="$fieldRequired"
+                                                      :data-department-required="$fieldRequired"
+                                                      :optional="! $fieldRequired" />
+                                        @break
+
+                                    @case('select')
+                                        <x-form.select name="field_values[{{ $field['key'] }}]"
+                                                       :label="$field['label']"
+                                                       :selected="$fv"
+                                                       :placeholder="__('quran_progress.select')"
+                                                       :options="array_combine($field['options'], $field['options'])"
+                                                       :required="$fieldRequired"
+                                                       :data-department-required="$fieldRequired" />
+                                        @break
+
+                                    @default
+                                        <x-form.textarea name="field_values[{{ $field['key'] }}]"
+                                                         :label="$field['label']"
+                                                         :value="$fv"
+                                                         rows="2"
+                                                         :required="$fieldRequired"
+                                                         :data-department-required="$fieldRequired"
+                                                         :optional="! $fieldRequired" />
+                                @endswitch
+                            </div>
+                        @endforeach
+                    </div>
+                @endforeach
+
+                <div class="row">
                     <div class="col-12 col-md-4">
                         <x-form.input name="completion_percentage"
                                       type="number"

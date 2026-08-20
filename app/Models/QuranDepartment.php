@@ -23,6 +23,7 @@ class QuranDepartment extends Model
         'company_id',
         'department_name',
         'description',
+        'progress_fields_schema',
         'display_order',
         'status',
     ];
@@ -32,6 +33,7 @@ class QuranDepartment extends Model
         return [
             'status' => Status::class,
             'display_order' => 'integer',
+            'progress_fields_schema' => 'array',
         ];
     }
 

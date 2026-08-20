@@ -93,7 +93,7 @@
                 <th scope="col">{{ __('quran_progress.employee') }}</th>
                 <th scope="col">{{ __('quran_progress.department') }}</th>
                 <th scope="col">{{ __('quran_progress.quran_status') }}</th>
-                <th scope="col">{{ __('quran_progress.lesson') }}</th>
+                <th scope="col">{{ __('quran_progress.progress_snapshot') }}</th>
                 <th scope="col" style="min-width: 9rem;">{{ __('quran_progress.completion') }}</th>
                 <th scope="col">{{ __('quran_progress.teacher') }}</th>
                 <th scope="col" class="col-actions"><span class="visually-hidden">{{ __('quran_progress.actions') }}</span></th>
@@ -138,8 +138,14 @@
                         @endif
                     </td>
 
-                    <td data-label="{{ __('quran_progress.lesson') }}">
-                        {{ $record->current_lesson ?? '—' }}
+                    <td data-label="{{ __('quran_progress.progress_snapshot') }}">
+                        @php($recordSchema = $record->quranDepartment?->progress_fields_schema ?? [])
+                        @if (! empty($recordSchema))
+                            @php($firstField = $recordSchema[0])
+                            {{ $firstField['label'] }}: {{ $record->field_values[$firstField['key']] ?? '—' }}
+                        @else
+                            {{ $record->current_lesson ?? '—' }}
+                        @endif
                     </td>
 
                     <td data-label="{{ __('quran_progress.completion') }}">

@@ -755,6 +755,116 @@ function initTaleemToggle() {
     });
 }
 
+// Progress Fields builder on the Quran Department create/edit screen: an
+// add/remove row repeater with no server round-trip, following this file's
+// existing [data-*]-driven init pattern. No repeater precedent existed
+// anywhere in this codebase before this — kept intentionally small.
+function initQuranProgressFieldBuilder() {
+    const container = document.querySelector('[data-progress-fields-rows]');
+    const template = document.querySelector('[data-progress-field-template]');
+    const addButton = document.querySelector('[data-progress-field-add]');
+    const emptyNote = document.querySelector('[data-progress-fields-empty]');
+    if (!container || !template) return;
+
+    const slugify = (value) => value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .replace(/^[^a-z]+/, '');
+
+    const syncRowType = (row) => {
+        const type = row.querySelector('[data-progress-field-type]')?.value;
+        row.querySelector('[data-progress-field-number-group]')?.toggleAttribute('hidden', type !== 'number');
+        row.querySelector('[data-progress-field-select-group]')?.toggleAttribute('hidden', type !== 'select');
+    };
+
+    const wireRow = (row) => {
+        const typeSelect = row.querySelector('[data-progress-field-type]');
+        const labelInput = row.querySelector('[data-progress-field-label]');
+        const keyInput = row.querySelector('[data-progress-field-key]');
+        const removeButton = row.querySelector('[data-progress-field-remove]');
+
+        syncRowType(row);
+        typeSelect?.addEventListener('change', () => syncRowType(row));
+
+        // A row loaded with a key already set (an existing field) is marked
+        // dirty immediately — editing its label must never silently rename
+        // the key, which would orphan already-recorded field_values under
+        // the old one.
+        if (keyInput && keyInput.value.trim() !== '') {
+            keyInput.dataset.keyDirty = '1';
+        }
+        keyInput?.addEventListener('input', () => {
+            keyInput.dataset.keyDirty = '1';
+        });
+        labelInput?.addEventListener('input', () => {
+            if (keyInput && keyInput.dataset.keyDirty !== '1') {
+                keyInput.value = slugify(labelInput.value);
+            }
+        });
+
+        removeButton?.addEventListener('click', () => {
+            row.remove();
+            if (emptyNote && container.children.length === 0) {
+                emptyNote.removeAttribute('hidden');
+            }
+        });
+    };
+
+    [...container.querySelectorAll('[data-progress-field-row]')].forEach(wireRow);
+
+    addButton?.addEventListener('click', () => {
+        const index = Date.now();
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = template.innerHTML.replaceAll('__INDEX__', String(index)).trim();
+        const row = wrapper.firstElementChild;
+        if (!row) return;
+
+        container.appendChild(row);
+        wireRow(row);
+        emptyNote?.setAttribute('hidden', '');
+    });
+}
+
+// Quran Progress form: which department-specific field block to show is
+// driven entirely by whether that department has a configured schema — a
+// department with none simply has no matching block, so the legacy
+// Lesson/Surah/Sipara/Page block shows automatically instead. Same toggle
+// pattern as initTeacherAbsenceToggle()/initTaleemToggle() above.
+function initQuranProgressDepartmentFields() {
+    const select = document.querySelector('[data-quran-department-select]');
+    if (!select) return;
+
+    const dynamicBlocks = [...document.querySelectorAll('[data-department-fields]')]
+        .filter((block) => block.dataset.departmentFields !== 'legacy');
+    const legacyBlock = document.querySelector('[data-department-fields="legacy"]');
+
+    const sync = () => {
+        const selected = select.value;
+        let matched = false;
+
+        dynamicBlocks.forEach((block) => {
+            const isMatch = block.dataset.departmentFields === selected;
+            if (isMatch) matched = true;
+
+            block.toggleAttribute('hidden', !isMatch);
+            block.querySelectorAll('[data-department-required]').forEach((field) => {
+                field.toggleAttribute('required', isMatch);
+            });
+            if (!isMatch) {
+                block.querySelectorAll('input, select, textarea').forEach((field) => {
+                    field.value = '';
+                });
+            }
+        });
+
+        legacyBlock?.toggleAttribute('hidden', matched);
+    };
+
+    select.addEventListener('change', sync);
+    sync();
+}
+
 /* ───────────────────────────────────────────────────────────────────────────
  * 8d. Shell-owned form triggers
  *
@@ -909,6 +1019,8 @@ function boot() {
     initAttendanceTally();
     initTeacherAbsenceToggle();
     initTaleemToggle();
+    initQuranProgressFieldBuilder();
+    initQuranProgressDepartmentFields();
     initShellForms();
     initAutoDismiss();
     initTooltips();

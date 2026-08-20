@@ -316,4 +316,218 @@ class QuranProgressTest extends TestCase
 
         $this->assertFalse($progress->isCompleted());
     }
+
+    // ── Dynamic per-department field_values ─────────────────────────────────
+
+    /** @return array{key: string, label: string, type: string, min?: int, max?: int, options?: array<int, string>, required?: bool} */
+    private function numberField(): array
+    {
+        return ['key' => 'current_takhti', 'label' => 'Current Takhti', 'type' => 'number', 'min' => 1, 'max' => 17, 'required' => false];
+    }
+
+    /** @return array<string, mixed> */
+    private function selectField(): array
+    {
+        return ['key' => 'letter_recognition', 'label' => 'Letter Recognition', 'type' => 'select', 'options' => ['Excellent', 'Average', 'Weak'], 'required' => true];
+    }
+
+    public function test_create_form_renders_successfully_for_a_department_with_a_schema(): void
+    {
+        // Regression guard: a Blade compiler quirk meant @php ... @endphp
+        // (block form) right before a dynamic-field component tag, combined
+        // with this same page's <form action="{{ ternary }}"> line, silently
+        // failed to compile and 500'd — but only once a department actually
+        // *had* a schema to render, which no other test here exercises via a
+        // GET request. Fixed by using inline @php(...) statements instead.
+        $user = $this->admin();
+        QuranDepartment::factory()->create([
+            'company_id' => $user->company_id,
+            'progress_fields_schema' => [$this->numberField(), $this->selectField()],
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('quran-progress.create'))
+            ->assertOk()
+            ->assertSee('Current Takhti')
+            ->assertSee('Letter Recognition');
+    }
+
+    public function test_store_persists_field_values_for_a_department_with_a_schema(): void
+    {
+        $user = $this->admin();
+        ['employee' => $emp, 'teacher' => $teacher, 'status' => $status] = $this->buildRelations($user);
+        $department = QuranDepartment::factory()->create([
+            'company_id' => $user->company_id,
+            'progress_fields_schema' => [$this->numberField(), $this->selectField()],
+        ]);
+
+        $payload = $this->validPayload($emp, $teacher, $department, $status);
+        $payload['field_values'] = ['current_takhti' => 5, 'letter_recognition' => 'Excellent'];
+
+        $this->actingAs($user)
+            ->post(route('quran-progress.store'), $payload)
+            ->assertRedirect();
+
+        $progress = QuranProgress::where('employee_id', $emp->id)->firstOrFail();
+        $this->assertSame(['current_takhti' => 5, 'letter_recognition' => 'Excellent'], $progress->field_values);
+    }
+
+    public function test_store_rejects_field_value_outside_declared_number_range(): void
+    {
+        $user = $this->admin();
+        ['employee' => $emp, 'teacher' => $teacher, 'status' => $status] = $this->buildRelations($user);
+        $department = QuranDepartment::factory()->create([
+            'company_id' => $user->company_id,
+            'progress_fields_schema' => [$this->numberField()],
+        ]);
+
+        $payload = $this->validPayload($emp, $teacher, $department, $status);
+        $payload['field_values'] = ['current_takhti' => 20];
+
+        $this->actingAs($user)
+            ->post(route('quran-progress.store'), $payload)
+            ->assertSessionHasErrors('field_values.current_takhti');
+    }
+
+    public function test_store_rejects_field_value_not_in_declared_select_options(): void
+    {
+        $user = $this->admin();
+        ['employee' => $emp, 'teacher' => $teacher, 'status' => $status] = $this->buildRelations($user);
+        $department = QuranDepartment::factory()->create([
+            'company_id' => $user->company_id,
+            'progress_fields_schema' => [$this->selectField()],
+        ]);
+
+        $payload = $this->validPayload($emp, $teacher, $department, $status);
+        $payload['field_values'] = ['letter_recognition' => 'Not An Option'];
+
+        $this->actingAs($user)
+            ->post(route('quran-progress.store'), $payload)
+            ->assertSessionHasErrors('field_values.letter_recognition');
+    }
+
+    public function test_store_requires_a_field_marked_required_in_the_schema(): void
+    {
+        $user = $this->admin();
+        ['employee' => $emp, 'teacher' => $teacher, 'status' => $status] = $this->buildRelations($user);
+        $department = QuranDepartment::factory()->create([
+            'company_id' => $user->company_id,
+            'progress_fields_schema' => [$this->selectField()],
+        ]);
+
+        $payload = $this->validPayload($emp, $teacher, $department, $status);
+        // letter_recognition (required: true) intentionally omitted.
+
+        $this->actingAs($user)
+            ->post(route('quran-progress.store'), $payload)
+            ->assertSessionHasErrors('field_values.letter_recognition');
+    }
+
+    public function test_store_drops_field_values_not_belonging_to_the_submitted_department(): void
+    {
+        $user = $this->admin();
+        ['employee' => $emp, 'teacher' => $teacher, 'status' => $status] = $this->buildRelations($user);
+        $department = QuranDepartment::factory()->create([
+            'company_id' => $user->company_id,
+            'progress_fields_schema' => [$this->numberField()],
+        ]);
+
+        $payload = $this->validPayload($emp, $teacher, $department, $status);
+        // A key that belongs to no field in this department's schema at all.
+        $payload['field_values'] = ['current_takhti' => 5, 'stray_key' => 'sneaked in'];
+
+        $this->actingAs($user)
+            ->post(route('quran-progress.store'), $payload)
+            ->assertRedirect();
+
+        $progress = QuranProgress::where('employee_id', $emp->id)->firstOrFail();
+        $this->assertSame(['current_takhti' => 5], $progress->field_values);
+    }
+
+    public function test_update_modifies_field_values(): void
+    {
+        $user = $this->admin();
+        ['employee' => $emp, 'teacher' => $teacher, 'status' => $status] = $this->buildRelations($user);
+        $department = QuranDepartment::factory()->create([
+            'company_id' => $user->company_id,
+            'progress_fields_schema' => [$this->numberField()],
+        ]);
+
+        $progress = QuranProgress::factory()->create([
+            'company_id' => $user->company_id,
+            'employee_id' => $emp->id,
+            'teacher_id' => $teacher->id,
+            'quran_department_id' => $department->id,
+            'quran_status_id' => $status->id,
+            'field_values' => ['current_takhti' => 3],
+        ]);
+
+        $payload = $this->validPayload($emp, $teacher, $department, $status);
+        $payload['field_values'] = ['current_takhti' => 12];
+
+        $this->actingAs($user)
+            ->put(route('quran-progress.update', $progress), $payload)
+            ->assertRedirect();
+
+        $this->assertSame(['current_takhti' => 12], $progress->refresh()->field_values);
+    }
+
+    public function test_record_history_snapshots_field_values(): void
+    {
+        $user = $this->admin();
+        ['employee' => $emp, 'teacher' => $teacher, 'status' => $status] = $this->buildRelations($user);
+        $department = QuranDepartment::factory()->create([
+            'company_id' => $user->company_id,
+            'progress_fields_schema' => [$this->numberField()],
+        ]);
+
+        $payload = $this->validPayload($emp, $teacher, $department, $status);
+        $payload['field_values'] = ['current_takhti' => 7];
+
+        $this->actingAs($user)->post(route('quran-progress.store'), $payload);
+
+        $progress = QuranProgress::where('employee_id', $emp->id)->firstOrFail();
+        $history = $progress->history()->latest('created_at')->firstOrFail();
+
+        $this->assertSame(['current_takhti' => 7], $history->field_values);
+    }
+
+    public function test_edit_form_renders_successfully_for_a_department_with_a_schema(): void
+    {
+        $user = $this->admin();
+        ['employee' => $emp, 'teacher' => $teacher, 'status' => $status] = $this->buildRelations($user);
+        $department = QuranDepartment::factory()->create([
+            'company_id' => $user->company_id,
+            'progress_fields_schema' => [$this->numberField(), $this->selectField()],
+        ]);
+        $progress = QuranProgress::factory()->create([
+            'company_id' => $user->company_id,
+            'employee_id' => $emp->id,
+            'teacher_id' => $teacher->id,
+            'quran_department_id' => $department->id,
+            'quran_status_id' => $status->id,
+            'field_values' => ['current_takhti' => 9, 'letter_recognition' => 'Average'],
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('quran-progress.edit', $progress))
+            ->assertOk()
+            ->assertSee('Current Takhti')
+            ->assertSee('Letter Recognition');
+    }
+
+    public function test_store_and_edit_still_work_for_a_department_with_an_empty_schema(): void
+    {
+        $user = $this->admin();
+        ['employee' => $emp, 'teacher' => $teacher, 'department' => $dept, 'status' => $status] = $this->buildRelations($user);
+        // buildRelations()'s department has no progress_fields_schema by default.
+
+        $this->actingAs($user)
+            ->post(route('quran-progress.store'), $this->validPayload($emp, $teacher, $dept, $status))
+            ->assertRedirect();
+
+        $progress = QuranProgress::where('employee_id', $emp->id)->firstOrFail();
+        $this->assertSame('Lesson 5', $progress->current_lesson);
+        $this->assertTrue(in_array($progress->field_values, [null, []], true));
+    }
 }
