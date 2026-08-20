@@ -161,33 +161,65 @@
                 <th scope="col" class="col-num">#</th>
                 <th scope="col">{{ __('reports.date') }}</th>
                 <th scope="col">{{ __('reports.employee_name') }}</th>
-                <th scope="col">{{ __('reports.prayer') }}</th>
                 <th scope="col">{{ __('reports.jamaat') }}</th>
-                <th scope="col">{{ __('reports.attendance_status') }}</th>
-                <th scope="col">{{ __('reports.remarks') }}</th>
+                @if ($groupedByPrayer)
+                    @foreach ($prayers as $id => $name)
+                        <th scope="col" class="text-center">{{ $name }}</th>
+                    @endforeach
+                @else
+                    <th scope="col">{{ __('reports.prayer') }}</th>
+                    <th scope="col">{{ __('reports.attendance_status') }}</th>
+                    <th scope="col">{{ __('reports.remarks') }}</th>
+                @endif
             </tr>
         </thead>
 
         <tbody>
-            @forelse ($attendance as $record)
-                <tr>
-                    <td class="col-num" data-label="#">{{ $attendance->firstItem() + $loop->index }}</td>
-                    <td data-label="{{ __('reports.date') }}" class="col-fit tabular">{{ $record->attendance_date->format('d M Y') }}</td>
-                    <td data-label="{{ __('reports.employee_name') }}" class="fw-semibold text-strong">{{ $record->employee?->employee_name ?? '—' }}</td>
-                    <td data-label="{{ __('reports.prayer') }}">{{ $record->prayer?->prayer_name ?? '—' }}</td>
-                    <td data-label="{{ __('reports.jamaat') }}">{{ $record->jamaat?->jamaat_name ?? '—' }}</td>
-                    <td data-label="{{ __('reports.attendance_status') }}">
-                        @if ($record->isPresent())
-                            <span class="badge-soft badge-soft-success">{{ __('reports.present') }}</span>
-                        @else
-                            <span class="badge-soft badge-soft-danger">{{ $record->attendanceReason?->reason_name ?? '—' }}</span>
-                        @endif
-                    </td>
-                    <td data-label="{{ __('reports.remarks') }}">{{ $record->remarks ?? '—' }}</td>
-                </tr>
+            @forelse ($attendance as $row)
+                @if ($groupedByPrayer)
+                    <tr>
+                        <td class="col-num" data-label="#">{{ $attendance->firstItem() + $loop->index }}</td>
+                        <td data-label="{{ __('reports.date') }}" class="col-fit tabular">{{ $row['date']->format('d M Y') }}</td>
+                        <td data-label="{{ __('reports.employee_name') }}" class="fw-semibold text-strong">{{ $row['employee']?->employee_name ?? '—' }}</td>
+                        <td data-label="{{ __('reports.jamaat') }}">{{ $row['jamaat']?->jamaat_name ?? '—' }}</td>
+                        @foreach ($prayers as $id => $name)
+                            @php($rec = $row['prayers']->get($id))
+                            <td class="text-center" data-label="{{ $name }}">
+                                @if ($rec === null)
+                                    <span class="dash" title="{{ __('salah_attendance.not_recorded') }}">—</span>
+                                @elseif ($rec->isPresent())
+                                    <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+                                    <span class="visually-hidden">{{ __('reports.present') }}</span>
+                                @else
+                                    <span class="badge-soft badge-soft--plain"
+                                          style="background-color: {{ $rec->attendanceReason?->color ?? '#64748B' }}1F;
+                                                 color: {{ $rec->attendanceReason?->color ?? '#64748B' }};">
+                                        {{ $rec->attendanceReason?->reason_name ?? '—' }}
+                                    </span>
+                                @endif
+                            </td>
+                        @endforeach
+                    </tr>
+                @else
+                    <tr>
+                        <td class="col-num" data-label="#">{{ $attendance->firstItem() + $loop->index }}</td>
+                        <td data-label="{{ __('reports.date') }}" class="col-fit tabular">{{ $row->attendance_date->format('d M Y') }}</td>
+                        <td data-label="{{ __('reports.employee_name') }}" class="fw-semibold text-strong">{{ $row->employee?->employee_name ?? '—' }}</td>
+                        <td data-label="{{ __('reports.jamaat') }}">{{ $row->jamaat?->jamaat_name ?? '—' }}</td>
+                        <td data-label="{{ __('reports.prayer') }}">{{ $row->prayer?->prayer_name ?? '—' }}</td>
+                        <td data-label="{{ __('reports.attendance_status') }}">
+                            @if ($row->isPresent())
+                                <span class="badge-soft badge-soft-success">{{ __('reports.present') }}</span>
+                            @else
+                                <span class="badge-soft badge-soft-danger">{{ $row->attendanceReason?->reason_name ?? '—' }}</span>
+                            @endif
+                        </td>
+                        <td data-label="{{ __('reports.remarks') }}">{{ $row->remarks ?? '—' }}</td>
+                    </tr>
+                @endif
             @empty
                 <tr>
-                    <td colspan="7">
+                    <td colspan="{{ $groupedByPrayer ? 4 + $prayers->count() : 7 }}">
                         <x-empty-state icon="bi-funnel"
                                        :title="$activeFilters ? __('ui.no_results_title') : __('ui.report_ready_title')"
                                        :text="$activeFilters ? __('ui.no_results_text') : __('ui.report_ready_text')">

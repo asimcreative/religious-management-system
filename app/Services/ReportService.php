@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Support\Analytics\DateExpression;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator as ManualPaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -164,6 +165,49 @@ class ReportService
             })
             ->latest('attendance_date')
             ->paginate($perPage);
+    }
+
+    /**
+     * Same rows as salahAttendanceReport(), one row per (date, jamaat,
+     * employee) with every prayer keyed by prayer_id instead of one row per
+     * prayer record — used when no single prayer is filtered, mirroring
+     * SalahAttendanceRepository::searchGrouped() (the Attendance History
+     * listing's grouping), which this report does not otherwise depend on.
+     * No prayer_id filter here on purpose: a specific prayer never reaches
+     * this method, ReportController only calls it when prayer_id is empty.
+     */
+    public function salahAttendanceReportGrouped(array $filters, int $perPage = 50): LengthAwarePaginator
+    {
+        $records = SalahAttendance::query()
+            ->with(['prayer', 'jamaat', 'employee', 'attendanceReason'])
+            ->when($filters['jamaat_id'] ?? null, fn (Builder $q, $v) => $q->where('jamaat_id', $v))
+            ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '<=', $v))
+            ->when($filters['search'] ?? null, function (Builder $q, $search) {
+                $q->whereHas('employee', fn (Builder $eq) => $eq->where('employee_name', 'like', "%{$search}%"));
+            })
+            ->latest('attendance_date')
+            ->orderBy('employee_id')
+            ->get();
+
+        $grouped = $records
+            ->groupBy(fn (SalahAttendance $r) => $r->attendance_date->format('Y-m-d').'|'.$r->jamaat_id.'|'.$r->employee_id)
+            ->map(fn ($rows) => [
+                'date' => $rows->first()->attendance_date,
+                'jamaat' => $rows->first()->jamaat,
+                'employee' => $rows->first()->employee,
+                'prayers' => $rows->keyBy('prayer_id'),
+            ])
+            ->values();
+
+        $page = (int) request()->get('page', 1);
+        $total = $grouped->count();
+        $items = $grouped->forPage($page, $perPage);
+
+        return new ManualPaginator($items, $total, $perPage, $page, [
+            'path' => request()->url(),
+            'query' => request()->query(),
+        ]);
     }
 
     /**
