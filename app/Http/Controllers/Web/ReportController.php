@@ -168,7 +168,17 @@ class ReportController extends Controller
         $this->authorize('report.salah');
 
         $filters = $request->only(['search', 'jamaat_id', 'prayer_id', 'date_from', 'date_to']);
-        $attendance = $this->service->salahAttendanceReport($filters, $this->perPage($request, 50));
+
+        // With no single prayer chosen, one row per (date, employee) with every
+        // prayer as its own column reads far better than five near-identical
+        // rows for the same person's day. Once a specific prayer is filtered,
+        // there is only ever one record per person per day anyway, so the flat
+        // one-row-per-record shape stays as it already was.
+        $groupedByPrayer = empty($filters['prayer_id']);
+        $attendance = $groupedByPrayer
+            ? $this->service->salahAttendanceReportGrouped($filters, $this->perPage($request, 50))
+            : $this->service->salahAttendanceReport($filters, $this->perPage($request, 50));
+
         $summary = $this->service->salahAttendanceSummary($filters);
         // Always the caller's own company. This used to widen to every tenant
         // for the platform account, but that account no longer reaches the
@@ -185,6 +195,7 @@ class ReportController extends Controller
 
         return view('reports.salah-attendance', [
             'attendance' => $attendance,
+            'groupedByPrayer' => $groupedByPrayer,
             'summary' => $summary,
             'prayerWise' => $prayerWise,
             'jamaats' => $jamaats,

@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\Employee;
 use App\Models\Jamaat;
 use App\Models\JamaatTaleem;
+use App\Models\Prayer;
 use App\Models\QuranAttendance;
 use App\Models\QuranClass;
 use App\Models\QuranTeacherAttendance;
@@ -206,6 +207,62 @@ class ReportTest extends TestCase
 
         $this->actingAs($userA);
         $this->assertSame(1, SalahAttendance::count());
+    }
+
+    /**
+     * With no single prayer chosen, one row per (date, employee) with every
+     * prayer as its own column reads far better than one row per prayer
+     * record for the same person's day — see ReportService::salahAttendanceReportGrouped().
+     */
+    public function test_salah_attendance_report_groups_every_prayer_into_one_row_when_none_is_filtered(): void
+    {
+        $user = $this->reportAdmin();
+        $jamaat = Jamaat::factory()->create(['company_id' => $user->company_id]);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $fajr = Prayer::factory()->create(['prayer_name' => 'Fajr']);
+        $isha = Prayer::factory()->create(['prayer_name' => 'Isha']);
+
+        foreach ([$fajr, $isha] as $prayer) {
+            SalahAttendance::factory()->create([
+                'company_id' => $user->company_id,
+                'jamaat_id' => $jamaat->id,
+                'employee_id' => $employee->id,
+                'prayer_id' => $prayer->id,
+                'attendance_date' => '2026-08-15',
+            ]);
+        }
+
+        $this->actingAs($user)
+            ->get(route('reports.salah-attendance'))
+            ->assertOk()
+            ->assertSee('Fajr')
+            ->assertSee('Isha')
+            // Two prayer records, but one grouped row — the toolbar counts groups.
+            ->assertSeeText('Total Records: 1');
+    }
+
+    public function test_salah_attendance_report_stays_one_row_per_record_when_a_prayer_is_filtered(): void
+    {
+        $user = $this->reportAdmin();
+        $jamaat = Jamaat::factory()->create(['company_id' => $user->company_id]);
+        $employee = Employee::factory()->create(['company_id' => $user->company_id]);
+        $fajr = Prayer::factory()->create(['prayer_name' => 'Fajr']);
+        $isha = Prayer::factory()->create(['prayer_name' => 'Isha']);
+
+        foreach ([$fajr, $isha] as $prayer) {
+            SalahAttendance::factory()->create([
+                'company_id' => $user->company_id,
+                'jamaat_id' => $jamaat->id,
+                'employee_id' => $employee->id,
+                'prayer_id' => $prayer->id,
+                'attendance_date' => '2026-08-15',
+            ]);
+        }
+
+        $this->actingAs($user)
+            ->get(route('reports.salah-attendance', ['prayer_id' => $fajr->id]))
+            ->assertOk()
+            ->assertSeeText('Total Records: 1');
     }
 
     // ── Jamaat Taleem Report ────────────────────────────────────────────────
