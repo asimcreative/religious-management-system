@@ -210,8 +210,14 @@
                         <td data-label="{{ __('reports.attendance_status') }}">
                             @if ($row->isPresent())
                                 <span class="badge-soft badge-soft-success">{{ __('reports.present') }}</span>
-                            @else
+                            @elseif ($row->isAbsent())
                                 <span class="badge-soft badge-soft-danger">{{ $row->attendanceReason?->reason_name ?? '—' }}</span>
+                            @else
+                                <span class="badge-soft badge-soft--plain"
+                                      style="background-color: {{ $row->attendanceReason?->color ?? '#64748B' }}1F;
+                                             color: {{ $row->attendanceReason?->color ?? '#64748B' }};">
+                                    {{ $row->attendanceReason?->reason_name ?? '—' }}
+                                </span>
                             @endif
                         </td>
                         <td data-label="{{ __('reports.remarks') }}">{{ $row->remarks ?? '—' }}</td>

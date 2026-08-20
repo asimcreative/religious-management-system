@@ -140,10 +140,16 @@
                     <td data-label="{{ __('reports.attendance_status') }}">
                         @if (! $record->class_held)
                             <span class="badge-soft badge-soft-info">{{ __('quran_attendance.class_not_held') }}</span>
-                        @elseif ($record->attendance_reason_id === null)
+                        @elseif ($record->isPresent())
                             <span class="badge-soft badge-soft-success">{{ __('reports.present') }}</span>
-                        @else
+                        @elseif ($record->isAbsent())
                             <span class="badge-soft badge-soft-danger">{{ $record->attendanceReason?->reason_name ?? '—' }}</span>
+                        @else
+                            <span class="badge-soft badge-soft--plain"
+                                  style="background-color: {{ $record->attendanceReason?->color ?? '#64748B' }}1F;
+                                         color: {{ $record->attendanceReason?->color ?? '#64748B' }};">
+                                {{ $record->attendanceReason?->reason_name ?? '—' }}
+                            </span>
                         @endif
                     </td>
                     <td data-label="{{ __('reports.remarks') }}">{{ $record->remarks ?? '—' }}</td>

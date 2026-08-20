@@ -12,6 +12,7 @@ use App\Models\QuranTeacherAttendance;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Support\Analytics\AttendanceExpression;
 use App\Support\Analytics\DateExpression;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -98,8 +99,8 @@ class ReportService
             ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '<=', $v));
 
         $total = (clone $query)->count();
-        $present = (clone $query)->whereNull('attendance_reason_id')->count();
-        $absent = $total - $present;
+        $absent = AttendanceExpression::countAbsent(clone $query, 'quran_attendance');
+        $present = $total - $absent;
 
         return [
             'total' => $total,
@@ -222,8 +223,8 @@ class ReportService
             ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->where('attendance_date', '<=', $v));
 
         $total = (clone $query)->count();
-        $present = (clone $query)->whereNull('attendance_reason_id')->count();
-        $absent = $total - $present;
+        $absent = AttendanceExpression::countAbsent(clone $query, 'salah_attendance');
+        $present = $total - $absent;
 
         return [
             'total' => $total,
@@ -243,8 +244,12 @@ class ReportService
      */
     public function salahPrayerWiseSummary(array $filters, ?int $companyId, ?array $allowedJamaatIds = null): Collection
     {
-        return SalahAttendance::query()
-            ->join('prayers', 'salah_attendance.prayer_id', '=', 'prayers.id')
+        $query = AttendanceExpression::joinReasons(
+            SalahAttendance::query()->join('prayers', 'salah_attendance.prayer_id', '=', 'prayers.id'),
+            'salah_attendance'
+        );
+
+        return $query
             ->when($companyId !== null, fn (Builder $q) => $q->where('salah_attendance.company_id', $companyId))
             ->when($allowedJamaatIds !== null, fn (Builder $q) => $q->whereIn('salah_attendance.jamaat_id', $allowedJamaatIds))
             ->when($filters['jamaat_id'] ?? null, fn (Builder $q, $v) => $q->where('salah_attendance.jamaat_id', $v))
@@ -253,13 +258,17 @@ class ReportService
             ->select(
                 'prayers.prayer_name',
                 DB::raw('COUNT(*) as total'),
-                DB::raw('SUM(CASE WHEN salah_attendance.attendance_reason_id IS NULL THEN 1 ELSE 0 END) as present'),
-                DB::raw('SUM(CASE WHEN salah_attendance.attendance_reason_id IS NOT NULL THEN 1 ELSE 0 END) as absent')
+                DB::raw('SUM('.AttendanceExpression::absentCase('salah_attendance').') as absent')
             )
             ->groupBy('prayers.id', 'prayers.prayer_name')
             ->orderBy('prayers.prayer_order')
             ->toBase()
-            ->get();
+            ->get()
+            ->map(function ($row) {
+                $row->present = $row->total - $row->absent;
+
+                return $row;
+            });
     }
 
     // ── Jamaat Taleem Report ───────────────────────────────────────

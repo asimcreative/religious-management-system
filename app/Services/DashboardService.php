@@ -12,6 +12,7 @@ use App\Models\QuranProgress;
 use App\Models\SalahAttendance;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Support\Analytics\AttendanceExpression;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -132,8 +133,11 @@ class DashboardService
             $today = Carbon::now(TimezoneHelper::getCompanyTimezone($this->companyId()))->toDateString();
 
             $total = QuranAttendance::where('attendance_date', $today)->where('class_held', true)->count();
-            $present = QuranAttendance::where('attendance_date', $today)->where('class_held', true)->whereNull('attendance_reason_id')->count();
-            $absent = $total - $present;
+            $absent = AttendanceExpression::countAbsent(
+                QuranAttendance::where('attendance_date', $today)->where('class_held', true),
+                'quran_attendance'
+            );
+            $present = $total - $absent;
 
             return [
                 'total' => $total,
@@ -161,8 +165,11 @@ class DashboardService
             $today = Carbon::now(TimezoneHelper::getCompanyTimezone($this->companyId()))->toDateString();
 
             $total = SalahAttendance::where('attendance_date', $today)->count();
-            $present = SalahAttendance::where('attendance_date', $today)->whereNull('attendance_reason_id')->count();
-            $absent = $total - $present;
+            $absent = AttendanceExpression::countAbsent(
+                SalahAttendance::where('attendance_date', $today),
+                'salah_attendance'
+            );
+            $present = $total - $absent;
 
             return [
                 'total' => $total,
@@ -285,23 +292,29 @@ class DashboardService
      */
     private function dailyAttendance(Builder $query, Carbon $start, Carbon $end): array
     {
+        $table = $query->getModel()->getTable();
+
         // Group on DATE(...) rather than the raw column: a date-cast attribute
         // is persisted as a full datetime string on SQLite, so a plain string
         // comparison would drop the final day and split one day into two
         // groups. DATE() behaves identically on MySQL and SQLite.
-        $rows = $query
-            ->whereDate('attendance_date', '>=', $start->toDateString())
-            ->whereDate('attendance_date', '<=', $end->toDateString())
-            ->selectRaw('DATE(attendance_date) as day, COUNT(*) as total, SUM(CASE WHEN attendance_reason_id IS NULL THEN 1 ELSE 0 END) as present')
-            ->groupByRaw('DATE(attendance_date)')
-            ->orderByRaw('DATE(attendance_date)')
+        $rows = AttendanceExpression::joinReasons($query, $table)
+            ->whereDate("{$table}.attendance_date", '>=', $start->toDateString())
+            ->whereDate("{$table}.attendance_date", '<=', $end->toDateString())
+            ->selectRaw(
+                "DATE({$table}.attendance_date) as day, COUNT(*) as total, SUM("
+                .AttendanceExpression::absentCase($table).') as absent'
+            )
+            ->groupByRaw("DATE({$table}.attendance_date)")
+            ->orderByRaw("DATE({$table}.attendance_date)")
             ->get();
 
         $result = [];
 
         foreach ($rows as $row) {
             $total = (int) $row->getAttribute('total');
-            $present = (int) $row->getAttribute('present');
+            $absent = (int) $row->getAttribute('absent');
+            $present = $total - $absent;
 
             // `day` arrives as a string on MySQL and may be cast on SQLite.
             $day = $row->getAttribute('day');
