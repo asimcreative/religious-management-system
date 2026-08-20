@@ -86,9 +86,25 @@ See [06-USER-WORKFLOWS.md](06-USER-WORKFLOWS.md) for each flow traced route → 
 
 ## Baseline scope note
 
-This documentation describes `main` at commit `7aba160` (2026-08-19). Since that baseline:
-- **PR #22** (`feat/searchable-employee-select`) and **PR #20** (`feat/jamaat-taleem-tracking`) have both **merged into `main`** (2026-08-19). Their content is **not yet reflected** in this folder — [02-ARCHITECTURE.md](02-ARCHITECTURE.md) (tech stack table, Tom Select), [16-TECHNICAL-DEBT.md](16-TECHNICAL-DEBT.md) (Tom Select currently listed as absent), [03-MODULES.md](03-MODULES.md) (Salah Module — Taleem tracking) and [04-DATABASE.md](04-DATABASE.md) (`jamaat_taleem` table) all need a pass.
-- **Branch `feat/split-attendance-reasons-by-type`** (not yet a PR at time of writing) — splits the shared `attendance_reasons` master list into independent Salah/Jamaat and Quran lists via a new `type` column (see `docs/features/attendance-reasons/README.md` for the full design). Once merged, update [03-MODULES.md](03-MODULES.md) (the Attendance Reasons master-data entry) and [04-DATABASE.md](04-DATABASE.md) (`attendance_reasons.type` column, new backfill migration) — the master-data route/controller/view is now two of everything (`masters.salah-attendance-reasons.*`, `masters.quran-attendance-reasons.*`) instead of one `masters.attendance-reasons.*`.
+This documentation describes `main` at commit `7aba160` (2026-08-19). Since that baseline, PRs #20
+through #25 have all **merged into `main`** and are **not yet reflected** in this folder:
+- **PR #20** (`feat/jamaat-taleem-tracking`) and **PR #22** (`feat/searchable-employee-select`) —
+  update [02-ARCHITECTURE.md](02-ARCHITECTURE.md) (tech stack table, Tom Select),
+  [16-TECHNICAL-DEBT.md](16-TECHNICAL-DEBT.md) (Tom Select currently listed as absent),
+  [03-MODULES.md](03-MODULES.md) (Salah Module — Taleem tracking) and
+  [04-DATABASE.md](04-DATABASE.md) (`jamaat_taleem` table).
+- **PR #23** (attendance-reasons Salah/Quran split), **PR #24** (Taleem status on the attendance
+  history listing) and **PR #25** (compiled-asset rebuild fix) — see
+  `docs/features/attendance-reasons/README.md` for the full design; update
+  [03-MODULES.md](03-MODULES.md) and [04-DATABASE.md](04-DATABASE.md) for the `attendance_reasons.type`
+  column and its migrations.
+- **Branch `feat/taleem-reason-type-and-tabbed-reasons-page`** (not yet a PR at time of writing) —
+  adds a third `AttendanceReasonType::Taleem` case (the Taleem "not held" reason no longer borrows the
+  Salah list) and **consolidates** the master-data screen from two dedicated pages down to **one
+  tabbed page** at `masters.attendance-reasons.{type}` — `masters.salah-attendance-reasons.*` and
+  `masters.quran-attendance-reasons.*` (added by PR #23) no longer exist; both single-type controllers
+  were replaced by one `AttendanceReasonController` parameterised by an enum route segment. Once
+  merged, update [03-MODULES.md](03-MODULES.md) and [04-DATABASE.md](04-DATABASE.md) again.
 
 Check `gh pr list --state open` at the start of any future documentation-maintenance pass to catch new branches like these before they merge silently out of sync with this folder.
 

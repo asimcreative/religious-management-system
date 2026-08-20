@@ -20,6 +20,7 @@ use App\DataTransfer\Definitions\QuranStatusDefinition;
 use App\DataTransfer\Definitions\QuranTeacherAttendanceDefinition;
 use App\DataTransfer\Definitions\SalahAttendanceDefinition;
 use App\DataTransfer\Definitions\SalahAttendanceReasonDefinition;
+use App\DataTransfer\Definitions\TaleemAttendanceReasonDefinition;
 use App\DataTransfer\Definitions\TeacherDefinition;
 use App\DataTransfer\Definitions\UserDefinition;
 
@@ -61,6 +62,7 @@ return [
         DesignationDefinition::class,
         SalahAttendanceReasonDefinition::class,
         QuranAttendanceReasonDefinition::class,
+        TaleemAttendanceReasonDefinition::class,
         QuranDepartmentDefinition::class,
         QuranStatusDefinition::class,
         LanguageDefinition::class,

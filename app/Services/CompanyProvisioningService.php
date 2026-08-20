@@ -42,8 +42,8 @@ class CompanyProvisioningService
         return DB::transaction(function () use ($company): int {
             $companyId = (int) $company->getKey();
 
-            return $this->provisionAttendanceReasons($companyId, AttendanceReasonType::Salah)
-                + $this->provisionAttendanceReasons($companyId, AttendanceReasonType::Quran);
+            return collect(AttendanceReasonType::cases())
+                ->sum(fn (AttendanceReasonType $type): int => $this->provisionAttendanceReasons($companyId, $type));
         });
     }
 
@@ -68,8 +68,8 @@ class CompanyProvisioningService
      * one: a company that renamed "Absent" would be handed a second Absent on
      * the next run, and one that deleted a default it does not use would get it
      * back. Soft-deleted rows count as held for the same reason — the record of
-     * a deliberate deletion is the deletion itself. Salah and Quran are checked
-     * independently so a company missing only one type still gets it.
+     * a deliberate deletion is the deletion itself. Every AttendanceReasonType
+     * is checked independently so a company missing only one type still gets it.
      */
     private function provisionAttendanceReasons(int $companyId, AttendanceReasonType $type): int
     {

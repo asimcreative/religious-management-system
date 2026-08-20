@@ -14,4 +14,5 @@ enum AttendanceReasonType: string
 {
     case Salah = 'salah';
     case Quran = 'quran';
+    case Taleem = 'taleem';
 }

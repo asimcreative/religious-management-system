@@ -46,7 +46,7 @@ class StoreSalahAttendanceRequest extends FormRequest
                 'integer',
                 Rule::exists('attendance_reasons', 'id')
                     ->where('company_id', $companyId)
-                    ->where('type', AttendanceReasonType::Salah->value)
+                    ->where('type', AttendanceReasonType::Taleem->value)
                     ->where('status', 1)
                     ->whereNull('deleted_at'),
             ],

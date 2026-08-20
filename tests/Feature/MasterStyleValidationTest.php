@@ -11,7 +11,7 @@ class MasterStyleValidationTest extends TestCase
         $user = $this->createUserWithCompany(['attendance_reason.manage']);
 
         $this->actingAs($user)
-            ->post(route('masters.salah-attendance-reasons.store'), [
+            ->post(route('masters.attendance-reasons.store', ['type' => 'salah']), [
                 'reason_name' => 'Unsafe color',
                 'color' => 'red;display:none',
                 'status' => 1,
@@ -24,7 +24,20 @@ class MasterStyleValidationTest extends TestCase
         $user = $this->createUserWithCompany(['attendance_reason.manage']);
 
         $this->actingAs($user)
-            ->post(route('masters.quran-attendance-reasons.store'), [
+            ->post(route('masters.attendance-reasons.store', ['type' => 'quran']), [
+                'reason_name' => 'Unsafe color',
+                'color' => 'red;display:none',
+                'status' => 1,
+            ])
+            ->assertSessionHasErrors('color');
+    }
+
+    public function test_taleem_attendance_reason_rejects_non_hex_color_values(): void
+    {
+        $user = $this->createUserWithCompany(['attendance_reason.manage']);
+
+        $this->actingAs($user)
+            ->post(route('masters.attendance-reasons.store', ['type' => 'taleem']), [
                 'reason_name' => 'Unsafe color',
                 'color' => 'red;display:none',
                 'status' => 1,

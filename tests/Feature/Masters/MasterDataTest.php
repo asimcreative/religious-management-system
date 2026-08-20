@@ -235,7 +235,7 @@ class MasterDataTest extends TestCase
         $user = $this->createUserWithCompany(['attendance_reason.manage']);
 
         $this->actingAs($user)
-            ->post(route('masters.salah-attendance-reasons.store'), [
+            ->post(route('masters.attendance-reasons.store', ['type' => 'salah']), [
                 'reason_name' => 'Sick Leave',
                 'status' => 1,
             ])
@@ -253,7 +253,7 @@ class MasterDataTest extends TestCase
         $user = $this->createUserWithCompany(['attendance_reason.manage']);
 
         $this->actingAs($user)
-            ->post(route('masters.quran-attendance-reasons.store'), [
+            ->post(route('masters.attendance-reasons.store', ['type' => 'quran']), [
                 'reason_name' => 'Sick Leave',
                 'status' => 1,
             ])
@@ -263,6 +263,24 @@ class MasterDataTest extends TestCase
             'reason_name' => 'Sick Leave',
             'company_id' => $user->company_id,
             'type' => AttendanceReasonType::Quran->value,
+        ]);
+    }
+
+    public function test_taleem_attendance_reason_store_creates_record(): void
+    {
+        $user = $this->createUserWithCompany(['attendance_reason.manage']);
+
+        $this->actingAs($user)
+            ->post(route('masters.attendance-reasons.store', ['type' => 'taleem']), [
+                'reason_name' => 'Sick Leave',
+                'status' => 1,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('attendance_reasons', [
+            'reason_name' => 'Sick Leave',
+            'company_id' => $user->company_id,
+            'type' => AttendanceReasonType::Taleem->value,
         ]);
     }
 
@@ -279,28 +297,29 @@ class MasterDataTest extends TestCase
     }
 
     /**
-     * Both screens bind the same AttendanceReason model class, so nothing
-     * short of an explicit type check stops a Salah-typed id being opened
-     * through the Quran controller (or vice versa) by editing the URL.
+     * Every type shares the same controller and binds the same AttendanceReason
+     * model class, so nothing short of an explicit type check stops a
+     * Salah-typed id being opened through {type=quran} (or any other
+     * mismatched pairing) by editing the URL.
      */
-    public function test_salah_attendance_reason_cannot_be_edited_through_the_quran_screen(): void
+    public function test_salah_attendance_reason_cannot_be_edited_through_the_quran_tab(): void
     {
         $user = $this->createUserWithCompany(['attendance_reason.manage']);
         $salahReason = AttendanceReason::factory()->salah()->create(['company_id' => $user->company_id]);
 
         $this->actingAs($user)
-            ->get(route('masters.quran-attendance-reasons.edit', $salahReason))
+            ->get(route('masters.attendance-reasons.edit', ['type' => 'quran', 'attendance_reason' => $salahReason]))
             ->assertForbidden();
 
         $this->actingAs($user)
-            ->put(route('masters.quran-attendance-reasons.update', $salahReason), [
+            ->put(route('masters.attendance-reasons.update', ['type' => 'quran', 'attendance_reason' => $salahReason]), [
                 'reason_name' => 'Renamed',
                 'status' => 1,
             ])
             ->assertForbidden();
 
         $this->actingAs($user)
-            ->delete(route('masters.quran-attendance-reasons.destroy', $salahReason))
+            ->delete(route('masters.attendance-reasons.destroy', ['type' => 'quran', 'attendance_reason' => $salahReason]))
             ->assertForbidden();
 
         $this->assertDatabaseHas('attendance_reasons', [
@@ -310,24 +329,24 @@ class MasterDataTest extends TestCase
         ]);
     }
 
-    public function test_quran_attendance_reason_cannot_be_edited_through_the_salah_screen(): void
+    public function test_quran_attendance_reason_cannot_be_edited_through_the_salah_tab(): void
     {
         $user = $this->createUserWithCompany(['attendance_reason.manage']);
         $quranReason = AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id]);
 
         $this->actingAs($user)
-            ->get(route('masters.salah-attendance-reasons.edit', $quranReason))
+            ->get(route('masters.attendance-reasons.edit', ['type' => 'salah', 'attendance_reason' => $quranReason]))
             ->assertForbidden();
 
         $this->actingAs($user)
-            ->put(route('masters.salah-attendance-reasons.update', $quranReason), [
+            ->put(route('masters.attendance-reasons.update', ['type' => 'salah', 'attendance_reason' => $quranReason]), [
                 'reason_name' => 'Renamed',
                 'status' => 1,
             ])
             ->assertForbidden();
 
         $this->actingAs($user)
-            ->delete(route('masters.salah-attendance-reasons.destroy', $quranReason))
+            ->delete(route('masters.attendance-reasons.destroy', ['type' => 'salah', 'attendance_reason' => $quranReason]))
             ->assertForbidden();
 
         $this->assertDatabaseHas('attendance_reasons', [
@@ -337,17 +356,39 @@ class MasterDataTest extends TestCase
         ]);
     }
 
-    public function test_salah_attendance_reasons_index_only_lists_salah_reasons(): void
+    public function test_taleem_attendance_reason_cannot_be_edited_through_the_quran_tab(): void
+    {
+        $user = $this->createUserWithCompany(['attendance_reason.manage']);
+        $taleemReason = AttendanceReason::factory()->taleem()->create(['company_id' => $user->company_id]);
+
+        $this->actingAs($user)
+            ->get(route('masters.attendance-reasons.edit', ['type' => 'quran', 'attendance_reason' => $taleemReason]))
+            ->assertForbidden();
+
+        $this->actingAs($user)
+            ->delete(route('masters.attendance-reasons.destroy', ['type' => 'quran', 'attendance_reason' => $taleemReason]))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('attendance_reasons', [
+            'id' => $taleemReason->id,
+            'reason_name' => $taleemReason->reason_name,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_salah_attendance_reasons_tab_only_lists_salah_reasons(): void
     {
         $user = $this->createUserWithCompany(['attendance_reason.manage']);
         AttendanceReason::factory()->salah()->create(['company_id' => $user->company_id, 'reason_name' => 'Salah Only']);
         AttendanceReason::factory()->quran()->create(['company_id' => $user->company_id, 'reason_name' => 'Quran Only']);
+        AttendanceReason::factory()->taleem()->create(['company_id' => $user->company_id, 'reason_name' => 'Taleem Only']);
 
         $this->actingAs($user)
-            ->get(route('masters.salah-attendance-reasons.index'))
+            ->get(route('masters.attendance-reasons.index', ['type' => 'salah']))
             ->assertOk()
             ->assertSee('Salah Only')
-            ->assertDontSee('Quran Only');
+            ->assertDontSee('Quran Only')
+            ->assertDontSee('Taleem Only');
     }
 
     // ═══════════════════════════════════════════════════════════════════════

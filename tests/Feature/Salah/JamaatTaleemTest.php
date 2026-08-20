@@ -129,7 +129,7 @@ class JamaatTaleemTest extends TestCase
         $jamaat = $this->makeJamaat($user);
         $prayer = Prayer::factory()->create();
         $employee = $this->addActiveMember($jamaat, $user);
-        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->taleem()->create(['company_id' => $user->company_id]);
         $date = $this->attendanceDate();
 
         $payload = $this->storePayload($jamaat, $date, $employee, $prayer->id);
@@ -156,7 +156,7 @@ class JamaatTaleemTest extends TestCase
         $jamaat = $this->makeJamaat($user);
         $prayer = Prayer::factory()->create();
         $employee = $this->addActiveMember($jamaat, $user);
-        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->taleem()->create(['company_id' => $user->company_id]);
         $date = $this->attendanceDate();
 
         $payload = $this->storePayload($jamaat, $date, $employee, $prayer->id);
@@ -181,7 +181,7 @@ class JamaatTaleemTest extends TestCase
         $jamaat = $this->makeJamaat($user);
         $prayer = Prayer::factory()->create();
         $employee = $this->addActiveMember($jamaat, $user);
-        $reason = AttendanceReason::factory()->create(['company_id' => $user->company_id]);
+        $reason = AttendanceReason::factory()->taleem()->create(['company_id' => $user->company_id]);
         $date = $this->attendanceDate();
 
         $this->actingAs($user)->post(route('salah-attendance.store'), $this->storePayload($jamaat, $date, $employee, $prayer->id));
@@ -240,7 +240,7 @@ class JamaatTaleemTest extends TestCase
         $jamaat = $this->makeJamaat($user);
         $prayer = Prayer::factory()->create();
         $employee = $this->addActiveMember($jamaat, $user);
-        $reason = AttendanceReason::factory()->create([
+        $reason = AttendanceReason::factory()->taleem()->create([
             'company_id' => $user->company_id,
             'reason_name' => 'Qari on leave',
         ]);
