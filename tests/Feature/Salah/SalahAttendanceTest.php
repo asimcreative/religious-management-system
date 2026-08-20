@@ -75,6 +75,25 @@ class SalahAttendanceTest extends TestCase
         $this->actingAs($user)->get(route('salah-attendance.index'))->assertOk();
     }
 
+    /**
+     * The mosque's own vocabulary for prayer attendance is "Prayed"/"Not
+     * Prayed", not "Present"/"Absent" — the blank/default option on this
+     * screen is the one place that wording is hardcoded (every reason name is
+     * the tenant's own free text), so it has to say what they mean.
+     */
+    public function test_mark_attendance_uses_prayed_wording_not_present(): void
+    {
+        $user = $this->admin();
+        $jamaat = $this->makeJamaat($user);
+        $this->addActiveMember($jamaat, $user);
+        Prayer::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('salah-attendance.create', ['jamaat_id' => $jamaat->id, 'date' => $this->attendanceDate()]))
+            ->assertOk()
+            ->assertSee('Prayed');
+    }
+
     // ── Store ─────────────────────────────────────────────────────────────
 
     public function test_store_records_salah_attendance(): void

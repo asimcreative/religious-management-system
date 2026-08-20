@@ -315,6 +315,24 @@ class ReportTest extends TestCase
         $this->assertSame(0, (int) $row->absent);
     }
 
+    /**
+     * The mosque's own vocabulary is "Prayed"/"Not Prayed" — the report's
+     * Present/Absent cards and badges use that wording for Salah specifically
+     * (not the generic reports.present/absent, which Quran attendance still
+     * uses correctly as "Present"/"Absent").
+     */
+    public function test_salah_attendance_report_uses_prayed_wording(): void
+    {
+        $user = $this->reportAdmin();
+        SalahAttendance::factory()->create(['company_id' => $user->company_id, 'attendance_reason_id' => null]);
+
+        $this->actingAs($user)
+            ->get(route('reports.salah-attendance'))
+            ->assertOk()
+            ->assertSee('Prayed')
+            ->assertSee('Not Prayed');
+    }
+
     public function test_quran_attendance_summary_excludes_a_reason_that_does_not_count_as_absent(): void
     {
         $user = $this->reportAdmin();

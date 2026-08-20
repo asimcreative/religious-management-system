@@ -56,8 +56,8 @@
 {{-- ── Executive summary ───────────────────────────────────────────────── --}}
 <div class="report-summary mb-4">
     <x-stat-card :label="__('reports.total')" :value="number_format($summary['total'])" icon="bi-list-check" tone="neutral" />
-    <x-stat-card :label="__('reports.present')" :value="number_format($summary['present'])" icon="bi-check-circle" tone="success" />
-    <x-stat-card :label="__('reports.absent')" :value="number_format($summary['absent'])" icon="bi-x-circle" tone="danger" />
+    <x-stat-card :label="__('salah_attendance.present')" :value="number_format($summary['present'])" icon="bi-check-circle" tone="success" />
+    <x-stat-card :label="__('salah_attendance.absent')" :value="number_format($summary['absent'])" icon="bi-x-circle" tone="danger" />
     <x-stat-card :label="__('reports.attendance_rate')" :value="$rate.'%'" icon="bi-percent" :tone="$rateTone">
         <x-slot:meta>
             <span class="progress w-100">
@@ -76,8 +76,8 @@
                 <tr>
                     <th scope="col">{{ __('reports.prayer') }}</th>
                     <th scope="col" class="col-fit">{{ __('reports.total') }}</th>
-                    <th scope="col" class="col-fit">{{ __('reports.present') }}</th>
-                    <th scope="col" class="col-fit">{{ __('reports.absent') }}</th>
+                    <th scope="col" class="col-fit">{{ __('salah_attendance.present') }}</th>
+                    <th scope="col" class="col-fit">{{ __('salah_attendance.absent') }}</th>
                     <th scope="col" style="min-width: 11rem;">{{ __('reports.attendance_rate') }}</th>
                 </tr>
             </thead>
@@ -90,8 +90,8 @@
                     <tr>
                         <td data-label="{{ __('reports.prayer') }}" class="fw-semibold text-strong">{{ $pw->prayer_name }}</td>
                         <td data-label="{{ __('reports.total') }}" class="col-fit tabular">{{ number_format($pw->total) }}</td>
-                        <td data-label="{{ __('reports.present') }}" class="col-fit tabular text-success">{{ number_format($pw->present) }}</td>
-                        <td data-label="{{ __('reports.absent') }}" class="col-fit tabular text-danger">{{ number_format($pw->absent) }}</td>
+                        <td data-label="{{ __('salah_attendance.present') }}" class="col-fit tabular text-success">{{ number_format($pw->present) }}</td>
+                        <td data-label="{{ __('salah_attendance.absent') }}" class="col-fit tabular text-danger">{{ number_format($pw->absent) }}</td>
                         <td data-label="{{ __('reports.attendance_rate') }}">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="progress flex-grow-1 w-cap-md" role="img" aria-label="{{ $pct }}%">
@@ -189,7 +189,7 @@
                                     <span class="dash" title="{{ __('salah_attendance.not_recorded') }}">—</span>
                                 @elseif ($rec->isPresent())
                                     <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
-                                    <span class="visually-hidden">{{ __('reports.present') }}</span>
+                                    <span class="visually-hidden">{{ __('salah_attendance.present') }}</span>
                                 @else
                                     <span class="badge-soft badge-soft--plain"
                                           style="background-color: {{ $rec->attendanceReason?->color ?? '#64748B' }}1F;
@@ -209,7 +209,7 @@
                         <td data-label="{{ __('reports.prayer') }}">{{ $row->prayer?->prayer_name ?? '—' }}</td>
                         <td data-label="{{ __('reports.attendance_status') }}">
                             @if ($row->isPresent())
-                                <span class="badge-soft badge-soft-success">{{ __('reports.present') }}</span>
+                                <span class="badge-soft badge-soft-success">{{ __('salah_attendance.present') }}</span>
                             @elseif ($row->isAbsent())
                                 <span class="badge-soft badge-soft-danger">{{ $row->attendanceReason?->reason_name ?? '—' }}</span>
                             @else

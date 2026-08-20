@@ -44,7 +44,8 @@ return [
     'attendance_status' => 'حاضری کی حالت',
     'reason' => 'وجہ',
     'remarks' => 'ملاحظات',
-    'present' => 'حاضر',
+    'present' => 'نماز پڑھی',
+    'absent' => 'نماز نہیں پڑھی',
     'actions' => 'عمل',
     'leader' => 'لگانے والا',
 
