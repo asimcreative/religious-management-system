@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Contracts\Repositories\AttendanceReasonRepositoryInterface;
+use App\Enums\AttendanceReasonType;
 use App\Models\AttendanceReason;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -13,9 +14,10 @@ class AttendanceReasonRepository extends BaseRepository implements AttendanceRea
         parent::__construct($model);
     }
 
-    public function search(?string $search, int $perPage = 15): LengthAwarePaginator
+    public function search(?string $search, AttendanceReasonType $type, int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->newQuery()
+            ->ofType($type)
             ->when($search, function ($query) use ($search) {
                 $query->where('reason_name', 'like', "%{$search}%");
             })
@@ -23,9 +25,9 @@ class AttendanceReasonRepository extends BaseRepository implements AttendanceRea
             ->paginate($perPage);
     }
 
-    public function restore(int $id): bool
+    public function restore(int $id, AttendanceReasonType $type): bool
     {
-        $model = AttendanceReason::onlyTrashed()->findOrFail($id);
+        $model = AttendanceReason::onlyTrashed()->ofType($type)->findOrFail($id);
 
         return $model->restore();
     }

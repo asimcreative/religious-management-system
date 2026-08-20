@@ -247,8 +247,15 @@ test.describe('Attendance reasons are usable from the sheet', () => {
         }
     });
 
-    test('the reasons master page lists at least one reason', async ({ page }) => {
-        await page.goto('/masters/attendance-reasons');
+    test('the salah reasons master page lists at least one reason', async ({ page }) => {
+        await page.goto('/masters/salah-attendance-reasons');
+
+        await expect(page.locator('body')).not.toContainText('500');
+        await expect(page.locator('table tbody tr').first()).toBeVisible();
+    });
+
+    test('the quran reasons master page lists at least one reason', async ({ page }) => {
+        await page.goto('/masters/quran-attendance-reasons');
 
         await expect(page.locator('body')).not.toContainText('500');
         await expect(page.locator('table tbody tr').first()).toBeVisible();

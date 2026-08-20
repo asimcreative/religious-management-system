@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Enums\AttendanceReasonType;
 use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SalahAttendance\StoreSalahAttendanceRequest;
@@ -69,7 +70,7 @@ class SalahAttendanceController extends Controller
         $members = collect();
         $existingAttendance = collect();
         $existingTaleem = null;
-        $reasons = AttendanceReason::active()->orderBy('reason_name')->get();
+        $reasons = AttendanceReason::active()->ofType(AttendanceReasonType::Salah)->orderBy('reason_name')->get();
         $selectedJamaat = null;
         $dateAllowed = true;
         $attendanceReadOnly = false;

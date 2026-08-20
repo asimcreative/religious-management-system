@@ -20,7 +20,10 @@
 </x-page-header>
 
 @if ($reasons->isEmpty())
-    @include('partials.attendance-reasons-missing')
+    @include('partials.attendance-reasons-missing', [
+        'manageRoute' => 'masters.quran-attendance-reasons.index',
+        'moduleLabel' => __('masters.quran_attendance_reasons'),
+    ])
 @endif
 
 {{-- ── Step 1 — choose class and date ──────────────────────────────────── --}}

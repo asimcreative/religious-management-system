@@ -2,41 +2,34 @@
 
 namespace App\DataTransfer\Definitions;
 
+use App\Enums\AttendanceReasonType;
 use App\Enums\Status;
 use App\Models\AttendanceReason;
 use App\Support\DataTransfer\AbstractResourceDefinition;
 use App\Support\DataTransfer\Column;
+use Illuminate\Database\Eloquent\Builder;
 
-class AttendanceReasonDefinition extends AbstractResourceDefinition
+/**
+ * Shared column/permission shape for the Salah and Quran attendance-reason
+ * lists. Each subclass only declares which type it manages.
+ *
+ * type is never a spreadsheet column: the screen a file is uploaded through
+ * already says which list it belongs to, and letting a cell decide instead
+ * would let a Salah reason slip into the Quran list (or vice versa) on a
+ * typo.
+ */
+abstract class AttendanceReasonDefinitionBase extends AbstractResourceDefinition
 {
-    public function key(): string
-    {
-        return 'attendance-reasons';
-    }
+    abstract protected function type(): AttendanceReasonType;
 
     public function modelClass(): string
     {
         return AttendanceReason::class;
     }
 
-    public function label(): string
+    public function newQuery(): Builder
     {
-        return __('masters.attendance_reasons');
-    }
-
-    public function singularLabel(): string
-    {
-        return __('masters.attendance_reason');
-    }
-
-    public function icon(): string
-    {
-        return 'bi-chat-left-text';
-    }
-
-    public function indexRoute(): string
-    {
-        return 'masters.attendance-reasons.index';
+        return parent::newQuery()->where('type', $this->type());
     }
 
     /** @return array<string, string> */
@@ -111,5 +104,17 @@ class AttendanceReasonDefinition extends AbstractResourceDefinition
     protected function defaultSort(): array
     {
         return ['created_at' => 'desc'];
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $context
+     * @return array<string, mixed>
+     */
+    public function prepareForWrite(array $attributes, array $context): array
+    {
+        $attributes['type'] = $this->type();
+
+        return $attributes;
     }
 }

@@ -81,8 +81,10 @@ const PAGES: PageSpec[] = [
 
     { path: '/masters/branches', label: 'Branches list', group: 'Master data' },
     { path: '/masters/branches/create', label: 'Branch form', group: 'Master data' },
-    { path: '/masters/attendance-reasons', label: 'Attendance reasons list', group: 'Master data' },
-    { path: '/masters/attendance-reasons/create', label: 'Attendance reason form', group: 'Master data' },
+    { path: '/masters/salah-attendance-reasons', label: 'Salah attendance reasons list', group: 'Master data' },
+    { path: '/masters/salah-attendance-reasons/create', label: 'Salah attendance reason form', group: 'Master data' },
+    { path: '/masters/quran-attendance-reasons', label: 'Quran attendance reasons list', group: 'Master data' },
+    { path: '/masters/quran-attendance-reasons/create', label: 'Quran attendance reason form', group: 'Master data' },
     { path: '/masters/quran-statuses', label: 'Quran statuses list', group: 'Master data' },
     { path: '/masters/languages', label: 'Languages list', group: 'Master data' },
 

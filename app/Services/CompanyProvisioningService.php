@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AttendanceReasonType;
 use App\Enums\Status;
 use App\Models\AttendanceReason;
 use App\Models\Company;
@@ -38,9 +39,12 @@ class CompanyProvisioningService
             return 0;
         }
 
-        return DB::transaction(
-            fn (): int => $this->provisionAttendanceReasons((int) $company->getKey())
-        );
+        return DB::transaction(function () use ($company): int {
+            $companyId = (int) $company->getKey();
+
+            return $this->provisionAttendanceReasons($companyId, AttendanceReasonType::Salah)
+                + $this->provisionAttendanceReasons($companyId, AttendanceReasonType::Quran);
+        });
     }
 
     /**
@@ -57,30 +61,34 @@ class CompanyProvisioningService
     }
 
     /**
-     * The company is seeded only when it holds no attendance reasons at all.
+     * The company is seeded only when it holds no attendance reasons of this
+     * type at all.
      *
      * Matching default-by-default would be the obvious approach and is the wrong
      * one: a company that renamed "Absent" would be handed a second Absent on
      * the next run, and one that deleted a default it does not use would get it
      * back. Soft-deleted rows count as held for the same reason — the record of
-     * a deliberate deletion is the deletion itself.
+     * a deliberate deletion is the deletion itself. Salah and Quran are checked
+     * independently so a company missing only one type still gets it.
      */
-    private function provisionAttendanceReasons(int $companyId): int
+    private function provisionAttendanceReasons(int $companyId, AttendanceReasonType $type): int
     {
         $alreadyConfigured = AttendanceReason::withoutGlobalScope('company')
             ->withTrashed()
             ->forCompany($companyId)
+            ->ofType($type)
             ->exists();
 
         if ($alreadyConfigured) {
             return 0;
         }
 
-        $defaults = config('master-data.attendance_reasons', []);
+        $defaults = config('master-data.attendance_reasons.'.$type->value, []);
 
         foreach ($defaults as $default) {
             AttendanceReason::withoutGlobalScope('company')->create([
                 'company_id' => $companyId,
+                'type' => $type,
                 'reason_name' => $default['reason_name'],
                 'color' => $default['color'] ?? null,
                 'icon' => $default['icon'] ?? null,

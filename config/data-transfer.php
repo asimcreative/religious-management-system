@@ -1,6 +1,5 @@
 <?php
 
-use App\DataTransfer\Definitions\AttendanceReasonDefinition;
 use App\DataTransfer\Definitions\BranchDefinition;
 use App\DataTransfer\Definitions\CompanyDefinition;
 use App\DataTransfer\Definitions\DepartmentDefinition;
@@ -12,6 +11,7 @@ use App\DataTransfer\Definitions\JamaatTaleemDefinition;
 use App\DataTransfer\Definitions\LanguageDefinition;
 use App\DataTransfer\Definitions\NotificationDefinition;
 use App\DataTransfer\Definitions\QuranAttendanceDefinition;
+use App\DataTransfer\Definitions\QuranAttendanceReasonDefinition;
 use App\DataTransfer\Definitions\QuranClassDefinition;
 use App\DataTransfer\Definitions\QuranClassMemberDefinition;
 use App\DataTransfer\Definitions\QuranDepartmentDefinition;
@@ -19,6 +19,7 @@ use App\DataTransfer\Definitions\QuranProgressDefinition;
 use App\DataTransfer\Definitions\QuranStatusDefinition;
 use App\DataTransfer\Definitions\QuranTeacherAttendanceDefinition;
 use App\DataTransfer\Definitions\SalahAttendanceDefinition;
+use App\DataTransfer\Definitions\SalahAttendanceReasonDefinition;
 use App\DataTransfer\Definitions\TeacherDefinition;
 use App\DataTransfer\Definitions\UserDefinition;
 
@@ -58,7 +59,8 @@ return [
         BranchDefinition::class,
         DepartmentDefinition::class,
         DesignationDefinition::class,
-        AttendanceReasonDefinition::class,
+        SalahAttendanceReasonDefinition::class,
+        QuranAttendanceReasonDefinition::class,
         QuranDepartmentDefinition::class,
         QuranStatusDefinition::class,
         LanguageDefinition::class,

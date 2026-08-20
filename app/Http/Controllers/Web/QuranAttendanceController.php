@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Enums\AttendanceReasonType;
 use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuranAttendance\StoreQuranAttendanceRequest;
@@ -73,7 +74,7 @@ class QuranAttendanceController extends Controller
         $members = collect();
         $existingAttendance = collect();
         $existingTeacherAttendance = null;
-        $reasons = AttendanceReason::active()->orderBy('reason_name')->get();
+        $reasons = AttendanceReason::active()->ofType(AttendanceReasonType::Quran)->orderBy('reason_name')->get();
         $selectedClass = null;
         $dateAllowed = true;
         $attendanceLocked = false;

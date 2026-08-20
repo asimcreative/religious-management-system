@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Masters;
 
+use App\Enums\AttendanceReasonType;
 use App\Enums\Status;
 use App\Models\AttendanceReason;
 use App\Models\Branch;
@@ -68,7 +69,7 @@ class AttendanceReasonProvisioningTest extends TestCase
 
     // ── Provisioning at company creation ───────────────────────────────────
 
-    public function test_creating_a_company_provisions_the_default_attendance_reasons(): void
+    public function test_creating_a_company_provisions_the_default_attendance_reasons_for_both_types(): void
     {
         $platform = $this->platformAccount();
 
@@ -77,18 +78,22 @@ class AttendanceReasonProvisioningTest extends TestCase
             ->assertRedirect(route('companies.index'));
 
         $company = Company::where('company_code', 'NEWCO')->firstOrFail();
-        $defaults = config('master-data.attendance_reasons');
+        $salahDefaults = config('master-data.attendance_reasons.salah');
+        $quranDefaults = config('master-data.attendance_reasons.quran');
 
-        $this->assertCount(count($defaults), $this->reasonsFor($company->id));
+        $this->assertCount(count($salahDefaults) + count($quranDefaults), $this->reasonsFor($company->id));
 
-        foreach ($defaults as $default) {
-            $this->assertDatabaseHas('attendance_reasons', [
-                'company_id' => $company->id,
-                'reason_name' => $default['reason_name'],
-                'counts_as_absent' => $default['counts_as_absent'],
-                'counts_as_leave' => $default['counts_as_leave'],
-                'status' => Status::Active->value,
-            ]);
+        foreach ([AttendanceReasonType::Salah->value => $salahDefaults, AttendanceReasonType::Quran->value => $quranDefaults] as $type => $defaults) {
+            foreach ($defaults as $default) {
+                $this->assertDatabaseHas('attendance_reasons', [
+                    'company_id' => $company->id,
+                    'type' => $type,
+                    'reason_name' => $default['reason_name'],
+                    'counts_as_absent' => $default['counts_as_absent'],
+                    'counts_as_leave' => $default['counts_as_leave'],
+                    'status' => Status::Active->value,
+                ]);
+            }
         }
     }
 
@@ -96,20 +101,24 @@ class AttendanceReasonProvisioningTest extends TestCase
     {
         // Every report built on counts_as_absent reads zero without one, which
         // renders as flawless attendance rather than as missing configuration.
-        $this->assertContains(
-            true,
-            array_column(config('master-data.attendance_reasons'), 'counts_as_absent'),
-        );
+        foreach (['salah', 'quran'] as $type) {
+            $this->assertContains(
+                true,
+                array_column(config('master-data.attendance_reasons.'.$type), 'counts_as_absent'),
+            );
+        }
     }
 
     public function test_the_defaults_do_not_include_present(): void
     {
         // Presence is the absence of a reason. A Present row would be a second
         // way to say the same thing and would split every attendance figure.
-        $this->assertNotContains(
-            'Present',
-            array_column(config('master-data.attendance_reasons'), 'reason_name'),
-        );
+        foreach (['salah', 'quran'] as $type) {
+            $this->assertNotContains(
+                'Present',
+                array_column(config('master-data.attendance_reasons.'.$type), 'reason_name'),
+            );
+        }
     }
 
     public function test_a_failure_while_provisioning_does_not_leave_a_half_built_company(): void
@@ -118,7 +127,8 @@ class AttendanceReasonProvisioningTest extends TestCase
 
         // attendance_reasons.reason_name is NOT NULL, so this default cannot be written.
         config(['master-data.attendance_reasons' => [
-            ['reason_name' => null, 'color' => null, 'icon' => null],
+            'salah' => [['reason_name' => null, 'color' => null, 'icon' => null]],
+            'quran' => [['reason_name' => null, 'color' => null, 'icon' => null]],
         ]]);
 
         try {
@@ -144,6 +154,11 @@ class AttendanceReasonProvisioningTest extends TestCase
 
     // ── Re-running provisioning is safe ────────────────────────────────────
 
+    private function defaultReasonCount(): int
+    {
+        return count(config('master-data.attendance_reasons.salah')) + count(config('master-data.attendance_reasons.quran'));
+    }
+
     public function test_provisioning_twice_does_not_duplicate_the_defaults(): void
     {
         $company = Company::factory()->create();
@@ -153,14 +168,20 @@ class AttendanceReasonProvisioningTest extends TestCase
         $second = $service->provision($company);
 
         $this->assertSame(0, $second);
-        $this->assertCount(count(config('master-data.attendance_reasons')), $this->reasonsFor($company->id));
+        $this->assertCount($this->defaultReasonCount(), $this->reasonsFor($company->id));
     }
 
-    public function test_provisioning_leaves_a_company_that_already_has_reasons_alone(): void
+    /**
+     * Salah and Quran are checked independently: a company that already holds
+     * one type but not the other must still be handed the missing type's
+     * defaults, not skipped entirely.
+     */
+    public function test_provisioning_leaves_an_already_configured_type_alone_but_fills_in_the_missing_one(): void
     {
         $company = Company::factory()->create();
         AttendanceReason::withoutGlobalScope('company')->create([
             'company_id' => $company->id,
+            'type' => AttendanceReasonType::Salah,
             'reason_name' => 'Ghair Haazir',
             'counts_as_absent' => true,
             'status' => Status::Active,
@@ -168,8 +189,10 @@ class AttendanceReasonProvisioningTest extends TestCase
 
         $created = app(CompanyProvisioningService::class)->provision($company);
 
-        $this->assertSame(0, $created);
-        $this->assertSame(['Ghair Haazir'], $this->reasonsFor($company->id)->pluck('reason_name')->all());
+        $this->assertSame(count(config('master-data.attendance_reasons.quran')), $created);
+        $reasons = $this->reasonsFor($company->id);
+        $this->assertSame(['Ghair Haazir'], $reasons->where('type', AttendanceReasonType::Salah)->pluck('reason_name')->all());
+        $this->assertCount(count(config('master-data.attendance_reasons.quran')), $reasons->where('type', AttendanceReasonType::Quran));
     }
 
     public function test_provisioning_does_not_resurrect_a_deleted_default(): void
@@ -212,7 +235,7 @@ class AttendanceReasonProvisioningTest extends TestCase
 
         $this->seed(AttendanceReasonSeeder::class);
 
-        $expected = count(config('master-data.attendance_reasons'));
+        $expected = $this->defaultReasonCount();
         $this->assertCount($expected, $this->reasonsFor($first->id));
         $this->assertCount($expected, $this->reasonsFor($second->id));
         $this->assertCount(0, $this->reasonsFor($platform->id));
@@ -225,7 +248,7 @@ class AttendanceReasonProvisioningTest extends TestCase
         $this->seed(AttendanceReasonSeeder::class);
         $this->seed(AttendanceReasonSeeder::class);
 
-        $this->assertCount(count(config('master-data.attendance_reasons')), $this->reasonsFor($company->id));
+        $this->assertCount($this->defaultReasonCount(), $this->reasonsFor($company->id));
     }
 
     // ── What the person marking attendance sees ────────────────────────────
@@ -238,7 +261,7 @@ class AttendanceReasonProvisioningTest extends TestCase
             ->get(route('salah-attendance.create'))
             ->assertOk()
             ->assertSee(__('masters.no_attendance_reasons_title'))
-            ->assertSee(route('masters.attendance-reasons.index'), false);
+            ->assertSee(route('masters.salah-attendance-reasons.index'), false);
     }
 
     public function test_the_salah_sheet_points_a_user_without_the_permission_at_an_administrator(): void
@@ -249,13 +272,13 @@ class AttendanceReasonProvisioningTest extends TestCase
             ->get(route('salah-attendance.create'))
             ->assertOk()
             ->assertSee(__('masters.no_attendance_reasons_ask_admin'))
-            ->assertDontSee(route('masters.attendance-reasons.index'), false);
+            ->assertDontSee(route('masters.salah-attendance-reasons.index'), false);
     }
 
     public function test_the_salah_sheet_stays_quiet_once_the_company_has_reasons(): void
     {
         $user = $this->createUserWithCompany(['salah.attendance.create']);
-        AttendanceReason::factory()->create([
+        AttendanceReason::factory()->salah()->create([
             'company_id' => $user->company_id,
             'status' => Status::Active,
         ]);
@@ -273,7 +296,42 @@ class AttendanceReasonProvisioningTest extends TestCase
         $this->actingAs($user)
             ->get(route('quran-attendance.create'))
             ->assertOk()
+            ->assertSee(__('masters.no_attendance_reasons_title'))
+            ->assertSee(route('masters.quran-attendance-reasons.index'), false);
+    }
+
+    /**
+     * A company can be configured on one side and not the other — the two
+     * lists are independent, so having Salah reasons must not silence the
+     * Quran sheet's own banner (and vice versa, covered above by the
+     * "no reasons" case starting from a blank company).
+     */
+    public function test_the_quran_sheet_still_speaks_up_when_only_salah_is_configured(): void
+    {
+        $user = $this->createUserWithCompany(['quran.attendance.create', 'salah.attendance.create']);
+        AttendanceReason::factory()->salah()->create([
+            'company_id' => $user->company_id,
+            'status' => Status::Active,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('quran-attendance.create'))
+            ->assertOk()
             ->assertSee(__('masters.no_attendance_reasons_title'));
+    }
+
+    public function test_the_quran_sheet_stays_quiet_once_the_company_has_quran_reasons(): void
+    {
+        $user = $this->createUserWithCompany(['quran.attendance.create']);
+        AttendanceReason::factory()->quran()->create([
+            'company_id' => $user->company_id,
+            'status' => Status::Active,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('quran-attendance.create'))
+            ->assertOk()
+            ->assertDontSee(__('masters.no_attendance_reasons_title'));
     }
 
     // ── The journey the production bug made impossible ─────────────────────
@@ -303,6 +361,7 @@ class AttendanceReasonProvisioningTest extends TestCase
         $prayer = Prayer::factory()->create();
         $absent = AttendanceReason::withoutGlobalScope('company')
             ->forCompany($company->id)
+            ->ofType(AttendanceReasonType::Salah)
             ->where('counts_as_absent', true)
             ->firstOrFail();
         $date = now('Asia/Karachi')->toDateString();

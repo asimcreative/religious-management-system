@@ -14,13 +14,14 @@ use App\Http\Controllers\Web\ImpersonationController;
 use App\Http\Controllers\Web\JamaatController;
 use App\Http\Controllers\Web\JamaatMemberController;
 use App\Http\Controllers\Web\LocaleController;
-use App\Http\Controllers\Web\Masters\AttendanceReasonController;
 use App\Http\Controllers\Web\Masters\BranchController;
 use App\Http\Controllers\Web\Masters\DepartmentController;
 use App\Http\Controllers\Web\Masters\DesignationController;
 use App\Http\Controllers\Web\Masters\LanguageController;
+use App\Http\Controllers\Web\Masters\QuranAttendanceReasonController;
 use App\Http\Controllers\Web\Masters\QuranDepartmentController;
 use App\Http\Controllers\Web\Masters\QuranStatusController;
+use App\Http\Controllers\Web\Masters\SalahAttendanceReasonController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\QuranAttendanceController;
 use App\Http\Controllers\Web\QuranClassController;
@@ -209,8 +210,11 @@ Route::middleware([
         Route::resource('designations', DesignationController::class)->except('show');
         Route::post('designations/{designation}/restore', [DesignationController::class, 'restore'])->name('designations.restore')->withTrashed();
 
-        Route::resource('attendance-reasons', AttendanceReasonController::class)->except('show');
-        Route::post('attendance-reasons/{attendance_reason}/restore', [AttendanceReasonController::class, 'restore'])->name('attendance-reasons.restore')->withTrashed();
+        Route::resource('salah-attendance-reasons', SalahAttendanceReasonController::class)->except('show');
+        Route::post('salah-attendance-reasons/{salah_attendance_reason}/restore', [SalahAttendanceReasonController::class, 'restore'])->name('salah-attendance-reasons.restore')->withTrashed();
+
+        Route::resource('quran-attendance-reasons', QuranAttendanceReasonController::class)->except('show');
+        Route::post('quran-attendance-reasons/{quran_attendance_reason}/restore', [QuranAttendanceReasonController::class, 'restore'])->name('quran-attendance-reasons.restore')->withTrashed();
 
         Route::resource('quran-departments', QuranDepartmentController::class)->except('show');
         Route::post('quran-departments/{quran_department}/restore', [QuranDepartmentController::class, 'restore'])->name('quran-departments.restore')->withTrashed();

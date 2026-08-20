@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\QuranAttendance;
 
+use App\Enums\AttendanceReasonType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,6 +32,7 @@ class StoreQuranAttendanceRequest extends FormRequest
                 'integer',
                 Rule::exists('attendance_reasons', 'id')
                     ->where('company_id', $companyId)
+                    ->where('type', AttendanceReasonType::Quran->value)
                     ->where('status', 1)
                     ->whereNull('deleted_at'),
             ],
@@ -44,6 +46,7 @@ class StoreQuranAttendanceRequest extends FormRequest
                 'integer',
                 Rule::exists('attendance_reasons', 'id')
                     ->where('company_id', $companyId)
+                    ->where('type', AttendanceReasonType::Quran->value)
                     ->where('status', 1)
                     ->whereNull('deleted_at'),
             ],

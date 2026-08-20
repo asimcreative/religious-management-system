@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\AttendanceReasonType;
 use App\Enums\Status;
 use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasAuditColumns;
 use App\Models\Concerns\HasStatus;
 use Database\Factories\AttendanceReasonFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +22,7 @@ class AttendanceReason extends Model
 
     protected $fillable = [
         'company_id',
+        'type',
         'reason_name',
         'color',
         'icon',
@@ -31,10 +34,16 @@ class AttendanceReason extends Model
     protected function casts(): array
     {
         return [
+            'type' => AttendanceReasonType::class,
             'status' => Status::class,
             'counts_as_absent' => 'boolean',
             'counts_as_leave' => 'boolean',
         ];
+    }
+
+    public function scopeOfType(Builder $query, AttendanceReasonType $type): Builder
+    {
+        return $query->where('type', $type);
     }
 
     // ── Relationships ──────────────────────────────────────────────
